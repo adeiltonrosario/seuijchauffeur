@@ -160,5 +160,30 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-body);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 }
+
+@utility surface-luxe {
+  background-image: var(--gradient-luxe);
+  box-shadow: var(--shadow-luxe);
+}
+
+@utility text-gold {
+  background-image: var(--gradient-gold);
+  background-clip: text;
+  color: transparent;
+}
+
+@utility glow-gold {
+  box-shadow: var(--shadow-glow);
+}
+
