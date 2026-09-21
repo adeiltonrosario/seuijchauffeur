@@ -18,7 +18,7 @@ export const Route = createFileRoute("/motorista/agendamentos/")({
       { property: "og:description", content: "Disponibilidade, filtro por data e lista de corridas agendadas." },
     ],
   }),
-  component: AgendamentosMotorista;
+  component: AgendamentosMotorista,
 });
 
 function AgendamentosMotorista() {
