@@ -1,0 +1,180 @@
+export type StatusAgendamento = "pendente" | "confirmado" | "em-andamento" | "concluido" | "cancelado";
+
+export const rotuloStatus: Record<StatusAgendamento, string> = {
+  pendente: "Pendente",
+  confirmado: "Confirmado",
+  "em-andamento": "Em andamento",
+  concluido: "Concluída",
+  cancelado: "Cancelado",
+};
+
+export type Agendamento = {
+  id: string;
+  cliente: string;
+  motorista: string;
+  embarque: string;
+  parada?: string;
+  desembarque: string;
+  ida: string;
+  retorno?: string;
+  modalidade: string;
+  pagamento: "Pix" | "Cartão de crédito" | "Plano mensal";
+  valor: number;
+  status: StatusAgendamento;
+  veiculo: string;
+  categoria: "Sedan" | "SUV" | "Hatch";
+  ocupantes: string[];
+  capacidade: number;
+};
+
+export const agendamentos: Agendamento[] = [
+  {
+    id: "AG-1042",
+    cliente: "Adeilton Oliveira",
+    motorista: "Marcos Vinícius",
+    embarque: "Av. Paulista, 1400 — São Paulo",
+    parada: "Rua Augusta, 900",
+    desembarque: "Aeroporto de Congonhas",
+    ida: "22/09/2026 07:30",
+    retorno: "22/09/2026 21:15",
+    modalidade: "Executivo aeroporto",
+    pagamento: "Pix",
+    valor: 320,
+    status: "confirmado",
+    veiculo: "Toyota Corolla — Preto",
+    categoria: "Sedan",
+    ocupantes: ["Adeilton Oliveira", "Carla Menezes"],
+    capacidade: 4,
+  },
+  {
+    id: "AG-1043",
+    cliente: "Renata Prado",
+    motorista: "Juliana Alves",
+    embarque: "Rua Oscar Freire, 233",
+    desembarque: "Hospital Albert Einstein",
+    ida: "23/09/2026 09:00",
+    modalidade: "Corrida assistida",
+    pagamento: "Plano mensal",
+    valor: 180,
+    status: "pendente",
+    veiculo: "Jeep Compass — Cinza",
+    categoria: "SUV",
+    ocupantes: ["Renata Prado"],
+    capacidade: 5,
+  },
+  {
+    id: "AG-1044",
+    cliente: "Eduardo Lima",
+    motorista: "Marcos Vinícius",
+    embarque: "Alameda Santos, 45",
+    parada: "Av. Faria Lima, 3500",
+    desembarque: "Aeroporto de Guarulhos",
+    ida: "24/09/2026 05:40",
+    retorno: "26/09/2026 23:10",
+    modalidade: "Viagem corporativa",
+    pagamento: "Cartão de crédito",
+    valor: 540,
+    status: "em-andamento",
+    veiculo: "Toyota Corolla — Preto",
+    categoria: "Sedan",
+    ocupantes: ["Eduardo Lima", "Paulo Braga", "Tiago Reis"],
+    capacidade: 4,
+  },
+  {
+    id: "AG-1045",
+    cliente: "Sofia Andrade",
+    motorista: "Rafael Costa",
+    embarque: "Rua Haddock Lobo, 120",
+    desembarque: "Shopping Iguatemi",
+    ida: "20/09/2026 18:00",
+    modalidade: "City tour",
+    pagamento: "Pix",
+    valor: 140,
+    status: "concluido",
+    veiculo: "Honda Fit — Branco",
+    categoria: "Hatch",
+    ocupantes: ["Sofia Andrade"],
+    capacidade: 4,
+  },
+];
+
+export const motoristas = [
+  { nome: "Marcos Vinícius", nota: 4.9, veiculo: "Toyota Corolla — Sedan", valor: 320, favorito: true },
+  { nome: "Juliana Alves", nota: 4.8, veiculo: "Jeep Compass — SUV", valor: 365, favorito: true },
+  { nome: "Rafael Costa", nota: 4.7, veiculo: "Honda Fit — Hatch", valor: 280, favorito: false },
+  { nome: "Camila Duarte", nota: 5.0, veiculo: "Volvo XC60 — SUV", valor: 420, favorito: false },
+];
+
+export const modalidades = [
+  "Executivo aeroporto",
+  "Corrida assistida",
+  "Viagem corporativa",
+  "City tour",
+  "Escolar recorrente",
+];
+
+export const planos = [
+  { nome: "Essencial", preco: "R$ 289/mês", corridas: "8 corridas urbanas", destaque: false },
+  { nome: "Executivo", preco: "R$ 649/mês", corridas: "20 corridas + aeroporto", destaque: true },
+  { nome: "Corporativo", preco: "R$ 1.290/mês", corridas: "Ilimitado para equipes", destaque: false },
+];
+
+export const participantesMapa = [
+  { id: "m1", nome: "Marcos Vinícius", tipo: "motorista" as const, x: 26, y: 32, agendamento: "AG-1042" },
+  { id: "m2", nome: "Juliana Alves", tipo: "motorista" as const, x: 64, y: 22, agendamento: "AG-1043" },
+  { id: "m3", nome: "Rafael Costa", tipo: "motorista" as const, x: 45, y: 70, agendamento: "AG-1045" },
+  { id: "c1", nome: "Adeilton Oliveira", tipo: "cliente" as const, x: 38, y: 48, agendamento: "AG-1042" },
+  { id: "c2", nome: "Renata Prado", tipo: "cliente" as const, x: 76, y: 56, agendamento: "AG-1043" },
+  { id: "c3", nome: "Eduardo Lima", tipo: "cliente" as const, x: 18, y: 66, agendamento: "AG-1044" },
+];
+
+export const veiculos = [
+  { placa: "FQR-4E21", modelo: "Toyota Corolla", cor: "Preto", categoria: "Sedan", capacidade: 4 },
+  { placa: "GHT-9J04", modelo: "Jeep Compass", cor: "Cinza", categoria: "SUV", capacidade: 5 },
+  { placa: "KLM-2B77", modelo: "Honda Fit", cor: "Branco", categoria: "Hatch", capacidade: 4 },
+];
+
+export const conversas = [
+  {
+    id: "cv-1",
+    cliente: "Adeilton Oliveira",
+    motorista: "Marcos Vinícius",
+    agendamento: "AG-1042",
+    assunto: "Motorista a caminho",
+    naoLidas: 2,
+  },
+  {
+    id: "cv-2",
+    cliente: "Renata Prado",
+    motorista: "Juliana Alves",
+    agendamento: "AG-1043",
+    assunto: "Confirmação de horário",
+    naoLidas: 0,
+  },
+  {
+    id: "cv-3",
+    cliente: "Eduardo Lima",
+    motorista: "Marcos Vinícius",
+    agendamento: "AG-1044",
+    assunto: "Troca de veículo",
+    naoLidas: 1,
+  },
+];
+
+export const mensagensMediadas = [
+  { autor: "motorista" as const, texto: "Estou saindo agora, chego em 12 minutos.", hora: "07:14" },
+  { autor: "ia" as const, texto: "Olá! Seu motorista Marcos já está a caminho e chega em cerca de 12 minutos.", hora: "07:14" },
+  { autor: "cliente" as const, texto: "Perfeito, já desço para a portaria.", hora: "07:15" },
+  { autor: "ia" as const, texto: "O cliente aguardará na portaria do prédio.", hora: "07:15" },
+];
+
+export const padroesAtendimento = [
+  "Sempre confirme nome do cliente, endereço de embarque e horário antes de repassar qualquer mensagem.",
+  "Avisos de atraso devem incluir o novo horário estimado e o pedido de desculpas padrão.",
+  "Troca de veículo só pode ser comunicada após aceitação do cliente.",
+  "Nunca compartilhe telefone pessoal, dados de pagamento ou endereço residencial completo.",
+  "Cancelamentos com menos de 2h devem oferecer reagendamento prioritário.",
+];
+
+export const formatarBRL = (valor: number) =>
+  valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
