@@ -26,19 +26,16 @@ export const Route = createFileRoute("/cliente/agendamento/novo")({
 
 type Horario = { id: number; tipo: "Ida" | "Retorno"; data: string; hora: string };
 
-export default function _unused() {
-  return null;
-}
-
 function NovoAgendamento() {
   const navigate = useNavigate();
   const [horarios, setHorarios] = useState<Horario[]>([
     { id: 1, tipo: "Ida", data: "2026-09-22", hora: "07:30" },
     { id: 2, tipo: "Retorno", data: "2026-09-22", hora: "21:15" },
   ]);
-  const [modalidade, setModalidade] = useState(modalidades[0]);
+  const [modalidade, setModalidade] = useState(modalidades[0]!);
   const [pagamento, setPagamento] = useState<"Pix" | "Cartão de crédito" | "Plano mensal">("Pix");
-  const [motorista, setMotorista] = useState(motoristas[0].nome);
+  const [motorista, setMotorista] = useState(motoristas[0]!.nome);
+
 
   const adicionarHorario = (tipo: "Ida" | "Retorno") => {
     const novo = { id: Date.now(), tipo, data: "2026-09-23", hora: "08:00" };
