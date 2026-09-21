@@ -14,6 +14,7 @@ import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
 import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento'
+import { Route as MotoristaGanhosRouteImport } from './routes/motorista.ganhos'
 import { Route as MotoristaVeiculosRouteImport } from './routes/motorista.veiculos'
 import { Route as ClienteAgendamentoNovoRouteImport } from './routes/cliente.agendamento.novo'
 import { Route as ClienteAgendamentosIdRouteImport } from './routes/cliente.agendamentos.$id'
@@ -43,6 +44,11 @@ const ClienteIndexRoute = ClienteIndexRouteImport.update({
 const ClientePagamentoRoute = ClientePagamentoRouteImport.update({
   id: '/cliente/pagamento',
   path: '/cliente/pagamento',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaGanhosRoute = MotoristaGanhosRouteImport.update({
+  id: '/motorista/ganhos',
+  path: '/motorista/ganhos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MotoristaVeiculosRoute = MotoristaVeiculosRouteImport.update({
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
+  '/motorista/ganhos': typeof MotoristaGanhosRoute
   '/motorista/veiculos': typeof MotoristaVeiculosRoute
   '/cliente/': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
+  '/motorista/ganhos': typeof MotoristaGanhosRoute
   '/motorista/veiculos': typeof MotoristaVeiculosRoute
   '/cliente': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
+  '/motorista/ganhos': typeof MotoristaGanhosRoute
   '/motorista/veiculos': typeof MotoristaVeiculosRoute
   '/cliente/': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/mapa'
     | '/cliente/pagamento'
+    | '/motorista/ganhos'
     | '/motorista/veiculos'
     | '/cliente/'
     | '/cliente/agendamento/novo'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/mapa'
     | '/cliente/pagamento'
+    | '/motorista/ganhos'
     | '/motorista/veiculos'
     | '/cliente'
     | '/cliente/agendamento/novo'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/mapa'
     | '/cliente/pagamento'
+    | '/motorista/ganhos'
     | '/motorista/veiculos'
     | '/cliente/'
     | '/cliente/agendamento/novo'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   FavoritosRoute: typeof FavoritosRoute
   MapaRoute: typeof MapaRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
+  MotoristaGanhosRoute: typeof MotoristaGanhosRoute
   MotoristaVeiculosRoute: typeof MotoristaVeiculosRoute
   ClienteIndexRoute: typeof ClienteIndexRoute
   ClienteAgendamentoNovoRoute: typeof ClienteAgendamentoNovoRoute
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientePagamentoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/motorista/ganhos': {
+      id: '/motorista/ganhos'
+      path: '/motorista/ganhos'
+      fullPath: '/motorista/ganhos'
+      preLoaderRoute: typeof MotoristaGanhosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/motorista/veiculos': {
       id: '/motorista/veiculos'
       path: '/motorista/veiculos'
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritosRoute: FavoritosRoute,
   MapaRoute: MapaRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
+  MotoristaGanhosRoute: MotoristaGanhosRoute,
   MotoristaVeiculosRoute: MotoristaVeiculosRoute,
   ClienteIndexRoute: ClienteIndexRoute,
   ClienteAgendamentoNovoRoute: ClienteAgendamentoNovoRoute,
