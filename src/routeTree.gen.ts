@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgenteSuporteRouteImport } from './routes/agente-suporte'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
@@ -24,6 +25,11 @@ import { Route as MotoristaAgendamentosIdRouteImport } from './routes/motorista.
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgenteSuporteRoute = AgenteSuporteRouteImport.update({
+  id: '/agente-suporte',
+  path: '/agente-suporte',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritosRoute = FavoritosRouteImport.update({
@@ -80,6 +86,7 @@ const MotoristaAgendamentosIdRoute = MotoristaAgendamentosIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agente-suporte': typeof AgenteSuporteRoute
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agente-suporte': typeof AgenteSuporteRoute
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
@@ -107,6 +115,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agente-suporte': typeof AgenteSuporteRoute
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/agente-suporte'
     | '/favoritos'
     | '/mapa'
     | '/cliente/pagamento'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agente-suporte'
     | '/favoritos'
     | '/mapa'
     | '/cliente/pagamento'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/agente-suporte'
     | '/favoritos'
     | '/mapa'
     | '/cliente/pagamento'
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgenteSuporteRoute: typeof AgenteSuporteRoute
   FavoritosRoute: typeof FavoritosRoute
   MapaRoute: typeof MapaRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
@@ -181,6 +194,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agente-suporte': {
+      id: '/agente-suporte'
+      path: '/agente-suporte'
+      fullPath: '/agente-suporte'
+      preLoaderRoute: typeof AgenteSuporteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favoritos': {
@@ -258,6 +278,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgenteSuporteRoute: AgenteSuporteRoute,
   FavoritosRoute: FavoritosRoute,
   MapaRoute: MapaRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
