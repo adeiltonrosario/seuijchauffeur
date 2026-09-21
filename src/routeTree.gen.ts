@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
 import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento'
 import { Route as ClienteAgendamentoNovoRouteImport } from './routes/cliente.agendamento.novo'
@@ -18,6 +19,11 @@ import { Route as ClienteAgendamentosIdRouteImport } from './routes/cliente.agen
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritosRoute = FavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteIndexRoute = ClienteIndexRouteImport.update({
@@ -43,6 +49,7 @@ const ClienteAgendamentosIdRoute = ClienteAgendamentosIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/favoritos': typeof FavoritosRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/favoritos': typeof FavoritosRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/favoritos': typeof FavoritosRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
@@ -67,6 +76,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/favoritos'
     | '/cliente/pagamento'
     | '/cliente/'
     | '/cliente/agendamento/novo'
@@ -74,6 +84,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/favoritos'
     | '/cliente/pagamento'
     | '/cliente'
     | '/cliente/agendamento/novo'
@@ -81,6 +92,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/favoritos'
     | '/cliente/pagamento'
     | '/cliente/'
     | '/cliente/agendamento/novo'
@@ -89,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FavoritosRoute: typeof FavoritosRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
   ClienteIndexRoute: typeof ClienteIndexRoute
   ClienteAgendamentoNovoRoute: typeof ClienteAgendamentoNovoRoute
@@ -102,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favoritos': {
+      id: '/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof FavoritosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cliente/': {
@@ -137,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FavoritosRoute: FavoritosRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
   ClienteIndexRoute: ClienteIndexRoute,
   ClienteAgendamentoNovoRoute: ClienteAgendamentoNovoRoute,
