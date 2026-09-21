@@ -10,33 +10,181 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgenteSuporteRouteImport } from './routes/agente-suporte'
+import { Route as FavoritosRouteImport } from './routes/favoritos'
+import { Route as MapaRouteImport } from './routes/mapa'
+import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
+import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento'
+import { Route as MotoristaGanhosRouteImport } from './routes/motorista.ganhos'
+import { Route as MotoristaVeiculosRouteImport } from './routes/motorista.veiculos'
+import { Route as ClienteAgendamentoNovoRouteImport } from './routes/cliente.agendamento.novo'
+import { Route as ClienteAgendamentosIdRouteImport } from './routes/cliente.agendamentos.$id'
+import { Route as MotoristaAgendamentosIndexRouteImport } from './routes/motorista.agendamentos.index'
+import { Route as MotoristaAgendamentosIdRouteImport } from './routes/motorista.agendamentos.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgenteSuporteRoute = AgenteSuporteRouteImport.update({
+  id: '/agente-suporte',
+  path: '/agente-suporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritosRoute = FavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapaRoute = MapaRouteImport.update({
+  id: '/mapa',
+  path: '/mapa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClienteIndexRoute = ClienteIndexRouteImport.update({
+  id: '/cliente/',
+  path: '/cliente/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientePagamentoRoute = ClientePagamentoRouteImport.update({
+  id: '/cliente/pagamento',
+  path: '/cliente/pagamento',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaGanhosRoute = MotoristaGanhosRouteImport.update({
+  id: '/motorista/ganhos',
+  path: '/motorista/ganhos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaVeiculosRoute = MotoristaVeiculosRouteImport.update({
+  id: '/motorista/veiculos',
+  path: '/motorista/veiculos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClienteAgendamentoNovoRoute = ClienteAgendamentoNovoRouteImport.update({
+  id: '/cliente/agendamento/novo',
+  path: '/cliente/agendamento/novo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClienteAgendamentosIdRoute = ClienteAgendamentosIdRouteImport.update({
+  id: '/cliente/agendamentos/$id',
+  path: '/cliente/agendamentos/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaAgendamentosIndexRoute =
+  MotoristaAgendamentosIndexRouteImport.update({
+    id: '/motorista/agendamentos/',
+    path: '/motorista/agendamentos/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const MotoristaAgendamentosIdRoute = MotoristaAgendamentosIdRouteImport.update({
+  id: '/motorista/agendamentos/$id',
+  path: '/motorista/agendamentos/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agente-suporte': typeof AgenteSuporteRoute
+  '/favoritos': typeof FavoritosRoute
+  '/mapa': typeof MapaRoute
+  '/cliente/pagamento': typeof ClientePagamentoRoute
+  '/motorista/ganhos': typeof MotoristaGanhosRoute
+  '/motorista/veiculos': typeof MotoristaVeiculosRoute
+  '/cliente/': typeof ClienteIndexRoute
+  '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
+  '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
+  '/motorista/agendamentos/$id': typeof MotoristaAgendamentosIdRoute
+  '/motorista/agendamentos/': typeof MotoristaAgendamentosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agente-suporte': typeof AgenteSuporteRoute
+  '/favoritos': typeof FavoritosRoute
+  '/mapa': typeof MapaRoute
+  '/cliente/pagamento': typeof ClientePagamentoRoute
+  '/motorista/ganhos': typeof MotoristaGanhosRoute
+  '/motorista/veiculos': typeof MotoristaVeiculosRoute
+  '/cliente': typeof ClienteIndexRoute
+  '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
+  '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
+  '/motorista/agendamentos/$id': typeof MotoristaAgendamentosIdRoute
+  '/motorista/agendamentos': typeof MotoristaAgendamentosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agente-suporte': typeof AgenteSuporteRoute
+  '/favoritos': typeof FavoritosRoute
+  '/mapa': typeof MapaRoute
+  '/cliente/pagamento': typeof ClientePagamentoRoute
+  '/motorista/ganhos': typeof MotoristaGanhosRoute
+  '/motorista/veiculos': typeof MotoristaVeiculosRoute
+  '/cliente/': typeof ClienteIndexRoute
+  '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
+  '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
+  '/motorista/agendamentos/$id': typeof MotoristaAgendamentosIdRoute
+  '/motorista/agendamentos/': typeof MotoristaAgendamentosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/agente-suporte'
+    | '/favoritos'
+    | '/mapa'
+    | '/cliente/pagamento'
+    | '/motorista/ganhos'
+    | '/motorista/veiculos'
+    | '/cliente/'
+    | '/cliente/agendamento/novo'
+    | '/cliente/agendamentos/$id'
+    | '/motorista/agendamentos/$id'
+    | '/motorista/agendamentos/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/agente-suporte'
+    | '/favoritos'
+    | '/mapa'
+    | '/cliente/pagamento'
+    | '/motorista/ganhos'
+    | '/motorista/veiculos'
+    | '/cliente'
+    | '/cliente/agendamento/novo'
+    | '/cliente/agendamentos/$id'
+    | '/motorista/agendamentos/$id'
+    | '/motorista/agendamentos'
+  id:
+    | '__root__'
+    | '/'
+    | '/agente-suporte'
+    | '/favoritos'
+    | '/mapa'
+    | '/cliente/pagamento'
+    | '/motorista/ganhos'
+    | '/motorista/veiculos'
+    | '/cliente/'
+    | '/cliente/agendamento/novo'
+    | '/cliente/agendamentos/$id'
+    | '/motorista/agendamentos/$id'
+    | '/motorista/agendamentos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgenteSuporteRoute: typeof AgenteSuporteRoute
+  FavoritosRoute: typeof FavoritosRoute
+  MapaRoute: typeof MapaRoute
+  ClientePagamentoRoute: typeof ClientePagamentoRoute
+  MotoristaGanhosRoute: typeof MotoristaGanhosRoute
+  MotoristaVeiculosRoute: typeof MotoristaVeiculosRoute
+  ClienteIndexRoute: typeof ClienteIndexRoute
+  ClienteAgendamentoNovoRoute: typeof ClienteAgendamentoNovoRoute
+  ClienteAgendamentosIdRoute: typeof ClienteAgendamentosIdRoute
+  MotoristaAgendamentosIdRoute: typeof MotoristaAgendamentosIdRoute
+  MotoristaAgendamentosIndexRoute: typeof MotoristaAgendamentosIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +196,99 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agente-suporte': {
+      id: '/agente-suporte'
+      path: '/agente-suporte'
+      fullPath: '/agente-suporte'
+      preLoaderRoute: typeof AgenteSuporteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favoritos': {
+      id: '/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof FavoritosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mapa': {
+      id: '/mapa'
+      path: '/mapa'
+      fullPath: '/mapa'
+      preLoaderRoute: typeof MapaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cliente/': {
+      id: '/cliente/'
+      path: '/cliente'
+      fullPath: '/cliente/'
+      preLoaderRoute: typeof ClienteIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cliente/pagamento': {
+      id: '/cliente/pagamento'
+      path: '/cliente/pagamento'
+      fullPath: '/cliente/pagamento'
+      preLoaderRoute: typeof ClientePagamentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista/ganhos': {
+      id: '/motorista/ganhos'
+      path: '/motorista/ganhos'
+      fullPath: '/motorista/ganhos'
+      preLoaderRoute: typeof MotoristaGanhosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista/veiculos': {
+      id: '/motorista/veiculos'
+      path: '/motorista/veiculos'
+      fullPath: '/motorista/veiculos'
+      preLoaderRoute: typeof MotoristaVeiculosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cliente/agendamento/novo': {
+      id: '/cliente/agendamento/novo'
+      path: '/cliente/agendamento/novo'
+      fullPath: '/cliente/agendamento/novo'
+      preLoaderRoute: typeof ClienteAgendamentoNovoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cliente/agendamentos/$id': {
+      id: '/cliente/agendamentos/$id'
+      path: '/cliente/agendamentos/$id'
+      fullPath: '/cliente/agendamentos/$id'
+      preLoaderRoute: typeof ClienteAgendamentosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista/agendamentos/': {
+      id: '/motorista/agendamentos/'
+      path: '/motorista/agendamentos'
+      fullPath: '/motorista/agendamentos/'
+      preLoaderRoute: typeof MotoristaAgendamentosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista/agendamentos/$id': {
+      id: '/motorista/agendamentos/$id'
+      path: '/motorista/agendamentos/$id'
+      fullPath: '/motorista/agendamentos/$id'
+      preLoaderRoute: typeof MotoristaAgendamentosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgenteSuporteRoute: AgenteSuporteRoute,
+  FavoritosRoute: FavoritosRoute,
+  MapaRoute: MapaRoute,
+  ClientePagamentoRoute: ClientePagamentoRoute,
+  MotoristaGanhosRoute: MotoristaGanhosRoute,
+  MotoristaVeiculosRoute: MotoristaVeiculosRoute,
+  ClienteIndexRoute: ClienteIndexRoute,
+  ClienteAgendamentoNovoRoute: ClienteAgendamentoNovoRoute,
+  ClienteAgendamentosIdRoute: ClienteAgendamentosIdRoute,
+  MotoristaAgendamentosIdRoute: MotoristaAgendamentosIdRoute,
+  MotoristaAgendamentosIndexRoute: MotoristaAgendamentosIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
