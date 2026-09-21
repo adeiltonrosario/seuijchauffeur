@@ -10,6 +10,7 @@ const navegacao = [
   { para: "/motorista/veiculos", texto: "Veículos" },
   { para: "/motorista/ganhos", texto: "Ganhos" },
   { para: "/agente-suporte", texto: "Suporte IA" },
+  { para: "/admin", texto: "Admin" },
 ] as const;
 
 export function AppShell({
