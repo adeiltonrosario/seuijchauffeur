@@ -14,6 +14,7 @@ import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
 import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento'
+import { Route as MotoristaVeiculosRouteImport } from './routes/motorista.veiculos'
 import { Route as ClienteAgendamentoNovoRouteImport } from './routes/cliente.agendamento.novo'
 import { Route as ClienteAgendamentosIdRouteImport } from './routes/cliente.agendamentos.$id'
 import { Route as MotoristaAgendamentosIndexRouteImport } from './routes/motorista.agendamentos.index'
@@ -44,6 +45,11 @@ const ClientePagamentoRoute = ClientePagamentoRouteImport.update({
   path: '/cliente/pagamento',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MotoristaVeiculosRoute = MotoristaVeiculosRouteImport.update({
+  id: '/motorista/veiculos',
+  path: '/motorista/veiculos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClienteAgendamentoNovoRoute = ClienteAgendamentoNovoRouteImport.update({
   id: '/cliente/agendamento/novo',
   path: '/cliente/agendamento/novo',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
+  '/motorista/veiculos': typeof MotoristaVeiculosRoute
   '/cliente/': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
   '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
+  '/motorista/veiculos': typeof MotoristaVeiculosRoute
   '/cliente': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
   '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
+  '/motorista/veiculos': typeof MotoristaVeiculosRoute
   '/cliente/': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
   '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/mapa'
     | '/cliente/pagamento'
+    | '/motorista/veiculos'
     | '/cliente/'
     | '/cliente/agendamento/novo'
     | '/cliente/agendamentos/$id'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/mapa'
     | '/cliente/pagamento'
+    | '/motorista/veiculos'
     | '/cliente'
     | '/cliente/agendamento/novo'
     | '/cliente/agendamentos/$id'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/mapa'
     | '/cliente/pagamento'
+    | '/motorista/veiculos'
     | '/cliente/'
     | '/cliente/agendamento/novo'
     | '/cliente/agendamentos/$id'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   FavoritosRoute: typeof FavoritosRoute
   MapaRoute: typeof MapaRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
+  MotoristaVeiculosRoute: typeof MotoristaVeiculosRoute
   ClienteIndexRoute: typeof ClienteIndexRoute
   ClienteAgendamentoNovoRoute: typeof ClienteAgendamentoNovoRoute
   ClienteAgendamentosIdRoute: typeof ClienteAgendamentosIdRoute
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientePagamentoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/motorista/veiculos': {
+      id: '/motorista/veiculos'
+      path: '/motorista/veiculos'
+      fullPath: '/motorista/veiculos'
+      preLoaderRoute: typeof MotoristaVeiculosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cliente/agendamento/novo': {
       id: '/cliente/agendamento/novo'
       path: '/cliente/agendamento/novo'
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritosRoute: FavoritosRoute,
   MapaRoute: MapaRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
+  MotoristaVeiculosRoute: MotoristaVeiculosRoute,
   ClienteIndexRoute: ClienteIndexRoute,
   ClienteAgendamentoNovoRoute: ClienteAgendamentoNovoRoute,
   ClienteAgendamentosIdRoute: ClienteAgendamentosIdRoute,
