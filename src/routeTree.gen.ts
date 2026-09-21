@@ -17,6 +17,7 @@ import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento
 import { Route as ClienteAgendamentoNovoRouteImport } from './routes/cliente.agendamento.novo'
 import { Route as ClienteAgendamentosIdRouteImport } from './routes/cliente.agendamentos.$id'
 import { Route as MotoristaAgendamentosIndexRouteImport } from './routes/motorista.agendamentos.index'
+import { Route as MotoristaAgendamentosIdRouteImport } from './routes/motorista.agendamentos.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -59,6 +60,11 @@ const MotoristaAgendamentosIndexRoute =
     path: '/motorista/agendamentos/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const MotoristaAgendamentosIdRoute = MotoristaAgendamentosIdRouteImport.update({
+  id: '/motorista/agendamentos/$id',
+  path: '/motorista/agendamentos/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/cliente/': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
   '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
+  '/motorista/agendamentos/$id': typeof MotoristaAgendamentosIdRoute
   '/motorista/agendamentos/': typeof MotoristaAgendamentosIndexRoute
 }
 export interface FileRoutesByTo {
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/cliente': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
   '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
+  '/motorista/agendamentos/$id': typeof MotoristaAgendamentosIdRoute
   '/motorista/agendamentos': typeof MotoristaAgendamentosIndexRoute
 }
 export interface FileRoutesById {
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/cliente/': typeof ClienteIndexRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
   '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
+  '/motorista/agendamentos/$id': typeof MotoristaAgendamentosIdRoute
   '/motorista/agendamentos/': typeof MotoristaAgendamentosIndexRoute
 }
 export interface FileRouteTypes {
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/cliente/'
     | '/cliente/agendamento/novo'
     | '/cliente/agendamentos/$id'
+    | '/motorista/agendamentos/$id'
     | '/motorista/agendamentos/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/cliente'
     | '/cliente/agendamento/novo'
     | '/cliente/agendamentos/$id'
+    | '/motorista/agendamentos/$id'
     | '/motorista/agendamentos'
   id:
     | '__root__'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/cliente/'
     | '/cliente/agendamento/novo'
     | '/cliente/agendamentos/$id'
+    | '/motorista/agendamentos/$id'
     | '/motorista/agendamentos/'
   fileRoutesById: FileRoutesById
 }
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   ClienteIndexRoute: typeof ClienteIndexRoute
   ClienteAgendamentoNovoRoute: typeof ClienteAgendamentoNovoRoute
   ClienteAgendamentosIdRoute: typeof ClienteAgendamentosIdRoute
+  MotoristaAgendamentosIdRoute: typeof MotoristaAgendamentosIdRoute
   MotoristaAgendamentosIndexRoute: typeof MotoristaAgendamentosIndexRoute
 }
 
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MotoristaAgendamentosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/motorista/agendamentos/$id': {
+      id: '/motorista/agendamentos/$id'
+      path: '/motorista/agendamentos/$id'
+      fullPath: '/motorista/agendamentos/$id'
+      preLoaderRoute: typeof MotoristaAgendamentosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClienteIndexRoute: ClienteIndexRoute,
   ClienteAgendamentoNovoRoute: ClienteAgendamentoNovoRoute,
   ClienteAgendamentosIdRoute: ClienteAgendamentosIdRoute,
+  MotoristaAgendamentosIdRoute: MotoristaAgendamentosIdRoute,
   MotoristaAgendamentosIndexRoute: MotoristaAgendamentosIndexRoute,
 }
 export const routeTree = rootRouteImport
