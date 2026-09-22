@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
+import { CAPACIDADE_PADRAO, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -32,8 +32,11 @@ function Admin() {
   // Motoristas
   const [motoristas, setMotoristas] = useState(motoristasIniciais);
   const [nome, setNome] = useState("");
-  const [veiculoMotorista, setVeiculoMotorista] = useState("");
   const [valorMotorista, setValorMotorista] = useState("");
+  const [modeloMotorista, setModeloMotorista] = useState("");
+  const [placaMotorista, setPlacaMotorista] = useState("");
+  const [corMotorista, setCorMotorista] = useState("");
+  const [categoriaMotorista, setCategoriaMotorista] = useState<Categoria>("Sedan");
 
   // Veículos
   const [veiculos, setVeiculos] = useState(veiculosIniciais);
@@ -55,18 +58,45 @@ function Admin() {
   const [novoPorKm, setNovoPorKm] = useState("");
 
   const salvarMotorista = () => {
-    if (!nome || !veiculoMotorista || !valorMotorista) {
-      toast.error("Preencha nome, veículo e valor acordado.");
+    if (!nome || !valorMotorista) {
+      toast.error("Preencha nome e valor acordado.");
+      return;
+    }
+    if (!modeloMotorista || !placaMotorista || !corMotorista) {
+      toast.error("Todo motorista precisa de um veículo: informe modelo, placa e cor.");
       return;
     }
     setMotoristas((atual) => [
       ...atual,
-      { nome, nota: 5, veiculo: veiculoMotorista, valor: Number(valorMotorista), favorito: false },
+      {
+        nome,
+        nota: 5,
+        veiculo: `${modeloMotorista} — ${categoriaMotorista}`,
+        placa: placaMotorista,
+        valor: Number(valorMotorista),
+        favorito: false,
+      },
     ]);
-    toast.success("Motorista cadastrado.");
+    setVeiculos((atual) =>
+      atual.some((v) => v.placa === placaMotorista)
+        ? atual
+        : [
+            ...atual,
+            {
+              placa: placaMotorista,
+              modelo: modeloMotorista,
+              cor: corMotorista,
+              categoria: categoriaMotorista,
+              capacidade: CAPACIDADE_PADRAO,
+            },
+          ],
+    );
+    toast.success("Motorista cadastrado com o veículo vinculado.");
     setNome("");
-    setVeiculoMotorista("");
     setValorMotorista("");
+    setModeloMotorista("");
+    setPlacaMotorista("");
+    setCorMotorista("");
   };
 
   const salvarVeiculo = () => {
@@ -76,7 +106,7 @@ function Admin() {
     }
     setVeiculos((atual) => [
       ...atual,
-      { placa, modelo, cor, categoria, capacidade: categoria === "SUV" ? 5 : 4 },
+      { placa, modelo, cor, categoria, capacidade: CAPACIDADE_PADRAO },
     ]);
     toast.success("Veículo cadastrado.");
     setPlaca("");
@@ -126,14 +156,58 @@ function Admin() {
                   <Label htmlFor="nome">Nome completo</Label>
                   <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Marcos Vinícius" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="veiculo-motorista">Veículo vinculado</Label>
-                  <Input
-                    id="veiculo-motorista"
-                    value={veiculoMotorista}
-                    onChange={(e) => setVeiculoMotorista(e.target.value)}
-                    placeholder="Toyota Corolla — Sedan"
-                  />
+                <div className="rounded-lg border border-border/60 bg-secondary/30 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Veículo vinculado (obrigatório)
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Todo veículo atende até {CAPACIDADE_PADRAO} passageiros.
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="modelo-motorista">Modelo</Label>
+                      <Input
+                        id="modelo-motorista"
+                        value={modeloMotorista}
+                        onChange={(e) => setModeloMotorista(e.target.value)}
+                        placeholder="Toyota Corolla"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="placa-motorista">Placa</Label>
+                      <Input
+                        id="placa-motorista"
+                        value={placaMotorista}
+                        onChange={(e) => setPlacaMotorista(e.target.value.toUpperCase())}
+                        placeholder="ABC-1D23"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cor-motorista">Cor</Label>
+                      <Input
+                        id="cor-motorista"
+                        value={corMotorista}
+                        onChange={(e) => setCorMotorista(e.target.value)}
+                        placeholder="Preto"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {categorias.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setCategoriaMotorista(c)}
+                        className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                          categoriaMotorista === c
+                            ? "border-primary/50 bg-primary/15 text-primary"
+                            : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="valor-motorista">Valor acordado por corrida (R$)</Label>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { veiculos as veiculosIniciais } from "@/lib/dados";
+import { CAPACIDADE_PADRAO, veiculos as veiculosIniciais } from "@/lib/dados";
 
 export const Route = createFileRoute("/motorista/veiculos")({
   head: () => ({
@@ -38,7 +38,7 @@ function Veiculos() {
     }
     setVeiculos((atual) => [
       ...atual,
-      { placa, modelo, cor, categoria, capacidade: categoria === "SUV" ? 5 : 4 },
+      { placa, modelo, cor, categoria, capacidade: CAPACIDADE_PADRAO },
     ]);
     toast.success("Veículo salvo.");
     setPlaca("");

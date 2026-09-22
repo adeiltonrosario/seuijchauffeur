@@ -1,3 +1,5 @@
+export const CAPACIDADE_PADRAO = 4;
+
 export type StatusAgendamento = "pendente" | "confirmado" | "em-andamento" | "concluido" | "cancelado";
 
 export const rotuloStatus: Record<StatusAgendamento, string> = {
@@ -44,7 +46,7 @@ export const agendamentos: Agendamento[] = [
     veiculo: "Toyota Corolla — Preto",
     categoria: "Sedan",
     ocupantes: ["Adeilton Oliveira", "Carla Menezes"],
-    capacidade: 4,
+    capacidade: CAPACIDADE_PADRAO,
   },
   {
     id: "AG-1043",
@@ -60,7 +62,7 @@ export const agendamentos: Agendamento[] = [
     veiculo: "Jeep Compass — Cinza",
     categoria: "SUV",
     ocupantes: ["Renata Prado"],
-    capacidade: 5,
+    capacidade: CAPACIDADE_PADRAO,
   },
   {
     id: "AG-1044",
@@ -78,7 +80,7 @@ export const agendamentos: Agendamento[] = [
     veiculo: "Toyota Corolla — Preto",
     categoria: "Sedan",
     ocupantes: ["Eduardo Lima", "Paulo Braga", "Tiago Reis"],
-    capacidade: 4,
+    capacidade: CAPACIDADE_PADRAO,
   },
   {
     id: "AG-1045",
@@ -94,15 +96,15 @@ export const agendamentos: Agendamento[] = [
     veiculo: "Honda Fit — Branco",
     categoria: "Hatch",
     ocupantes: ["Sofia Andrade"],
-    capacidade: 4,
+    capacidade: CAPACIDADE_PADRAO,
   },
 ];
 
 export const motoristas = [
-  { nome: "Marcos Vinícius", nota: 4.9, veiculo: "Toyota Corolla — Sedan", valor: 320, favorito: true },
-  { nome: "Juliana Alves", nota: 4.8, veiculo: "Jeep Compass — SUV", valor: 365, favorito: true },
-  { nome: "Rafael Costa", nota: 4.7, veiculo: "Honda Fit — Hatch", valor: 280, favorito: false },
-  { nome: "Camila Duarte", nota: 5.0, veiculo: "Volvo XC60 — SUV", valor: 420, favorito: false },
+  { nome: "Marcos Vinícius", nota: 4.9, veiculo: "Toyota Corolla — Sedan", placa: "FQR-4E21", valor: 320, favorito: true },
+  { nome: "Juliana Alves", nota: 4.8, veiculo: "Jeep Compass — SUV", placa: "GHT-9J04", valor: 365, favorito: true },
+  { nome: "Rafael Costa", nota: 4.7, veiculo: "Honda Fit — Hatch", placa: "KLM-2B77", valor: 280, favorito: false },
+  { nome: "Camila Duarte", nota: 5.0, veiculo: "Volvo XC60 — SUV", placa: "RPA-7C55", valor: 420, favorito: false },
 ];
 
 export const modalidades = [
@@ -129,9 +131,9 @@ export const participantesMapa = [
 ];
 
 export const veiculos = [
-  { placa: "FQR-4E21", modelo: "Toyota Corolla", cor: "Preto", categoria: "Sedan", capacidade: 4 },
-  { placa: "GHT-9J04", modelo: "Jeep Compass", cor: "Cinza", categoria: "SUV", capacidade: 5 },
-  { placa: "KLM-2B77", modelo: "Honda Fit", cor: "Branco", categoria: "Hatch", capacidade: 4 },
+  { placa: "FQR-4E21", modelo: "Toyota Corolla", cor: "Preto", categoria: "Sedan", capacidade: CAPACIDADE_PADRAO },
+  { placa: "GHT-9J04", modelo: "Jeep Compass", cor: "Cinza", categoria: "SUV", capacidade: CAPACIDADE_PADRAO },
+  { placa: "KLM-2B77", modelo: "Honda Fit", cor: "Branco", categoria: "Hatch", capacidade: CAPACIDADE_PADRAO },
 ];
 
 export const conversas = [
