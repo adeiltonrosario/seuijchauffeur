@@ -26,12 +26,22 @@ export const Route = createFileRoute("/")({
   component: Autenticacao,
 });
 
+const categorias = ["Sedan", "SUV", "Hatch"] as const;
+
 function Autenticacao() {
   const [perfil, setPerfil] = useState<"cliente" | "motorista">("cliente");
   const [criandoConta, setCriandoConta] = useState(false);
+  const [modelo, setModelo] = useState("");
+  const [placa, setPlaca] = useState("");
+  const [cor, setCor] = useState("");
+  const [categoria, setCategoria] = useState<(typeof categorias)[number]>("Sedan");
   const navigate = useNavigate();
 
   const entrar = () => {
+    if (criandoConta && perfil === "motorista" && (!modelo || !placa || !cor)) {
+      toast.error("Para se cadastrar como motorista, informe modelo, placa e cor do seu veículo.");
+      return;
+    }
     navigate({ to: perfil === "cliente" ? "/cliente" : "/motorista/agendamentos" });
   };
 
@@ -82,6 +92,63 @@ function Autenticacao() {
               <Label htmlFor="senha">Senha</Label>
               <Input id="senha" type="password" placeholder="••••••••" />
             </div>
+            {criandoConta && perfil === "motorista" ? (
+              <div className="rounded-lg border border-border/60 bg-secondary/30 p-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                  Seu veículo (obrigatório)
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Todo veículo atende até {CAPACIDADE_PADRAO} passageiros.
+                </p>
+                <div className="mt-3 space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="modelo-cadastro">Modelo</Label>
+                    <Input
+                      id="modelo-cadastro"
+                      value={modelo}
+                      onChange={(e) => setModelo(e.target.value)}
+                      placeholder="Toyota Corolla"
+                    />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="placa-cadastro">Placa</Label>
+                      <Input
+                        id="placa-cadastro"
+                        value={placa}
+                        onChange={(e) => setPlaca(e.target.value.toUpperCase())}
+                        placeholder="ABC-1D23"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cor-cadastro">Cor</Label>
+                      <Input
+                        id="cor-cadastro"
+                        value={cor}
+                        onChange={(e) => setCor(e.target.value)}
+                        placeholder="Preto"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {categorias.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setCategoria(c)}
+                        className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                          categoria === c
+                            ? "border-primary/50 bg-primary/15 text-primary"
+                            : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
             <Button type="submit" className="w-full">
               {criandoConta ? "Criar conta" : "Entrar"}
             </Button>
