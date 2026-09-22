@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
+import { CAPACIDADE_PADRAO, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -32,8 +32,11 @@ function Admin() {
   // Motoristas
   const [motoristas, setMotoristas] = useState(motoristasIniciais);
   const [nome, setNome] = useState("");
-  const [veiculoMotorista, setVeiculoMotorista] = useState("");
   const [valorMotorista, setValorMotorista] = useState("");
+  const [modeloMotorista, setModeloMotorista] = useState("");
+  const [placaMotorista, setPlacaMotorista] = useState("");
+  const [corMotorista, setCorMotorista] = useState("");
+  const [categoriaMotorista, setCategoriaMotorista] = useState<Categoria>("Sedan");
 
   // Veículos
   const [veiculos, setVeiculos] = useState(veiculosIniciais);
