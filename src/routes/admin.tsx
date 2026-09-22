@@ -156,14 +156,58 @@ function Admin() {
                   <Label htmlFor="nome">Nome completo</Label>
                   <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Marcos Vinícius" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="veiculo-motorista">Veículo vinculado</Label>
-                  <Input
-                    id="veiculo-motorista"
-                    value={veiculoMotorista}
-                    onChange={(e) => setVeiculoMotorista(e.target.value)}
-                    placeholder="Toyota Corolla — Sedan"
-                  />
+                <div className="rounded-lg border border-border/60 bg-secondary/30 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Veículo vinculado (obrigatório)
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Todo veículo atende até {CAPACIDADE_PADRAO} passageiros.
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="modelo-motorista">Modelo</Label>
+                      <Input
+                        id="modelo-motorista"
+                        value={modeloMotorista}
+                        onChange={(e) => setModeloMotorista(e.target.value)}
+                        placeholder="Toyota Corolla"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="placa-motorista">Placa</Label>
+                      <Input
+                        id="placa-motorista"
+                        value={placaMotorista}
+                        onChange={(e) => setPlacaMotorista(e.target.value.toUpperCase())}
+                        placeholder="ABC-1D23"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cor-motorista">Cor</Label>
+                      <Input
+                        id="cor-motorista"
+                        value={corMotorista}
+                        onChange={(e) => setCorMotorista(e.target.value)}
+                        placeholder="Preto"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {categorias.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setCategoriaMotorista(c)}
+                        className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                          categoriaMotorista === c
+                            ? "border-primary/50 bg-primary/15 text-primary"
+                            : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="valor-motorista">Valor acordado por corrida (R$)</Label>
