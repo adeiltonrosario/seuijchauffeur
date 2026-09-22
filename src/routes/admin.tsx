@@ -58,18 +58,45 @@ function Admin() {
   const [novoPorKm, setNovoPorKm] = useState("");
 
   const salvarMotorista = () => {
-    if (!nome || !veiculoMotorista || !valorMotorista) {
-      toast.error("Preencha nome, veículo e valor acordado.");
+    if (!nome || !valorMotorista) {
+      toast.error("Preencha nome e valor acordado.");
+      return;
+    }
+    if (!modeloMotorista || !placaMotorista || !corMotorista) {
+      toast.error("Todo motorista precisa de um veículo: informe modelo, placa e cor.");
       return;
     }
     setMotoristas((atual) => [
       ...atual,
-      { nome, nota: 5, veiculo: veiculoMotorista, valor: Number(valorMotorista), favorito: false },
+      {
+        nome,
+        nota: 5,
+        veiculo: `${modeloMotorista} — ${categoriaMotorista}`,
+        placa: placaMotorista,
+        valor: Number(valorMotorista),
+        favorito: false,
+      },
     ]);
-    toast.success("Motorista cadastrado.");
+    setVeiculos((atual) =>
+      atual.some((v) => v.placa === placaMotorista)
+        ? atual
+        : [
+            ...atual,
+            {
+              placa: placaMotorista,
+              modelo: modeloMotorista,
+              cor: corMotorista,
+              categoria: categoriaMotorista,
+              capacidade: CAPACIDADE_PADRAO,
+            },
+          ],
+    );
+    toast.success("Motorista cadastrado com o veículo vinculado.");
     setNome("");
-    setVeiculoMotorista("");
     setValorMotorista("");
+    setModeloMotorista("");
+    setPlacaMotorista("");
+    setCorMotorista("");
   };
 
   const salvarVeiculo = () => {
@@ -79,7 +106,7 @@ function Admin() {
     }
     setVeiculos((atual) => [
       ...atual,
-      { placa, modelo, cor, categoria, capacidade: categoria === "SUV" ? 5 : 4 },
+      { placa, modelo, cor, categoria, capacidade: CAPACIDADE_PADRAO },
     ]);
     toast.success("Veículo cadastrado.");
     setPlaca("");
