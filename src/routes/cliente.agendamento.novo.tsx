@@ -197,7 +197,7 @@ function NovoAgendamento() {
             <div className="mt-5 space-y-1 border-t border-border/70 pt-4 text-sm">
               <p className="flex justify-between text-muted-foreground">
                 <span>Modalidade</span>
-                <span className="text-foreground">{modalidade}</span>
+                <span className="text-foreground">{modalidade.nome}</span>
               </p>
               <p className="flex justify-between text-muted-foreground">
                 <span>Pagamento</span>
