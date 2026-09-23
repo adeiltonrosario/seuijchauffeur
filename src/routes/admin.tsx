@@ -372,6 +372,19 @@ function Admin() {
                     placeholder="4,00"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="caracteristicas">Características e procedimentos</Label>
+                  <Textarea
+                    id="caracteristicas"
+                    rows={6}
+                    value={novasCaracteristicas}
+                    onChange={(e) => setNovasCaracteristicas(e.target.value)}
+                    placeholder="Embarque: como o motorista recebe o cliente. Desembarque: como a corrida é encerrada. O que o serviço inclui."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Este texto aparece para o cliente ao agendar e para o motorista na corrida.
+                  </p>
+                </div>
                 <Button className="w-full" onClick={salvarModalidade}>
                   <Plus className="size-4" /> Criar modalidade
                 </Button>
