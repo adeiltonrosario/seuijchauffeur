@@ -121,20 +121,34 @@ function Admin() {
       toast.error("Informe o nome da modalidade e o valor base.");
       return;
     }
+    if (!novasCaracteristicas.trim()) {
+      toast.error("Descreva as características e procedimentos de embarque e desembarque.");
+      return;
+    }
     setModalidades((atual) => [
       ...atual,
-      { nome: novaModalidade, valorBase: Number(novoValorBase), porKm: Number(novoPorKm) || 0 },
+      {
+        nome: novaModalidade,
+        caracteristicas: novasCaracteristicas.trim(),
+        valorBase: Number(novoValorBase),
+        porKm: Number(novoPorKm) || 0,
+      },
     ]);
     toast.success("Modalidade criada.");
     setNovaModalidade("");
     setNovoValorBase("");
     setNovoPorKm("");
+    setNovasCaracteristicas("");
   };
 
   const atualizarModalidade = (indice: number, campo: "valorBase" | "porKm", valor: string) => {
     setModalidades((atual) =>
       atual.map((m, i) => (i === indice ? { ...m, [campo]: Number(valor) || 0 } : m)),
     );
+  };
+
+  const atualizarCaracteristicas = (indice: number, texto: string) => {
+    setModalidades((atual) => atual.map((m, i) => (i === indice ? { ...m, caracteristicas: texto } : m)));
   };
 
   return (
