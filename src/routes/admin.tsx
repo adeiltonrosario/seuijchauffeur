@@ -47,8 +47,9 @@ function Admin() {
 
   // Modalidades
   const [modalidades, setModalidades] = useState(
-    modalidadesIniciais.map((nomeModalidade, i) => ({
-      nome: nomeModalidade,
+    modalidadesIniciais.map((m, i) => ({
+      nome: m.nome,
+      caracteristicas: m.caracteristicas,
       valorBase: [320, 180, 540, 140, 220][i] ?? 200,
       porKm: [4.5, 3.8, 5.2, 3.2, 3.5][i] ?? 4,
     })),
@@ -56,6 +57,7 @@ function Admin() {
   const [novaModalidade, setNovaModalidade] = useState("");
   const [novoValorBase, setNovoValorBase] = useState("");
   const [novoPorKm, setNovoPorKm] = useState("");
+  const [novasCaracteristicas, setNovasCaracteristicas] = useState("");
 
   const salvarMotorista = () => {
     if (!nome || !valorMotorista) {
