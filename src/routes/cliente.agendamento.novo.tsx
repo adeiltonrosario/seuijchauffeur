@@ -125,19 +125,27 @@ function NovoAgendamento() {
             <div className="mt-4 flex flex-wrap gap-2">
               {modalidades.map((m) => (
                 <button
-                  key={m}
+                  key={m.nome}
                   type="button"
                   onClick={() => setModalidade(m)}
                   className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                    modalidade === m
+                    modalidade.nome === m.nome
                       ? "border-primary/50 bg-primary/15 text-primary"
                       : "border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {m}
+                  {m.nome}
                 </button>
               ))}
             </div>
+
+            <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                Características e procedimentos
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{modalidade.caracteristicas}</p>
+            </div>
+
 
             <h2 className="mt-6 text-sm font-medium uppercase tracking-wide text-muted-foreground">
               Forma de pagamento
@@ -189,7 +197,7 @@ function NovoAgendamento() {
             <div className="mt-5 space-y-1 border-t border-border/70 pt-4 text-sm">
               <p className="flex justify-between text-muted-foreground">
                 <span>Modalidade</span>
-                <span className="text-foreground">{modalidade}</span>
+                <span className="text-foreground">{modalidade.nome}</span>
               </p>
               <p className="flex justify-between text-muted-foreground">
                 <span>Pagamento</span>

@@ -107,13 +107,42 @@ export const motoristas = [
   { nome: "Camila Duarte", nota: 5.0, veiculo: "Volvo XC60 — SUV", placa: "RPA-7C55", valor: 420, favorito: false },
 ];
 
-export const modalidades = [
-  "Executivo aeroporto",
-  "Corrida assistida",
-  "Viagem corporativa",
-  "City tour",
-  "Escolar recorrente",
+export type Modalidade = {
+  nome: string;
+  caracteristicas: string;
+};
+
+export const modalidades: Modalidade[] = [
+  {
+    nome: "Executivo aeroporto",
+    caracteristicas:
+      "Embarque: motorista aguarda na portaria 10 minutos antes do horário, confirma o nome do cliente e acomoda as bagagens no porta-malas. Desembarque: parar na área de embarque da companhia aérea, entregar as bagagens ao cliente e confirmar o voo antes de liberar o veículo. Inclui água, carregador e monitoramento do voo.",
+  },
+  {
+    nome: "Corrida assistida",
+    caracteristicas:
+      "Embarque: motorista desce do veículo, auxilia o cliente com apoio de braço e ajusta o cinto quando solicitado. Desembarque: acompanhar o cliente até a recepção do destino e aguardar a confirmação de entrada. Indicado para consultas médicas e passageiros com mobilidade reduzida.",
+  },
+  {
+    nome: "Viagem corporativa",
+    caracteristicas:
+      "Embarque: pontualidade rigorosa, traje social e conferência da lista de passageiros da empresa. Desembarque: emitir recibo da corrida e registrar centro de custo. Silêncio a bordo por padrão; conversas apenas se iniciadas pelo cliente.",
+  },
+  {
+    nome: "City tour",
+    caracteristicas:
+      "Embarque: alinhar com o cliente a ordem dos pontos de visita e o tempo de parada em cada um. Desembarque: em cada parada o motorista informa o horário de retorno ao veículo e aguarda no ponto combinado. Roteiro pode ser ajustado durante o trajeto.",
+  },
+  {
+    nome: "Escolar recorrente",
+    caracteristicas:
+      "Embarque: identificar o responsável, conferir o nome do aluno e checar o cinto antes de sair. Desembarque: entregar o aluno somente ao responsável cadastrado ou à equipe da escola, com confirmação no aplicativo. Rota fixa e horários repetidos nos dias úteis.",
+  },
 ];
+
+export const caracteristicasDaModalidade = (nome: string) =>
+  modalidades.find((m) => m.nome === nome)?.caracteristicas ??
+  "Procedimentos de embarque e desembarque a combinar com o motorista antes da corrida.";
 
 export const planos = [
   { nome: "Essencial", preco: "R$ 289/mês", corridas: "8 corridas urbanas", destaque: false },

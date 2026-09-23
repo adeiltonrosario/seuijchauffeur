@@ -47,8 +47,9 @@ function Admin() {
 
   // Modalidades
   const [modalidades, setModalidades] = useState(
-    modalidadesIniciais.map((nomeModalidade, i) => ({
-      nome: nomeModalidade,
+    modalidadesIniciais.map((m, i) => ({
+      nome: m.nome,
+      caracteristicas: m.caracteristicas,
       valorBase: [320, 180, 540, 140, 220][i] ?? 200,
       porKm: [4.5, 3.8, 5.2, 3.2, 3.5][i] ?? 4,
     })),
@@ -56,6 +57,7 @@ function Admin() {
   const [novaModalidade, setNovaModalidade] = useState("");
   const [novoValorBase, setNovoValorBase] = useState("");
   const [novoPorKm, setNovoPorKm] = useState("");
+  const [novasCaracteristicas, setNovasCaracteristicas] = useState("");
 
   const salvarMotorista = () => {
     if (!nome || !valorMotorista) {
@@ -119,20 +121,34 @@ function Admin() {
       toast.error("Informe o nome da modalidade e o valor base.");
       return;
     }
+    if (!novasCaracteristicas.trim()) {
+      toast.error("Descreva as características e procedimentos de embarque e desembarque.");
+      return;
+    }
     setModalidades((atual) => [
       ...atual,
-      { nome: novaModalidade, valorBase: Number(novoValorBase), porKm: Number(novoPorKm) || 0 },
+      {
+        nome: novaModalidade,
+        caracteristicas: novasCaracteristicas.trim(),
+        valorBase: Number(novoValorBase),
+        porKm: Number(novoPorKm) || 0,
+      },
     ]);
     toast.success("Modalidade criada.");
     setNovaModalidade("");
     setNovoValorBase("");
     setNovoPorKm("");
+    setNovasCaracteristicas("");
   };
 
   const atualizarModalidade = (indice: number, campo: "valorBase" | "porKm", valor: string) => {
     setModalidades((atual) =>
       atual.map((m, i) => (i === indice ? { ...m, [campo]: Number(valor) || 0 } : m)),
     );
+  };
+
+  const atualizarCaracteristicas = (indice: number, texto: string) => {
+    setModalidades((atual) => atual.map((m, i) => (i === indice ? { ...m, caracteristicas: texto } : m)));
   };
 
   return (
@@ -355,6 +371,19 @@ function Admin() {
                     onChange={(e) => setNovoPorKm(e.target.value)}
                     placeholder="4,00"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="caracteristicas">Características e procedimentos</Label>
+                  <Textarea
+                    id="caracteristicas"
+                    rows={6}
+                    value={novasCaracteristicas}
+                    onChange={(e) => setNovasCaracteristicas(e.target.value)}
+                    placeholder="Embarque: como o motorista recebe o cliente. Desembarque: como a corrida é encerrada. O que o serviço inclui."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Este texto aparece para o cliente ao agendar e para o motorista na corrida.
+                  </p>
                 </div>
                 <Button className="w-full" onClick={salvarModalidade}>
                   <Plus className="size-4" /> Criar modalidade
