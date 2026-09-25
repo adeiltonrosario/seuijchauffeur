@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { CAPACIDADE_PADRAO, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
 
 export const Route = createFileRoute("/admin")({
@@ -431,6 +432,15 @@ function Admin() {
                           onChange={(e) => atualizarModalidade(i, "porKm", e.target.value)}
                         />
                       </div>
+                    </div>
+                    <div className="mt-3 space-y-1">
+                      <Label className="text-xs text-muted-foreground">Características e procedimentos</Label>
+                      <Textarea
+                        rows={5}
+                        value={m.caracteristicas}
+                        onChange={(e) => atualizarCaracteristicas(i, e.target.value)}
+                        placeholder="Como proceder no embarque e no desembarque."
+                      />
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
                       Corrida de 12 km ≈ {formatarBRL(m.valorBase + m.porKm * 12)}
