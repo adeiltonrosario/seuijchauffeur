@@ -127,13 +127,18 @@ function Admin() {
       toast.error("Descreva as características e procedimentos de embarque e desembarque.");
       return;
     }
+    const porKm = Number(novoPorKm) || TARIFA_PADRAO_POR_KM;
+    if (porKm < VALOR_MINIMO_POR_KM) {
+      toast.error(`O valor por km não pode ser inferior a ${formatarBRL(VALOR_MINIMO_POR_KM)}/km.`);
+      return;
+    }
     setModalidades((atual) => [
       ...atual,
       {
         nome: novaModalidade,
         caracteristicas: novasCaracteristicas.trim(),
         valorBase: Number(novoValorBase),
-        porKm: Number(novoPorKm) || 0,
+        porKm,
       },
     ]);
     toast.success("Modalidade criada.");
@@ -144,10 +149,15 @@ function Admin() {
   };
 
   const atualizarModalidade = (indice: number, campo: "valorBase" | "porKm", valor: string) => {
+    const numero = Number(valor) || 0;
+    if (campo === "porKm" && numero > 0 && numero < VALOR_MINIMO_POR_KM) {
+      toast.error(`Piso mínimo do sistema: ${formatarBRL(VALOR_MINIMO_POR_KM)} por km.`);
+    }
     setModalidades((atual) =>
-      atual.map((m, i) => (i === indice ? { ...m, [campo]: Number(valor) || 0 } : m)),
+      atual.map((m, i) => (i === indice ? { ...m, [campo]: numero } : m)),
     );
   };
+
 
   const atualizarCaracteristicas = (indice: number, texto: string) => {
     setModalidades((atual) => atual.map((m, i) => (i === indice ? { ...m, caracteristicas: texto } : m)));
