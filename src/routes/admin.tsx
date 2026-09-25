@@ -52,9 +52,10 @@ function Admin() {
       nome: m.nome,
       caracteristicas: m.caracteristicas,
       valorBase: [320, 180, 540, 140, 220][i] ?? 200,
-      porKm: [4.5, 3.8, 5.2, 3.2, 3.5][i] ?? 4,
+      porKm: m.valorPorKm,
     })),
   );
+
   const [novaModalidade, setNovaModalidade] = useState("");
   const [novoValorBase, setNovoValorBase] = useState("");
   const [novoPorKm, setNovoPorKm] = useState("");
