@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { CAPACIDADE_PADRAO, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
+import { CAPACIDADE_PADRAO, TARIFA_PADRAO_POR_KM, VALOR_MINIMO_POR_KM, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -52,9 +52,10 @@ function Admin() {
       nome: m.nome,
       caracteristicas: m.caracteristicas,
       valorBase: [320, 180, 540, 140, 220][i] ?? 200,
-      porKm: [4.5, 3.8, 5.2, 3.2, 3.5][i] ?? 4,
+      porKm: m.valorPorKm,
     })),
   );
+
   const [novaModalidade, setNovaModalidade] = useState("");
   const [novoValorBase, setNovoValorBase] = useState("");
   const [novoPorKm, setNovoPorKm] = useState("");
@@ -126,13 +127,18 @@ function Admin() {
       toast.error("Descreva as características e procedimentos de embarque e desembarque.");
       return;
     }
+    const porKm = Number(novoPorKm) || TARIFA_PADRAO_POR_KM;
+    if (porKm < VALOR_MINIMO_POR_KM) {
+      toast.error(`O valor por km não pode ser inferior a ${formatarBRL(VALOR_MINIMO_POR_KM)}/km.`);
+      return;
+    }
     setModalidades((atual) => [
       ...atual,
       {
         nome: novaModalidade,
         caracteristicas: novasCaracteristicas.trim(),
         valorBase: Number(novoValorBase),
-        porKm: Number(novoPorKm) || 0,
+        porKm,
       },
     ]);
     toast.success("Modalidade criada.");
@@ -143,10 +149,15 @@ function Admin() {
   };
 
   const atualizarModalidade = (indice: number, campo: "valorBase" | "porKm", valor: string) => {
+    const numero = Number(valor) || 0;
+    if (campo === "porKm" && numero > 0 && numero < VALOR_MINIMO_POR_KM) {
+      toast.error(`Piso mínimo do sistema: ${formatarBRL(VALOR_MINIMO_POR_KM)} por km.`);
+    }
     setModalidades((atual) =>
-      atual.map((m, i) => (i === indice ? { ...m, [campo]: Number(valor) || 0 } : m)),
+      atual.map((m, i) => (i === indice ? { ...m, [campo]: numero } : m)),
     );
   };
+
 
   const atualizarCaracteristicas = (indice: number, texto: string) => {
     setModalidades((atual) => atual.map((m, i) => (i === indice ? { ...m, caracteristicas: texto } : m)));
@@ -425,13 +436,21 @@ function Admin() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Por km</Label>
+                        <Label className="text-xs text-muted-foreground">
+                          Por km (mínimo {formatarBRL(VALOR_MINIMO_POR_KM)})
+                        </Label>
                         <Input
                           inputMode="decimal"
                           value={String(m.porKm)}
                           onChange={(e) => atualizarModalidade(i, "porKm", e.target.value)}
                         />
+                        {m.porKm < VALOR_MINIMO_POR_KM && (
+                          <p className="text-xs text-destructive">
+                            Abaixo do piso de {formatarBRL(VALOR_MINIMO_POR_KM)} por km.
+                          </p>
+                        )}
                       </div>
+
                     </div>
                     <div className="mt-3 space-y-1">
                       <Label className="text-xs text-muted-foreground">Características e procedimentos</Label>
