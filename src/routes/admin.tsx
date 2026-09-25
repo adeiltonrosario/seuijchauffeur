@@ -436,13 +436,21 @@ function Admin() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Por km</Label>
+                        <Label className="text-xs text-muted-foreground">
+                          Por km (mínimo {formatarBRL(VALOR_MINIMO_POR_KM)})
+                        </Label>
                         <Input
                           inputMode="decimal"
                           value={String(m.porKm)}
                           onChange={(e) => atualizarModalidade(i, "porKm", e.target.value)}
                         />
+                        {m.porKm < VALOR_MINIMO_POR_KM && (
+                          <p className="text-xs text-destructive">
+                            Abaixo do piso de {formatarBRL(VALOR_MINIMO_POR_KM)} por km.
+                          </p>
+                        )}
                       </div>
+
                     </div>
                     <div className="mt-3 space-y-1">
                       <Label className="text-xs text-muted-foreground">Características e procedimentos</Label>
