@@ -7,7 +7,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { agendamentos, formatarBRL, veiculos } from "@/lib/dados";
+import { agendamentos, caracteristicasDaModalidade, formatarBRL, veiculos } from "@/lib/dados";
 
 export const Route = createFileRoute("/cliente/agendamentos/$id")({
   loader: ({ params }) => {
@@ -81,6 +81,15 @@ function DetalhesAgendamento() {
                 </div>
               ))}
             </dl>
+          </Card>
+
+          <Card className="border-border/60 p-6">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              Como proceder · {agendamento.modalidade}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {caracteristicasDaModalidade(agendamento.modalidade)}
+            </p>
           </Card>
 
           <Card className="border-border/60 p-6">

@@ -6,7 +6,7 @@ import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { agendamentos, formatarBRL, type StatusAgendamento } from "@/lib/dados";
+import { agendamentos, caracteristicasDaModalidade, formatarBRL, type StatusAgendamento } from "@/lib/dados";
 
 export const Route = createFileRoute("/motorista/agendamentos/$id")({
   loader: ({ params }) => {
@@ -77,6 +77,15 @@ function DetalhesMotorista() {
             </dl>
             <p className="mt-4 text-xs text-muted-foreground">
               A troca de veículo depende da aceitação do cliente.
+            </p>
+          </Card>
+
+          <Card className="border-border/60 p-6">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              Como proceder · {agendamento.modalidade}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {caracteristicasDaModalidade(agendamento.modalidade)}
             </p>
           </Card>
         </div>
