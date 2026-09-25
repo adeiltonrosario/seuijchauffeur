@@ -1,13 +1,22 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { MapPin, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, CalendarDays, Clock, MapPin, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { formatarBRL, modalidades, motoristas } from "@/lib/dados";
+import { cn } from "@/lib/utils";
+import {
+  CAPACIDADE_PADRAO,
+  VALOR_MINIMO_POR_KM,
+  calcularValorCorrida,
+  formatarBRL,
+  modalidades,
+  motoristas,
+} from "@/lib/dados";
 
 export const Route = createFileRoute("/cliente/agendamento/novo")({
   head: () => ({
@@ -15,209 +24,490 @@ export const Route = createFileRoute("/cliente/agendamento/novo")({
       { title: "Agendar corrida — seuchauffeur" },
       {
         name: "description",
-        content: "Defina embarque, parada e desembarque, escolha datas de ida e retorno, modalidade e pagamento.",
+        content:
+          "Escolha a data no calendário, a modalidade e o motorista, depois defina o trajeto com cálculo automático por km.",
       },
       { property: "og:title", content: "Agendar corrida — seuchauffeur" },
-      { property: "og:description", content: "Crie agendamentos de ida e retorno com valor acordado com o motorista." },
+      {
+        property: "og:description",
+        content: "Agenda, motorista e trajeto com valor calculado por quilômetro rodado.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: NovoAgendamento,
 });
 
-type Horario = { id: number; tipo: "Ida" | "Retorno"; data: string; hora: string };
+const HORARIOS_RAPIDOS = ["06:00", "07:30", "09:00", "18:00"];
+const TAXA_SERVICO = 8;
+
+const dataLonga = (d: Date) =>
+  d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "long", year: "numeric" });
 
 function NovoAgendamento() {
   const navigate = useNavigate();
-  const [horarios, setHorarios] = useState<Horario[]>([
-    { id: 1, tipo: "Ida", data: "2026-09-22", hora: "07:30" },
-    { id: 2, tipo: "Retorno", data: "2026-09-22", hora: "21:15" },
-  ]);
+  const [etapa, setEtapa] = useState<1 | 2>(1);
+
+  // Etapa 1
+  const [tipo, setTipo] = useState<"Somente ida" | "Ida e retorno">("Somente ida");
+  const [dataIda, setDataIda] = useState<Date | undefined>(new Date());
+  const [horaIda, setHoraIda] = useState("07:30");
+  const [dataRetorno, setDataRetorno] = useState<Date | undefined>(undefined);
+  const [horaRetorno, setHoraRetorno] = useState("21:00");
   const [modalidade, setModalidade] = useState(modalidades[0]!);
-  const [pagamento, setPagamento] = useState<"Pix" | "Cartão de crédito" | "Plano mensal">("Pix");
   const [motorista, setMotorista] = useState(motoristas[0]!.nome);
 
-
-  const adicionarHorario = (tipo: "Ida" | "Retorno") => {
-    const novo = { id: Date.now(), tipo, data: "2026-09-23", hora: "08:00" };
-    const conflito = horarios.some((h) => h.data === novo.data && h.hora === novo.hora);
-    if (conflito) {
-      toast.error("Conflito de agenda nesse dia e horário.");
-      return;
-    }
-    setHorarios((atual) => [...atual, novo]);
-  };
+  // Etapa 2
+  const [embarque, setEmbarque] = useState("Av. Paulista, 1400 — Bela Vista, São Paulo");
+  const [paradas, setParadas] = useState<{ id: number; endereco: string }[]>([
+    { id: 1, endereco: "Rua Augusta, 900 — Consolação" },
+  ]);
+  const [desembarque, setDesembarque] = useState("Aeroporto de Congonhas — Portão 2");
+  const [instrucoes, setInstrucoes] = useState("");
+  const [distancia, setDistancia] = useState("20.5");
+  const [pagamento, setPagamento] = useState<"Pix" | "Cartão de crédito" | "Plano mensal">("Pix");
 
   const escolhido = motoristas.find((m) => m.nome === motorista)!;
+  const km = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
+  const tarifa = Math.max(modalidade.valorPorKm, VALOR_MINIMO_POR_KM);
+  const valorTrajeto = useMemo(() => calcularValorCorrida(km, tarifa), [km, tarifa]);
+  const total = valorTrajeto + TAXA_SERVICO;
+
+  const avancar = () => {
+    if (!dataIda) {
+      toast.error("Escolha a data da ida no calendário.");
+      return;
+    }
+    if (tipo === "Ida e retorno" && !dataRetorno) {
+      toast.error("Escolha também a data de retorno.");
+      return;
+    }
+    setEtapa(2);
+  };
+
+  const confirmar = () => {
+    if (!embarque.trim() || !desembarque.trim()) {
+      toast.error("Informe o endereço de embarque e de desembarque.");
+      return;
+    }
+    if (km <= 0) {
+      toast.error("Informe a distância estimada do trajeto.");
+      return;
+    }
+    toast.success(`Agendamento enviado a ${motorista}. Total ${formatarBRL(total)}.`);
+    navigate({ to: "/cliente/pagamento" });
+  };
 
   return (
-    <AppShell titulo="Agendar corrida" descricao="Ida e retorno, pontos de parada e valor acordado com o motorista.">
+    <AppShell
+      titulo="Agendar corrida"
+      descricao="Primeiro a agenda e o motorista, depois o trajeto com valor calculado por km."
+    >
+      <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
+        {(
+          [
+            { n: 1 as const, rotulo: "Agenda e motorista" },
+            { n: 2 as const, rotulo: "Trajeto e pagamento" },
+          ]
+        ).map((p, indice) => (
+          <div key={p.n} className="flex items-center gap-3">
+            {indice > 0 && <span className="h-px w-8 bg-border" />}
+            <button
+              type="button"
+              onClick={() => setEtapa(p.n)}
+              className={cn(
+                "rounded-full border px-4 py-2 transition-colors",
+                etapa === p.n
+                  ? "border-primary/50 bg-primary/15 text-primary"
+                  : "border-border text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {p.n}. {p.rotulo}
+            </button>
+          </div>
+        ))}
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <div className="space-y-6">
-          <Card className="border-border/60 p-6">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Trajeto</h2>
-            <div className="mt-4 space-y-4">
-              {[
-                { id: "embarque", rotulo: "Endereço de embarque", valor: "Av. Paulista, 1400 — São Paulo" },
-                { id: "parada", rotulo: "Ponto de parada", valor: "Rua Augusta, 900" },
-                { id: "desembarque", rotulo: "Endereço de desembarque", valor: "Aeroporto de Congonhas" },
-              ].map((campo) => (
-                <div key={campo.id} className="space-y-2">
-                  <Label htmlFor={campo.id}>{campo.rotulo}</Label>
-                  <div className="relative">
-                    <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input id={campo.id} defaultValue={campo.valor} className="pl-9" />
+          {etapa === 1 ? (
+            <>
+              <Card className="border-border/60 p-6">
+                <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                  Selecione o dia e o horário
+                </h2>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {(["Somente ida", "Ida e retorno"] as const).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => {
+                        setTipo(t);
+                        if (t === "Somente ida") setDataRetorno(undefined);
+                      }}
+                      className={cn(
+                        "rounded-full border px-4 py-2 text-sm transition-colors",
+                        tipo === t
+                          ? "border-primary/50 bg-primary/15 text-primary"
+                          : "border-border text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-5 grid gap-6 md:grid-cols-2">
+                  <div>
+                    <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+                      <CalendarDays className="size-4 text-primary" /> Data da ida
+                    </p>
+                    <Calendar
+                      mode="single"
+                      selected={dataIda}
+                      onSelect={setDataIda}
+                      disabled={{ before: new Date() }}
+                      className={cn("pointer-events-auto rounded-lg border border-border/60 p-3")}
+                    />
+                    <div className="mt-3 space-y-2">
+                      <Label htmlFor="hora-ida" className="flex items-center gap-2">
+                        <Clock className="size-4 text-primary" /> Horário de embarque
+                      </Label>
+                      <Input
+                        id="hora-ida"
+                        type="time"
+                        value={horaIda}
+                        onChange={(e) => setHoraIda(e.target.value)}
+                        className="w-32"
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        {HORARIOS_RAPIDOS.map((h) => (
+                          <button
+                            key={h}
+                            type="button"
+                            onClick={() => setHoraIda(h)}
+                            className={cn(
+                              "rounded-full border px-3 py-1 text-xs transition-colors",
+                              horaIda === h
+                                ? "border-primary/50 bg-primary/15 text-primary"
+                                : "border-border text-muted-foreground hover:text-foreground",
+                            )}
+                          >
+                            {h}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {tipo === "Ida e retorno" && (
+                    <div>
+                      <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+                        <CalendarDays className="size-4 text-primary" /> Data do retorno
+                      </p>
+                      <Calendar
+                        mode="single"
+                        selected={dataRetorno}
+                        onSelect={setDataRetorno}
+                        disabled={{ before: dataIda ?? new Date() }}
+                        className={cn("pointer-events-auto rounded-lg border border-border/60 p-3")}
+                      />
+                      <div className="mt-3 space-y-2">
+                        <Label htmlFor="hora-retorno" className="flex items-center gap-2">
+                          <Clock className="size-4 text-primary" /> Horário do retorno
+                        </Label>
+                        <Input
+                          id="hora-retorno"
+                          type="time"
+                          value={horaRetorno}
+                          onChange={(e) => setHoraRetorno(e.target.value)}
+                          className="w-32"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              <Card className="border-border/60 p-6">
+                <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                  Modalidade de atendimento
+                </h2>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {modalidades.map((m) => (
+                    <button
+                      key={m.nome}
+                      type="button"
+                      onClick={() => setModalidade(m)}
+                      className={cn(
+                        "rounded-full border px-4 py-2 text-sm transition-colors",
+                        modalidade.nome === m.nome
+                          ? "border-primary/50 bg-primary/15 text-primary"
+                          : "border-border text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {m.nome} · {formatarBRL(Math.max(m.valorPorKm, VALOR_MINIMO_POR_KM))}/km
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Características e procedimentos
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{modalidade.caracteristicas}</p>
+                </div>
+              </Card>
+
+              <Card className="border-border/60 p-6">
+                <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                  Motoristas disponíveis {dataIda ? `para ${dataIda.toLocaleDateString("pt-BR")} às ${horaIda}` : ""}
+                </h2>
+                <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {motoristas.map((m) => (
+                    <li key={m.nome}>
+                      <button
+                        type="button"
+                        onClick={() => setMotorista(m.nome)}
+                        className={cn(
+                          "w-full rounded-lg border p-4 text-left transition-colors",
+                          motorista === m.nome ? "border-primary/50 bg-primary/10" : "border-border/70",
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">{m.nome}</span>
+                          <span className="text-sm text-primary">{m.nota} ★</span>
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {m.veiculo} · {m.placa}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Capacidade: {CAPACIDADE_PADRAO} passageiros
+                        </p>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            </>
+          ) : (
+            <>
+              <Card className="border-border/60 p-6">
+                <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                  Pontos do percurso
+                </h2>
+                <div className="mt-4 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="embarque">Embarque (origem)</Label>
+                    <div className="relative">
+                      <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-success" />
+                      <Input
+                        id="embarque"
+                        value={embarque}
+                        onChange={(e) => setEmbarque(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+
+                  {paradas.map((p, i) => (
+                    <div key={p.id} className="space-y-2">
+                      <Label htmlFor={`parada-${p.id}`}>Parada {i + 1} (opcional)</Label>
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-warning" />
+                          <Input
+                            id={`parada-${p.id}`}
+                            value={p.endereco}
+                            onChange={(e) =>
+                              setParadas((atual) =>
+                                atual.map((x) => (x.id === p.id ? { ...x, endereco: e.target.value } : x)),
+                              )
+                            }
+                            className="pl-9"
+                          />
+                        </div>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label={`Remover parada ${i + 1}`}
+                          onClick={() => setParadas((atual) => atual.filter((x) => x.id !== p.id))}
+                        >
+                          <Trash2 />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setParadas((atual) => [...atual, { id: Date.now(), endereco: "" }])}
+                  >
+                    <Plus /> Adicionar outra parada
+                  </Button>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="desembarque">Desembarque (destino)</Label>
+                    <div className="relative">
+                      <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-destructive" />
+                      <Input
+                        id="desembarque"
+                        value={desembarque}
+                        onChange={(e) => setDesembarque(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="instrucoes">Instruções de acesso ao motorista</Label>
+                    <Input
+                      id="instrucoes"
+                      value={instrucoes}
+                      onChange={(e) => setInstrucoes(e.target.value)}
+                      placeholder="Ex.: aguardar na portaria social, interfone 102."
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
-          </Card>
+              </Card>
 
-          <Card className="border-border/60 p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Datas e horários</h2>
-              <div className="flex gap-2">
-                <Button size="sm" variant="secondary" onClick={() => adicionarHorario("Ida")}>
-                  <Plus /> Ida
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => adicionarHorario("Retorno")}>
-                  <Plus /> Retorno
-                </Button>
-              </div>
-            </div>
-            <div className="mt-4 space-y-3">
-              {horarios.map((h) => (
-                <div key={h.id} className="flex flex-wrap items-center gap-3 rounded-lg bg-secondary/50 p-3">
-                  <span className="w-20 text-sm font-medium">{h.tipo}</span>
-                  <Input
-                    type="date"
-                    value={h.data}
-                    className="w-40"
-                    onChange={(e) =>
-                      setHorarios((atual) =>
-                        atual.map((i) => (i.id === h.id ? { ...i, data: e.target.value } : i)),
-                      )
-                    }
-                  />
-                  <Input
-                    type="time"
-                    value={h.hora}
-                    className="w-28"
-                    onChange={(e) =>
-                      setHorarios((atual) =>
-                        atual.map((i) => (i.id === h.id ? { ...i, hora: e.target.value } : i)),
-                      )
-                    }
-                  />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => setHorarios((atual) => atual.filter((i) => i.id !== h.id))}
-                  >
-                    <Trash2 />
-                  </Button>
+              <Card className="border-border/60 p-6">
+                <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                  Distância e cálculo do valor
+                </h2>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="distancia">Distância estimada do trajeto (km)</Label>
+                    <Input
+                      id="distancia"
+                      inputMode="decimal"
+                      value={distancia}
+                      onChange={(e) => setDistancia(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Soma de todos os trechos, incluindo as paradas.
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-secondary/50 p-4 text-sm">
+                    <p className="text-xs font-medium uppercase tracking-wide text-primary">Memória de cálculo</p>
+                    <p className="mt-2 text-muted-foreground">
+                      {km.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km
+                    </p>
+                    <p className="font-display text-lg text-primary">{formatarBRL(valorTrajeto)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Piso mínimo do sistema: {formatarBRL(VALOR_MINIMO_POR_KM)} por km.
+                    </p>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </Card>
 
-          <Card className="border-border/60 p-6">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Modalidade</h2>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {modalidades.map((m) => (
-                <button
-                  key={m.nome}
-                  type="button"
-                  onClick={() => setModalidade(m)}
-                  className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                    modalidade.nome === m.nome
-                      ? "border-primary/50 bg-primary/15 text-primary"
-                      : "border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {m.nome}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-primary">
-                Características e procedimentos
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{modalidade.caracteristicas}</p>
-            </div>
-
-
-            <h2 className="mt-6 text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              Forma de pagamento
-            </h2>
-            <div className="mt-4 grid gap-2 sm:grid-cols-3">
-              {(["Pix", "Cartão de crédito", "Plano mensal"] as const).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPagamento(p)}
-                  className={`rounded-lg border px-4 py-3 text-sm transition-colors ${
-                    pagamento === p ? "border-primary/50 bg-primary/15 text-primary" : "border-border text-muted-foreground"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </Card>
+                <h2 className="mt-6 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                  Forma de pagamento
+                </h2>
+                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                  {(["Pix", "Cartão de crédito", "Plano mensal"] as const).map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setPagamento(p)}
+                      className={cn(
+                        "rounded-lg border px-4 py-3 text-sm transition-colors",
+                        pagamento === p
+                          ? "border-primary/50 bg-primary/15 text-primary"
+                          : "border-border text-muted-foreground",
+                      )}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            </>
+          )}
         </div>
 
         <aside className="space-y-4">
           <Card className="surface-luxe border-border/60 p-5">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              Motoristas disponíveis
-            </h2>
-            <ul className="mt-4 space-y-2">
-              {motoristas.map((m) => (
-                <li key={m.nome}>
-                  <button
-                    type="button"
-                    onClick={() => setMotorista(m.nome)}
-                    className={`w-full rounded-lg border p-3 text-left transition-colors ${
-                      motorista === m.nome ? "border-primary/50 bg-primary/10" : "border-border/70"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{m.nome}</span>
-                      <span className="text-sm text-primary">{formatarBRL(m.valor)}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {m.veiculo} · nota {m.nota}
-                    </p>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Resumo da reserva</h2>
+
+            <div className="mt-4 space-y-3 text-sm">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Ida</p>
+                <p>{dataIda ? `${dataLonga(dataIda)} às ${horaIda}` : "Selecione a data"}</p>
+              </div>
+              {tipo === "Ida e retorno" && (
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Retorno</p>
+                  <p>{dataRetorno ? `${dataLonga(dataRetorno)} às ${horaRetorno}` : "Selecione a data"}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Modalidade</p>
+                <p>{modalidade.nome}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Motorista</p>
+                <p>
+                  {escolhido.nome} ({escolhido.nota} ★)
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {escolhido.veiculo} · {CAPACIDADE_PADRAO} passageiros
+                </p>
+              </div>
+              {etapa === 2 && (
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Trajeto</p>
+                  <p className="text-xs text-muted-foreground">Embarque: {embarque || "—"}</p>
+                  {paradas
+                    .filter((p) => p.endereco.trim())
+                    .map((p) => (
+                      <p key={p.id} className="text-xs text-muted-foreground">
+                        Parada: {p.endereco}
+                      </p>
+                    ))}
+                  <p className="text-xs text-muted-foreground">Destino: {desembarque || "—"}</p>
+                </div>
+              )}
+            </div>
 
             <div className="mt-5 space-y-1 border-t border-border/70 pt-4 text-sm">
               <p className="flex justify-between text-muted-foreground">
-                <span>Modalidade</span>
-                <span className="text-foreground">{modalidade.nome}</span>
+                <span>Trajeto ({km.toLocaleString("pt-BR")} km)</span>
+                <span className="text-foreground">{formatarBRL(valorTrajeto)}</span>
               </p>
               <p className="flex justify-between text-muted-foreground">
-                <span>Pagamento</span>
-                <span className="text-foreground">{pagamento}</span>
+                <span>Taxa de serviço</span>
+                <span className="text-foreground">{formatarBRL(TAXA_SERVICO)}</span>
               </p>
-              <p className="flex justify-between text-muted-foreground">
-                <span>Valor acordado</span>
-                <span className="font-display text-base text-primary">{formatarBRL(escolhido.valor)}</span>
+              <p className="flex justify-between border-t border-border/70 pt-2 text-muted-foreground">
+                <span>Total</span>
+                <span className="font-display text-base text-primary">{formatarBRL(total)}</span>
               </p>
             </div>
 
-            <Button
-              className="mt-5 w-full"
-              onClick={() => {
-                toast.success(`Agendamento enviado a ${motorista}.`);
-                navigate({ to: "/cliente/pagamento" });
-              }}
-            >
-              Confirmar agendamento
-            </Button>
+            <div className="mt-4 flex gap-2 rounded-lg border border-border/60 bg-secondary/30 p-3">
+              <ShieldCheck className="size-4 shrink-0 text-success" />
+              <p className="text-xs text-muted-foreground">
+                Pagamento em custódia: o valor só é repassado ao motorista após a conclusão do trajeto com o seu
+                código de 4 dígitos.
+              </p>
+            </div>
+
+            {etapa === 1 ? (
+              <Button className="mt-5 w-full" onClick={avancar}>
+                Continuar para o trajeto <ArrowRight />
+              </Button>
+            ) : (
+              <div className="mt-5 space-y-2">
+                <Button className="w-full" onClick={confirmar}>
+                  Ir para pagamento <ArrowRight />
+                </Button>
+                <Button variant="secondary" className="w-full" onClick={() => setEtapa(1)}>
+                  <ArrowLeft /> Voltar à agenda
+                </Button>
+              </div>
+            )}
           </Card>
         </aside>
       </div>
