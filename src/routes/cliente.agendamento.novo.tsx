@@ -352,14 +352,70 @@ function NovoAgendamento() {
                           <Trash2 />
                         </Button>
                       </div>
+
+                      <div className="rounded-lg border border-border/60 bg-secondary/30 p-3">
+                        <Label htmlFor={`espera-${p.id}`} className="flex items-center gap-2 text-xs">
+                          <Clock className="size-3.5 text-primary" /> Tempo de espera nesta parada (minutos)
+                        </Label>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          {[3, 10, 15, 30].map((min) => (
+                            <button
+                              key={min}
+                              type="button"
+                              onClick={() =>
+                                setParadas((atual) =>
+                                  atual.map((x) => (x.id === p.id ? { ...x, espera: min } : x)),
+                                )
+                              }
+                              className={cn(
+                                "rounded-full border px-3 py-1 text-xs transition-colors",
+                                p.espera === min
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              {min} min{min === TOLERANCIA_ESPERA_MIN ? " (grátis)" : ""}
+                            </button>
+                          ))}
+                          <Input
+                            id={`espera-${p.id}`}
+                            inputMode="numeric"
+                            value={String(p.espera)}
+                            onChange={(e) =>
+                              setParadas((atual) =>
+                                atual.map((x) =>
+                                  x.id === p.id
+                                    ? { ...x, espera: Math.max(0, Number(e.target.value) || 0) }
+                                    : x,
+                                ),
+                              )
+                            }
+                            className="h-8 w-20"
+                          />
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {TOLERANCIA_ESPERA_MIN} minutos de cortesia; depois{" "}
+                          {formatarBRL(VALOR_ESPERA_POR_MINUTO)} por minuto. Cobrança desta parada:{" "}
+                          <span className="text-primary">
+                            {minutosCobradosEspera(p.espera)} min ={" "}
+                            {formatarBRL(calcularValorEspera([p.espera]))}
+                          </span>
+                        </p>
+                      </div>
                     </div>
                   ))}
 
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => setParadas((atual) => [...atual, { id: Date.now(), endereco: "" }])}
+                    onClick={() =>
+                      setParadas((atual) => [
+                        ...atual,
+                        { id: Date.now(), endereco: "", espera: TOLERANCIA_ESPERA_MIN },
+                      ])
+                    }
                   >
+
                     <Plus /> Adicionar outra parada
                   </Button>
 
