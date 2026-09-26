@@ -65,9 +65,10 @@ function NovoAgendamento() {
 
   // Etapa 2
   const [embarque, setEmbarque] = useState("Av. Paulista, 1400 — Bela Vista, São Paulo");
-  const [paradas, setParadas] = useState<{ id: number; endereco: string }[]>([
-    { id: 1, endereco: "Rua Augusta, 900 — Consolação" },
+  const [paradas, setParadas] = useState<{ id: number; endereco: string; espera: number }[]>([
+    { id: 1, endereco: "Rua Augusta, 900 — Consolação", espera: TOLERANCIA_ESPERA_MIN },
   ]);
+
   const [desembarque, setDesembarque] = useState("Aeroporto de Congonhas — Portão 2");
   const [instrucoes, setInstrucoes] = useState("");
   const [distancia, setDistancia] = useState("20.5");
