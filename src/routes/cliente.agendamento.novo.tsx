@@ -11,12 +11,17 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
   CAPACIDADE_PADRAO,
+  TOLERANCIA_ESPERA_MIN,
+  VALOR_ESPERA_POR_MINUTO,
   VALOR_MINIMO_POR_KM,
   calcularValorCorrida,
+  calcularValorEspera,
   formatarBRL,
+  minutosCobradosEspera,
   modalidades,
   motoristas,
 } from "@/lib/dados";
+
 
 export const Route = createFileRoute("/cliente/agendamento/novo")({
   head: () => ({
