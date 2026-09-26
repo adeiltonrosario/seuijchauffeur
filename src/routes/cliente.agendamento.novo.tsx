@@ -543,7 +543,7 @@ function NovoAgendamento() {
                     .filter((p) => p.endereco.trim())
                     .map((p) => (
                       <p key={p.id} className="text-xs text-muted-foreground">
-                        Parada: {p.endereco}
+                        Parada: {p.endereco} · espera {p.espera} min
                       </p>
                     ))}
                   <p className="text-xs text-muted-foreground">Destino: {desembarque || "—"}</p>
@@ -557,9 +557,14 @@ function NovoAgendamento() {
                 <span className="text-foreground">{formatarBRL(valorTrajeto)}</span>
               </p>
               <p className="flex justify-between text-muted-foreground">
+                <span>Espera nas paradas ({minutosEspera} min)</span>
+                <span className="text-foreground">{formatarBRL(valorEspera)}</span>
+              </p>
+              <p className="flex justify-between text-muted-foreground">
                 <span>Taxa de serviço</span>
                 <span className="text-foreground">{formatarBRL(TAXA_SERVICO)}</span>
               </p>
+
               <p className="flex justify-between border-t border-border/70 pt-2 text-muted-foreground">
                 <span>Total</span>
                 <span className="font-display text-base text-primary">{formatarBRL(total)}</span>
