@@ -109,6 +109,8 @@ export const motoristas = [
 
 export const VALOR_MINIMO_POR_KM = 1.85;
 export const TARIFA_PADRAO_POR_KM = 3;
+export const TOLERANCIA_ESPERA_MIN = 3;
+export const VALOR_ESPERA_POR_MINUTO = 0.5;
 
 export type Modalidade = {
   nome: string;
@@ -120,6 +122,26 @@ export const calcularValorCorrida = (distanciaKm: number, valorPorKm: number) =>
   const tarifa = Math.max(valorPorKm, VALOR_MINIMO_POR_KM);
   return Math.round(distanciaKm * tarifa * 100) / 100;
 };
+
+/** Minutos cobrados em uma parada, descontada a tolerância gratuita. */
+export const minutosCobradosEspera = (
+  minutos: number,
+  tolerancia: number = TOLERANCIA_ESPERA_MIN,
+) => Math.max(0, (Number.isFinite(minutos) ? minutos : 0) - tolerancia);
+
+/** Valor total do tempo de espera das paradas intermediárias. */
+export const calcularValorEspera = (
+  minutosPorParada: number[],
+  valorPorMinuto: number = VALOR_ESPERA_POR_MINUTO,
+  tolerancia: number = TOLERANCIA_ESPERA_MIN,
+) => {
+  const minutos = minutosPorParada.reduce(
+    (total, m) => total + minutosCobradosEspera(m, tolerancia),
+    0,
+  );
+  return Math.round(minutos * valorPorMinuto * 100) / 100;
+};
+
 
 export const modalidades: Modalidade[] = [
   {
