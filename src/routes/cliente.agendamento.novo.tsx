@@ -78,7 +78,16 @@ function NovoAgendamento() {
   const km = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
   const tarifa = Math.max(modalidade.valorPorKm, VALOR_MINIMO_POR_KM);
   const valorTrajeto = useMemo(() => calcularValorCorrida(km, tarifa), [km, tarifa]);
-  const total = valorTrajeto + TAXA_SERVICO;
+  const minutosEspera = useMemo(
+    () => paradas.reduce((t, p) => t + minutosCobradosEspera(p.espera), 0),
+    [paradas],
+  );
+  const valorEspera = useMemo(
+    () => calcularValorEspera(paradas.map((p) => p.espera)),
+    [paradas],
+  );
+  const total = valorTrajeto + valorEspera + TAXA_SERVICO;
+
 
   const avancar = () => {
     if (!dataIda) {
