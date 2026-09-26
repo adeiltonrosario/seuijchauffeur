@@ -11,12 +11,17 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
   CAPACIDADE_PADRAO,
+  TOLERANCIA_ESPERA_MIN,
+  VALOR_ESPERA_POR_MINUTO,
   VALOR_MINIMO_POR_KM,
   calcularValorCorrida,
+  calcularValorEspera,
   formatarBRL,
+  minutosCobradosEspera,
   modalidades,
   motoristas,
 } from "@/lib/dados";
+
 
 export const Route = createFileRoute("/cliente/agendamento/novo")({
   head: () => ({
@@ -60,9 +65,10 @@ function NovoAgendamento() {
 
   // Etapa 2
   const [embarque, setEmbarque] = useState("Av. Paulista, 1400 — Bela Vista, São Paulo");
-  const [paradas, setParadas] = useState<{ id: number; endereco: string }[]>([
-    { id: 1, endereco: "Rua Augusta, 900 — Consolação" },
+  const [paradas, setParadas] = useState<{ id: number; endereco: string; espera: number }[]>([
+    { id: 1, endereco: "Rua Augusta, 900 — Consolação", espera: TOLERANCIA_ESPERA_MIN },
   ]);
+
   const [desembarque, setDesembarque] = useState("Aeroporto de Congonhas — Portão 2");
   const [instrucoes, setInstrucoes] = useState("");
   const [distancia, setDistancia] = useState("20.5");
@@ -72,7 +78,16 @@ function NovoAgendamento() {
   const km = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
   const tarifa = Math.max(modalidade.valorPorKm, VALOR_MINIMO_POR_KM);
   const valorTrajeto = useMemo(() => calcularValorCorrida(km, tarifa), [km, tarifa]);
-  const total = valorTrajeto + TAXA_SERVICO;
+  const minutosEspera = useMemo(
+    () => paradas.reduce((t, p) => t + minutosCobradosEspera(p.espera), 0),
+    [paradas],
+  );
+  const valorEspera = useMemo(
+    () => calcularValorEspera(paradas.map((p) => p.espera)),
+    [paradas],
+  );
+  const total = valorTrajeto + valorEspera + TAXA_SERVICO;
+
 
   const avancar = () => {
     if (!dataIda) {
@@ -337,14 +352,70 @@ function NovoAgendamento() {
                           <Trash2 />
                         </Button>
                       </div>
+
+                      <div className="rounded-lg border border-border/60 bg-secondary/30 p-3">
+                        <Label htmlFor={`espera-${p.id}`} className="flex items-center gap-2 text-xs">
+                          <Clock className="size-3.5 text-primary" /> Tempo de espera nesta parada (minutos)
+                        </Label>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          {[3, 10, 15, 30].map((min) => (
+                            <button
+                              key={min}
+                              type="button"
+                              onClick={() =>
+                                setParadas((atual) =>
+                                  atual.map((x) => (x.id === p.id ? { ...x, espera: min } : x)),
+                                )
+                              }
+                              className={cn(
+                                "rounded-full border px-3 py-1 text-xs transition-colors",
+                                p.espera === min
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              {min} min{min === TOLERANCIA_ESPERA_MIN ? " (grátis)" : ""}
+                            </button>
+                          ))}
+                          <Input
+                            id={`espera-${p.id}`}
+                            inputMode="numeric"
+                            value={String(p.espera)}
+                            onChange={(e) =>
+                              setParadas((atual) =>
+                                atual.map((x) =>
+                                  x.id === p.id
+                                    ? { ...x, espera: Math.max(0, Number(e.target.value) || 0) }
+                                    : x,
+                                ),
+                              )
+                            }
+                            className="h-8 w-20"
+                          />
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {TOLERANCIA_ESPERA_MIN} minutos de cortesia; depois{" "}
+                          {formatarBRL(VALOR_ESPERA_POR_MINUTO)} por minuto. Cobrança desta parada:{" "}
+                          <span className="text-primary">
+                            {minutosCobradosEspera(p.espera)} min ={" "}
+                            {formatarBRL(calcularValorEspera([p.espera]))}
+                          </span>
+                        </p>
+                      </div>
                     </div>
                   ))}
 
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => setParadas((atual) => [...atual, { id: Date.now(), endereco: "" }])}
+                    onClick={() =>
+                      setParadas((atual) => [
+                        ...atual,
+                        { id: Date.now(), endereco: "", espera: TOLERANCIA_ESPERA_MIN },
+                      ])
+                    }
                   >
+
                     <Plus /> Adicionar outra parada
                   </Button>
 
@@ -393,13 +464,22 @@ function NovoAgendamento() {
                   <div className="rounded-lg bg-secondary/50 p-4 text-sm">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Memória de cálculo</p>
                     <p className="mt-2 text-muted-foreground">
-                      {km.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km
+                      {km.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
+                      {formatarBRL(valorTrajeto)}
                     </p>
-                    <p className="font-display text-lg text-primary">{formatarBRL(valorTrajeto)}</p>
+                    <p className="text-muted-foreground">
+                      Espera: {minutosEspera} min × {formatarBRL(VALOR_ESPERA_POR_MINUTO)} ={" "}
+                      {formatarBRL(valorEspera)}
+                    </p>
+                    <p className="font-display text-lg text-primary">
+                      {formatarBRL(valorTrajeto + valorEspera)}
+                    </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Piso mínimo do sistema: {formatarBRL(VALOR_MINIMO_POR_KM)} por km.
+                      Piso mínimo do sistema: {formatarBRL(VALOR_MINIMO_POR_KM)} por km. Cada parada tem{" "}
+                      {TOLERANCIA_ESPERA_MIN} minutos de cortesia.
                     </p>
                   </div>
+
                 </div>
 
                 <h2 className="mt-6 text-sm font-medium uppercase tracking-wide text-muted-foreground">
@@ -463,7 +543,7 @@ function NovoAgendamento() {
                     .filter((p) => p.endereco.trim())
                     .map((p) => (
                       <p key={p.id} className="text-xs text-muted-foreground">
-                        Parada: {p.endereco}
+                        Parada: {p.endereco} · espera {p.espera} min
                       </p>
                     ))}
                   <p className="text-xs text-muted-foreground">Destino: {desembarque || "—"}</p>
@@ -477,9 +557,14 @@ function NovoAgendamento() {
                 <span className="text-foreground">{formatarBRL(valorTrajeto)}</span>
               </p>
               <p className="flex justify-between text-muted-foreground">
+                <span>Espera nas paradas ({minutosEspera} min)</span>
+                <span className="text-foreground">{formatarBRL(valorEspera)}</span>
+              </p>
+              <p className="flex justify-between text-muted-foreground">
                 <span>Taxa de serviço</span>
                 <span className="text-foreground">{formatarBRL(TAXA_SERVICO)}</span>
               </p>
+
               <p className="flex justify-between border-t border-border/70 pt-2 text-muted-foreground">
                 <span>Total</span>
                 <span className="font-display text-base text-primary">{formatarBRL(total)}</span>

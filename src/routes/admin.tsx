@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { CAPACIDADE_PADRAO, TARIFA_PADRAO_POR_KM, VALOR_MINIMO_POR_KM, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
+import { CAPACIDADE_PADRAO, TARIFA_PADRAO_POR_KM, TOLERANCIA_ESPERA_MIN, VALOR_ESPERA_POR_MINUTO, VALOR_MINIMO_POR_KM, calcularValorEspera, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -60,6 +60,11 @@ function Admin() {
   const [novoValorBase, setNovoValorBase] = useState("");
   const [novoPorKm, setNovoPorKm] = useState("");
   const [novasCaracteristicas, setNovasCaracteristicas] = useState("");
+
+  // Espera nas paradas
+  const [tolerancia, setTolerancia] = useState(String(TOLERANCIA_ESPERA_MIN));
+  const [valorEsperaMinuto, setValorEsperaMinuto] = useState(String(VALOR_ESPERA_POR_MINUTO));
+
 
   const salvarMotorista = () => {
     if (!nome || !valorMotorista) {
@@ -351,7 +356,53 @@ function Admin() {
         </TabsContent>
 
         <TabsContent value="modalidades" className="mt-6">
+          <Card className="mb-6 border-border/60 p-6">
+            <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              <Clock className="size-4 text-primary" /> Espera nas paradas intermediárias
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Cada parada soma os quilômetros do desvio ao trajeto e cobra o tempo de espera que passar da
+              cortesia.
+            </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_1fr_1.4fr]">
+              <div className="space-y-2">
+                <Label htmlFor="tolerancia">Cortesia por parada (minutos)</Label>
+                <Input
+                  id="tolerancia"
+                  inputMode="numeric"
+                  value={tolerancia}
+                  onChange={(e) => setTolerancia(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="valor-espera">Valor por minuto excedente (R$)</Label>
+                <Input
+                  id="valor-espera"
+                  inputMode="decimal"
+                  value={valorEsperaMinuto}
+                  onChange={(e) => setValorEsperaMinuto(e.target.value)}
+                />
+              </div>
+              <div className="rounded-lg bg-secondary/50 p-4 text-sm">
+                <p className="text-xs font-medium uppercase tracking-wide text-primary">Exemplo</p>
+                <p className="mt-1 text-muted-foreground">
+                  Parada de 15 minutos:{" "}
+                  <span className="text-primary">
+                    {formatarBRL(
+                      calcularValorEspera(
+                        [15],
+                        Number(valorEsperaMinuto.replace(",", ".")) || 0,
+                        Number(tolerancia) || 0,
+                      ),
+                    )}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </Card>
+
           <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+
             <Card className="surface-luxe border-border/60 p-6">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Nova modalidade</h2>
               <div className="mt-4 space-y-4">
