@@ -61,6 +61,11 @@ function Admin() {
   const [novoPorKm, setNovoPorKm] = useState("");
   const [novasCaracteristicas, setNovasCaracteristicas] = useState("");
 
+  // Espera nas paradas
+  const [tolerancia, setTolerancia] = useState(String(TOLERANCIA_ESPERA_MIN));
+  const [valorEsperaMinuto, setValorEsperaMinuto] = useState(String(VALOR_ESPERA_POR_MINUTO));
+
+
   const salvarMotorista = () => {
     if (!nome || !valorMotorista) {
       toast.error("Preencha nome e valor acordado.");
