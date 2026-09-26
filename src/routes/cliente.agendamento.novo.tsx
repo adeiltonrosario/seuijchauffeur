@@ -464,13 +464,22 @@ function NovoAgendamento() {
                   <div className="rounded-lg bg-secondary/50 p-4 text-sm">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Memória de cálculo</p>
                     <p className="mt-2 text-muted-foreground">
-                      {km.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km
+                      {km.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
+                      {formatarBRL(valorTrajeto)}
                     </p>
-                    <p className="font-display text-lg text-primary">{formatarBRL(valorTrajeto)}</p>
+                    <p className="text-muted-foreground">
+                      Espera: {minutosEspera} min × {formatarBRL(VALOR_ESPERA_POR_MINUTO)} ={" "}
+                      {formatarBRL(valorEspera)}
+                    </p>
+                    <p className="font-display text-lg text-primary">
+                      {formatarBRL(valorTrajeto + valorEspera)}
+                    </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Piso mínimo do sistema: {formatarBRL(VALOR_MINIMO_POR_KM)} por km.
+                      Piso mínimo do sistema: {formatarBRL(VALOR_MINIMO_POR_KM)} por km. Cada parada tem{" "}
+                      {TOLERANCIA_ESPERA_MIN} minutos de cortesia.
                     </p>
                   </div>
+
                 </div>
 
                 <h2 className="mt-6 text-sm font-medium uppercase tracking-wide text-muted-foreground">
