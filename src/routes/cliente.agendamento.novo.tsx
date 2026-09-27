@@ -21,6 +21,7 @@ import {
   modalidades,
   motoristas,
 } from "@/lib/dados";
+import { carregarAgenda, motoristaDisponivel } from "@/lib/disponibilidade";
 
 
 export const Route = createFileRoute("/cliente/agendamento/novo")({
