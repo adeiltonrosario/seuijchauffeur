@@ -7,6 +7,7 @@ const navegacao = [
   { para: "/mapa", texto: "Mapa" },
   { para: "/favoritos", texto: "Favoritos" },
   { para: "/motorista/agendamentos", texto: "Motorista" },
+  { para: "/motorista/disponibilidade", texto: "Disponibilidade" },
   { para: "/motorista/veiculos", texto: "Veículos" },
   { para: "/motorista/ganhos", texto: "Ganhos" },
   { para: "/agente-suporte", texto: "Suporte IA" },
