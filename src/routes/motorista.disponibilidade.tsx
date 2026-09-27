@@ -8,7 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import {
+  MOTORISTA_ATUAL,
+  carregarAgenda,
+  salvarAgenda,
+  type RegistroDia,
+  type StatusDia,
+} from "@/lib/disponibilidade";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/motorista/disponibilidade")({
@@ -22,14 +28,6 @@ export const Route = createFileRoute("/motorista/disponibilidade")({
   }),
   component: DisponibilidadeMotorista,
 });
-
-type StatusDia = "disponivel" | "indisponivel";
-
-type RegistroDia = {
-  status: StatusDia;
-  inicio: string;
-  fim: string;
-};
 
 const atalhosHorario = ["06:00", "07:30", "09:00", "12:00", "14:00", "18:00", "20:00"];
 
@@ -51,7 +49,9 @@ function DisponibilidadeMotorista() {
   const hoje = useMemo(() => new Date(), []);
   const [mesVisivel, setMesVisivel] = useState(() => new Date(hoje.getFullYear(), hoje.getMonth(), 1));
   const [diaSelecionado, setDiaSelecionado] = useState<string | null>(null);
-  const [registros, setRegistros] = useState<Record<string, RegistroDia>>({});
+  const [registros, setRegistros] = useState<Record<string, RegistroDia>>(
+    () => carregarAgenda()[MOTORISTA_ATUAL] ?? {},
+  );
 
   const [status, setStatus] = useState<StatusDia>("disponivel");
   const [inicio, setInicio] = useState("08:00");
@@ -62,6 +62,13 @@ function DisponibilidadeMotorista() {
   const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
   const diasNoMes = new Date(ano, mes + 1, 0).getDate();
   const chaveHoje = chaveData(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+  const persistir = (novos: Record<string, RegistroDia>) => {
+    setRegistros(novos);
+    const agenda = carregarAgenda();
+    agenda[MOTORISTA_ATUAL] = novos;
+    salvarAgenda(agenda);
+  };
 
   const selecionarDia = (chave: string) => {
     setDiaSelecionado(chave);
@@ -83,7 +90,7 @@ function DisponibilidadeMotorista() {
       toast.error("O horário de início precisa ser anterior ao horário de fim.");
       return;
     }
-    setRegistros((atual) => ({ ...atual, [diaSelecionado]: { status, inicio, fim } }));
+    persistir({ ...registros, [diaSelecionado]: { status, inicio, fim } });
     toast.success(
       status === "disponivel"
         ? `Disponível em ${rotuloData(diaSelecionado)} das ${inicio} às ${fim}.`
@@ -93,11 +100,9 @@ function DisponibilidadeMotorista() {
 
   const limparDia = () => {
     if (!diaSelecionado) return;
-    setRegistros((atual) => {
-      const copia = { ...atual };
-      delete copia[diaSelecionado];
-      return copia;
-    });
+    const copia = { ...registros };
+    delete copia[diaSelecionado];
+    persistir(copia);
     toast("Dia limpo: você voltará a receber corridas conforme sua disponibilidade geral.");
   };
 
