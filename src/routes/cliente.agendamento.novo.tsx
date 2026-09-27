@@ -76,6 +76,14 @@ function NovoAgendamento() {
   const [pagamento, setPagamento] = useState<"Pix" | "Cartão de crédito" | "Plano mensal">("Pix");
 
   const escolhido = motoristas.find((m) => m.nome === motorista)!;
+  const agenda = useMemo(() => carregarAgenda(), []);
+  const motoristasDisponiveis = useMemo(
+    () =>
+      dataIda
+        ? motoristas.filter((m) => motoristaDisponivel(agenda, m.nome, dataIda, horaIda))
+        : motoristas,
+    [agenda, dataIda, horaIda],
+  );
   const km = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
   const tarifa = Math.max(modalidade.valorPorKm, VALOR_MINIMO_POR_KM);
   const valorTrajeto = useMemo(() => calcularValorCorrida(km, tarifa), [km, tarifa]);
@@ -281,7 +289,7 @@ function NovoAgendamento() {
                   Motoristas disponíveis {dataIda ? `para ${dataIda.toLocaleDateString("pt-BR")} às ${horaIda}` : ""}
                 </h2>
                 <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {motoristas.map((m) => (
+                  {motoristasDisponiveis.map((m) => (
                     <li key={m.nome}>
                       <button
                         type="button"
@@ -305,6 +313,11 @@ function NovoAgendamento() {
                     </li>
                   ))}
                 </ul>
+                {motoristasDisponiveis.length === 0 ? (
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    Nenhum motorista disponível neste dia e horário. Tente outro horário ou outra data.
+                  </p>
+                ) : null}
               </Card>
             </>
           ) : (
