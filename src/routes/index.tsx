@@ -182,20 +182,37 @@ function Autenticacao() {
             </Card>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {planos.map((plano) => (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {planosCalculados.map((plano) => (
               <Card
-                key={plano.nome}
-                className={`p-6 ${plano.destaque ? "glow-gold border-primary/40" : "border-border/60"}`}
+                key={plano.periodicidade}
+                className={`p-6 ${plano.periodicidade === "anual" ? "glow-gold border-primary/40" : "border-border/60"}`}
               >
-                {plano.destaque ? (
-                  <span className="text-xs font-medium uppercase tracking-wide text-primary">Mais escolhido</span>
+                {plano.periodicidade === "anual" ? (
+                  <span className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Melhor economia
+                  </span>
                 ) : null}
-                <h2 className="mt-2 text-lg font-semibold">{plano.nome}</h2>
-                <p className="mt-2 font-display text-2xl">{plano.preco}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{plano.corridas}</p>
-                <Button variant={plano.destaque ? "default" : "secondary"} className="mt-5 w-full">
-                  Assinar
+                <h2 className="mt-2 text-lg font-semibold">Plano {plano.rotulo}</h2>
+                <p className="mt-2 font-display text-2xl text-gold">{plano.exibicaoPrincipal}</p>
+                <p className="mt-1 text-xs text-primary">{plano.exibicaoSecundaria}</p>
+                <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
+                  <li>
+                    {plano.viagensPorMes} viagens por mês · {plano.creditosTotais} créditos no total
+                  </li>
+                  <li>
+                    Sem plano: {formatarBRL(plano.precoMensalSemDesconto)}/mês ({formatarBRL(plano.precoUnitarioAvulso)} por viagem)
+                  </li>
+                  <li>Desconto de {Math.round(plano.percentualDesconto * 100)}%</li>
+                  <li>Créditos válidos por {VALIDADE_CREDITOS_DIAS} dias</li>
+                  <li>Total do período: {formatarBRL(plano.valorTotalCiclo)}</li>
+                </ul>
+                <Button
+                  variant={plano.periodicidade === "anual" ? "default" : "secondary"}
+                  className="mt-5 w-full"
+                  onClick={() => assinar(plano)}
+                >
+                  Assinar {plano.rotulo.toLowerCase()}
                 </Button>
               </Card>
             ))}
