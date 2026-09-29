@@ -42,12 +42,18 @@ function AgenteSuporte() {
   const [mensagens, setMensagens] = useState<Mensagem[]>(mensagensMediadas);
   const [rascunho, setRascunho] = useState("A IA sugere: seu motorista chega em 12 minutos.");
   const [verPadroes, setVerPadroes] = useState(false);
+  const [auditoria, setAuditoria] = useState<MensagemMediada[]>([]);
 
   const conversa = conversas.find((c) => c.id === ativa)!;
   const agendamento = agendamentos.find((a) => a.id === conversa.agendamento)!;
 
+  useEffect(() => {
+    setAuditoria(carregarConversa(agendamento.id));
+  }, [agendamento.id]);
+
   const hora = () =>
     new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
 
   const enviar = (autor: Mensagem["autor"], texto: string) => {
     if (!texto.trim()) return;
