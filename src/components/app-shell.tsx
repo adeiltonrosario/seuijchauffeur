@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 const navegacao = [
   { para: "/cliente", texto: "Cliente" },
   { para: "/cliente/agendamento/novo", texto: "Agendar" },
+  { para: "/cliente/plantao", texto: "Plantão" },
+
   { para: "/mapa", texto: "Mapa" },
   { para: "/favoritos", texto: "Favoritos" },
   { para: "/motorista/agendamentos", texto: "Motorista" },
