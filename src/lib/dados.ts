@@ -260,10 +260,32 @@ export const participantesMapa = [
   { id: "c3", nome: "Eduardo Lima", tipo: "cliente" as const, x: 18, y: 66, agendamento: "AG-1044" },
 ];
 
-export const veiculos = [
-  { placa: "FQR-4E21", modelo: "Toyota Corolla", cor: "Preto", categoria: "Sedan", capacidade: CAPACIDADE_PADRAO },
-  { placa: "GHT-9J04", modelo: "Jeep Compass", cor: "Cinza", categoria: "SUV", capacidade: CAPACIDADE_PADRAO },
-  { placa: "KLM-2B77", modelo: "Honda Fit", cor: "Branco", categoria: "Hatch", capacidade: CAPACIDADE_PADRAO },
+export type Veiculo = {
+  placa: string;
+  modelo: string;
+  cor: string;
+  categoria: CategoriaVeiculo;
+  capacidade: number;
+};
+
+export const veiculos: Veiculo[] = [
+  { placa: "FQR-4E21", modelo: "Toyota Corolla", cor: "Preto", categoria: "Sedan", capacidade: capacidadeDaCategoria("Sedan") },
+  { placa: "GHT-9J04", modelo: "Jeep Compass", cor: "Cinza", categoria: "SUV", capacidade: capacidadeDaCategoria("SUV") },
+  { placa: "KLM-2B77", modelo: "Honda Fit", cor: "Branco", categoria: "Hatch", capacidade: capacidadeDaCategoria("Hatch") },
+  {
+    placa: "TRK-5H19",
+    modelo: "Fiat Fiorino Furgão",
+    cor: "Branco",
+    categoria: "Fiorino / Furgão leve",
+    capacidade: capacidadeDaCategoria("Fiorino / Furgão leve"),
+  },
+  {
+    placa: "VUC-8D30",
+    modelo: "Hyundai HR Baú",
+    cor: "Branco",
+    categoria: "Caminhão VUC / Baú 3/4",
+    capacidade: capacidadeDaCategoria("Caminhão VUC / Baú 3/4"),
+  },
 ];
 
 export const conversas = [
