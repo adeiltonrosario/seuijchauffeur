@@ -7,11 +7,13 @@ import {
   CalendarDays,
   Clock,
   MapPin,
+  PackageOpen,
   PiggyBank,
   Plus,
   ShieldCheck,
   Ticket,
   Trash2,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
@@ -20,14 +22,19 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
-  CAPACIDADE_PADRAO,
+  MAX_AJUDANTES,
   TOLERANCIA_ESPERA_MIN,
   VALOR_ESPERA_POR_MINUTO,
   VALOR_MINIMO_POR_KM,
   calcularValorCorrida,
   calcularValorEspera,
+  capacidadeDaCategoria,
+  cargaDaCategoria,
+  categoriasDaModalidade,
+  ehModalidadeDeCarga,
   formatarBRL,
   minutosCobradosEspera,
   modalidades,
@@ -256,6 +263,12 @@ function NovoAgendamento() {
   const [zonaManual, setZonaManual] = useState<number | undefined>(undefined);
   const [diasViagem, setDiasViagem] = useState("3");
 
+  // Carreto e mudanças
+  const [ajudantes, setAjudantes] = useState(0);
+  const [itensCarga, setItensCarga] = useState("");
+  const [acessoColeta, setAcessoColeta] = useState<"Térreo" | "Elevador de serviço" | "Escadas">("Térreo");
+  const [acessoEntrega, setAcessoEntrega] = useState<"Térreo" | "Elevador de serviço" | "Escadas">("Térreo");
+
   // Planos de assinatura da modalidade escolhida
   const [viagensPorMes, setViagensPorMes] = useState(4);
   const [lotes, setLotes] = useState(() => carregarCreditos());
@@ -280,15 +293,21 @@ function NovoAgendamento() {
   const embarqueVoltaEfetivo = embarqueVolta.trim() || desembarque;
   const desembarqueVoltaEfetivo = desembarqueVolta.trim() || embarque;
 
-  const escolhido = motoristas.find((m) => m.nome === motorista)!;
+  const cargaSelecionada = ehModalidadeDeCarga(modalidade);
+  const categoriasAceitas = useMemo(() => categoriasDaModalidade(modalidade), [modalidade]);
   const agenda = useMemo(() => carregarAgenda(), []);
   const motoristasDisponiveis = useMemo(
     () =>
-      dataIda
-        ? motoristas.filter((m) => motoristaDisponivel(agenda, m.nome, dataIda, horaIda))
-        : motoristas,
-    [agenda, dataIda, horaIda],
+      motoristas
+        .filter((m) => categoriasAceitas.includes(m.categoria))
+        .filter((m) => (dataIda ? motoristaDisponivel(agenda, m.nome, dataIda, horaIda) : true)),
+    [agenda, dataIda, horaIda, categoriasAceitas],
   );
+  const escolhido =
+    motoristasDisponiveis.find((m) => m.nome === motorista) ?? motoristasDisponiveis[0] ?? motoristas[0]!;
+  const maxAjudantes = Math.min(escolhido.ajudantes, MAX_AJUDANTES);
+  const ajudantesEfetivos = cargaSelecionada ? Math.min(ajudantes, maxAjudantes) : 0;
+  const valorAjudantes = Math.round(ajudantesEfetivos * escolhido.valorAjudante * 100) / 100;
   const kmIda = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
   const kmVoltaInformado = Math.max(Number(distanciaVolta.replace(",", ".")) || 0, 0);
   const kmVolta = idaEVolta ? (kmVoltaInformado > 0 ? kmVoltaInformado : kmIda) : 0;
@@ -357,7 +376,7 @@ function NovoAgendamento() {
   );
   const precoFinal = modoPreco === "zona" ? transfer.final_trip_price : valorTrajeto;
   const desconto = modoPreco === "zona" ? transfer.package_discount : descontoKm;
-  const total = precoFinal + valorEspera + TAXA_SERVICO;
+  const total = Math.round((precoFinal + valorEspera + valorAjudantes + TAXA_SERVICO) * 100) / 100;
   const custoEstacionamento = dias * DIARIA_ESTACIONAMENTO;
   const economia = Math.round((custoEstacionamento - total) * 100) / 100;
 
@@ -369,6 +388,10 @@ function NovoAgendamento() {
     }
     if (tipo === "Ida e retorno" && !dataRetorno) {
       toast.error("Escolha também a data de retorno.");
+      return;
+    }
+    if (motoristasDisponiveis.length === 0) {
+      toast.error("Nenhum veículo desta modalidade está disponível neste dia e horário.");
       return;
     }
     setEtapa(2);
@@ -383,7 +406,11 @@ function NovoAgendamento() {
       toast.error("Informe a distância estimada do trajeto.");
       return;
     }
-    toast.success(`Agendamento enviado a ${motorista}. Total ${formatarBRL(total)}.`);
+    if (cargaSelecionada && !itensCarga.trim()) {
+      toast.error("Liste os itens que serão transportados no carreto.");
+      return;
+    }
+    toast.success(`Agendamento enviado a ${escolhido.nome}. Total ${formatarBRL(total)}.`);
     navigate({ to: "/cliente/pagamento" });
   };
 
@@ -528,7 +555,10 @@ function NovoAgendamento() {
                     <button
                       key={m.nome}
                       type="button"
-                      onClick={() => setModalidade(m)}
+                      onClick={() => {
+                        setModalidade(m);
+                        setAjudantes(0);
+                      }}
                       className={cn(
                         "rounded-full border px-4 py-2 text-sm transition-colors",
                         modalidade.nome === m.nome
@@ -536,6 +566,7 @@ function NovoAgendamento() {
                           : "border-border text-muted-foreground hover:text-foreground",
                       )}
                     >
+                      {ehModalidadeDeCarga(m) ? "🚚 " : ""}
                       {m.nome} · {formatarBRL(Math.max(m.valorPorKm, VALOR_MINIMO_POR_KM))}/km
                     </button>
                   ))}
@@ -624,8 +655,12 @@ function NovoAgendamento() {
 
               <Card className="border-border/60 p-6">
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                  Motoristas disponíveis {dataIda ? `para ${dataIda.toLocaleDateString("pt-BR")} às ${horaIda}` : ""}
+                  {cargaSelecionada ? "Veículos de carga disponíveis" : "Motoristas disponíveis"}{" "}
+                  {dataIda ? `para ${dataIda.toLocaleDateString("pt-BR")} às ${horaIda}` : ""}
                 </h2>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Categorias aceitas nesta modalidade: {categoriasAceitas.join(" · ")}
+                </p>
                 <ul className="mt-4 grid gap-2 sm:grid-cols-2">
                   {motoristasDisponiveis.map((m) => (
                     <li key={m.nome}>
@@ -634,7 +669,7 @@ function NovoAgendamento() {
                         onClick={() => setMotorista(m.nome)}
                         className={cn(
                           "w-full rounded-lg border p-4 text-left transition-colors",
-                          motorista === m.nome ? "border-primary/50 bg-primary/10" : "border-border/70",
+                          escolhido.nome === m.nome ? "border-primary/50 bg-primary/10" : "border-border/70",
                         )}
                       >
                         <div className="flex items-center justify-between">
@@ -645,15 +680,23 @@ function NovoAgendamento() {
                           {m.veiculo} · {m.placa}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Capacidade: {CAPACIDADE_PADRAO} passageiros
+                          {capacidadeDaCategoria(m.categoria)} ocupantes
+                          {cargaDaCategoria(m.categoria) ? ` · ${cargaDaCategoria(m.categoria)}` : ""}
                         </p>
+                        {cargaSelecionada ? (
+                          <p className="text-xs text-primary">
+                            {m.ajudantes > 0
+                              ? `Até ${Math.min(m.ajudantes, MAX_AJUDANTES)} ajudante(s) · ${formatarBRL(m.valorAjudante)} cada`
+                              : "Não oferece ajudantes"}
+                          </p>
+                        ) : null}
                       </button>
                     </li>
                   ))}
                 </ul>
                 {motoristasDisponiveis.length === 0 ? (
                   <p className="mt-4 text-sm text-muted-foreground">
-                    Nenhum motorista disponível neste dia e horário. Tente outro horário ou outra data.
+                    Nenhum veículo desta modalidade disponível neste dia e horário. Tente outro horário ou outra data.
                   </p>
                 ) : null}
               </Card>
@@ -684,6 +727,97 @@ function NovoAgendamento() {
                   />
                 </div>
               </Card>
+
+              {cargaSelecionada && (
+                <Card className="border-border/60 p-6">
+                  <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                    <PackageOpen className="size-4 text-primary" /> Carga, itens e ajudantes
+                  </h2>
+
+                  <div className="mt-4 space-y-2">
+                    <Label htmlFor="itens-carga">Itens a transportar</Label>
+                    <Textarea
+                      id="itens-carga"
+                      value={itensCarga}
+                      onChange={(e) => setItensCarga(e.target.value)}
+                      rows={3}
+                      placeholder="Ex.: 1 geladeira frost free, 1 fogão 4 bocas, 1 TV 65 polegadas e 6 caixas."
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Veículo do motorista: {escolhido.veiculo} — {cargaDaCategoria(escolhido.categoria)}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    {(
+                      [
+                        { rotulo: "Acesso na coleta", valor: acessoColeta, set: setAcessoColeta },
+                        { rotulo: "Acesso na entrega", valor: acessoEntrega, set: setAcessoEntrega },
+                      ] as const
+                    ).map((campo) => (
+                      <div key={campo.rotulo} className="space-y-2">
+                        <Label>{campo.rotulo}</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {(["Térreo", "Elevador de serviço", "Escadas"] as const).map((op) => (
+                            <button
+                              key={op}
+                              type="button"
+                              onClick={() => campo.set(op)}
+                              className={cn(
+                                "rounded-full border px-3 py-1.5 text-xs transition-colors",
+                                campo.valor === op
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              {op}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 rounded-lg border border-border/60 bg-secondary/30 p-4">
+                    <Label className="flex items-center gap-2 text-xs">
+                      <Users className="size-3.5 text-primary" /> Ajudantes de carga
+                    </Label>
+                    {maxAjudantes > 0 ? (
+                      <>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {Array.from({ length: maxAjudantes + 1 }, (_, n) => n).map((n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              onClick={() => setAjudantes(n)}
+                              className={cn(
+                                "rounded-full border px-4 py-2 text-sm transition-colors",
+                                ajudantesEfetivos === n
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              {n === 0 ? "Sem ajudante" : `${n} ajudante${n > 1 ? "s" : ""}`}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="mt-3 text-xs text-muted-foreground">
+                          {ajudantesEfetivos === 0
+                            ? "Sem ajudante o motorista apenas dirige e acomoda a carga no veículo; o carregamento pesado fica com você."
+                            : `${ajudantesEfetivos} ajudante(s) × ${formatarBRL(escolhido.valorAjudante)} = ${formatarBRL(valorAjudantes)} — carregam e descarregam móveis e eletrodomésticos.`}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="mt-3 text-xs text-muted-foreground">
+                        Este motorista não disponibiliza ajudantes. Escolha outro veículo de carga na etapa anterior se
+                        precisar de equipe.
+                      </p>
+                    )}
+                  </div>
+                </Card>
+              )}
+
+
 
               {idaEVolta && (
                 <Card className="border-border/60 p-6">
@@ -1038,7 +1172,7 @@ function NovoAgendamento() {
                   {escolhido.nome} ({escolhido.nota} ★)
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {escolhido.veiculo} · {CAPACIDADE_PADRAO} passageiros
+                  {escolhido.veiculo} · {capacidadeDaCategoria(escolhido.categoria)} ocupantes
                 </p>
               </div>
               {etapa === 2 && (
@@ -1112,6 +1246,14 @@ function NovoAgendamento() {
                 <span>Espera nas paradas ({minutosEspera} min)</span>
                 <span className="text-foreground">{formatarBRL(valorEspera)}</span>
               </p>
+              {ajudantesEfetivos > 0 && (
+                <p className="flex justify-between text-muted-foreground">
+                  <span>
+                    Ajudantes ({ajudantesEfetivos} × {formatarBRL(escolhido.valorAjudante)})
+                  </span>
+                  <span className="text-foreground">{formatarBRL(valorAjudantes)}</span>
+                </p>
+              )}
               <p className="flex justify-between text-muted-foreground">
                 <span>Taxa de serviço</span>
                 <span className="text-foreground">{formatarBRL(TAXA_SERVICO)}</span>

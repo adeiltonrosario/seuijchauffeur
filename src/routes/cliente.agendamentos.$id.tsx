@@ -7,7 +7,15 @@ import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { agendamentos, caracteristicasDaModalidade, formatarBRL, veiculos } from "@/lib/dados";
+import {
+  CATEGORIAS_CARGA,
+  CATEGORIAS_PASSAGEIROS,
+  agendamentos,
+  capacidadeDaCategoria,
+  caracteristicasDaModalidade,
+  cargaDaCategoria,
+  formatarBRL,
+} from "@/lib/dados";
 
 export const Route = createFileRoute("/cliente/agendamentos/$id")({
   loader: ({ params }) => {
@@ -42,7 +50,7 @@ function DetalhesAgendamento() {
   const [novoOcupante, setNovoOcupante] = useState("");
   const [valor, setValor] = useState(agendamento.valor);
 
-  const capacidade = veiculos.find((v) => v.categoria === categoria)?.capacidade ?? 4;
+  const capacidade = capacidadeDaCategoria(categoria);
 
   const incluirOcupante = () => {
     if (!novoOcupante.trim()) return;
@@ -94,23 +102,39 @@ function DetalhesAgendamento() {
 
           <Card className="border-border/60 p-6">
             <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Tipo de veículo</h2>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {(["Sedan", "SUV", "Hatch"] as const).map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCategoria(c)}
-                  className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                    categoria === c
-                      ? "border-primary/50 bg-primary/15 text-primary"
-                      : "border-border text-muted-foreground"
-                  }`}
-                >
-                  {c}
-                </button>
+            <div className="mt-4 space-y-4">
+              {(
+                [
+                  { titulo: "Passageiros", lista: CATEGORIAS_PASSAGEIROS },
+                  { titulo: "Carga (carretos e mudanças)", lista: CATEGORIAS_CARGA },
+                ] as const
+              ).map((grupo) => (
+                <div key={grupo.titulo} className="space-y-2">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">{grupo.titulo}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {grupo.lista.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setCategoria(c)}
+                        className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                          categoria === c
+                            ? "border-primary/50 bg-primary/15 text-primary"
+                            : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
-            <p className="mt-3 text-xs text-muted-foreground">Capacidade: {capacidade} ocupantes.</p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Capacidade: {capacidade} ocupantes.
+              {cargaDaCategoria(categoria) ? ` Carga: ${cargaDaCategoria(categoria)}.` : ""} A troca de veículo só vale
+              após a aceitação do motorista.
+            </p>
           </Card>
 
           <Card className="border-border/60 p-6">

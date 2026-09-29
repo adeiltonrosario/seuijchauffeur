@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Car, Clock, Plus, Route as RouteIcon, Ticket, Trash2, UserPlus } from "lucide-react";
+import { Car, Clock, Plus, Route as RouteIcon, Ticket, Trash2, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { CAPACIDADE_PADRAO, TARIFA_PADRAO_POR_KM, TOLERANCIA_ESPERA_MIN, VALOR_ESPERA_POR_MINUTO, VALOR_MINIMO_POR_KM, calcularValorEspera, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
+import { CATEGORIAS_CARGA, CATEGORIAS_PASSAGEIROS, MAX_AJUDANTES, TARIFA_PADRAO_POR_KM, TAXA_AJUDANTE_PADRAO, TOLERANCIA_ESPERA_MIN, VALOR_ESPERA_POR_MINUTO, VALOR_MINIMO_POR_KM, calcularValorEspera, capacidadeDaCategoria, cargaDaCategoria, ehCategoriaCarga, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais, type CategoriaVeiculo } from "@/lib/dados";
 import {
   DESCONTOS,
   PRECO_UNITARIO_AVULSO,
@@ -34,9 +34,7 @@ export const Route = createFileRoute("/admin")({
   component: Admin,
 });
 
-type Categoria = "Sedan" | "SUV" | "Hatch";
-
-const categorias: Categoria[] = ["Sedan", "SUV", "Hatch"];
+type Categoria = CategoriaVeiculo;
 
 function Admin() {
   // Motoristas
@@ -47,6 +45,9 @@ function Admin() {
   const [placaMotorista, setPlacaMotorista] = useState("");
   const [corMotorista, setCorMotorista] = useState("");
   const [categoriaMotorista, setCategoriaMotorista] = useState<Categoria>("Sedan");
+  const [ajudantesMotorista, setAjudantesMotorista] = useState("0");
+  const [valorAjudante, setValorAjudante] = useState(String(TAXA_AJUDANTE_PADRAO));
+  const [taxaAjudantePlataforma, setTaxaAjudantePlataforma] = useState(String(TAXA_AJUDANTE_PADRAO));
 
   // Veículos
   const [veiculos, setVeiculos] = useState(veiculosIniciais);
@@ -102,6 +103,8 @@ function Admin() {
       toast.error("Todo motorista precisa de um veículo: informe modelo, placa e cor.");
       return;
     }
+    const ajudantesNum = ehCategoriaCarga(categoriaMotorista) ? Math.min(Number(ajudantesMotorista) || 0, MAX_AJUDANTES) : 0;
+    const valorAjudanteNum = ajudantesNum > 0 ? Math.max(0, Number(valorAjudante) || TAXA_AJUDANTE_PADRAO) : 0;
     setMotoristas((atual) => [
       ...atual,
       {
@@ -111,6 +114,9 @@ function Admin() {
         placa: placaMotorista,
         valor: Number(valorMotorista),
         favorito: false,
+        categoria: categoriaMotorista,
+        ajudantes: ajudantesNum,
+        valorAjudante: valorAjudanteNum,
       },
     ]);
     setVeiculos((atual) =>
@@ -123,7 +129,7 @@ function Admin() {
               modelo: modeloMotorista,
               cor: corMotorista,
               categoria: categoriaMotorista,
-              capacidade: CAPACIDADE_PADRAO,
+              capacidade: capacidadeDaCategoria(categoriaMotorista),
             },
           ],
     );
@@ -133,6 +139,8 @@ function Admin() {
     setModeloMotorista("");
     setPlacaMotorista("");
     setCorMotorista("");
+    setAjudantesMotorista("0");
+    setValorAjudante(String(TAXA_AJUDANTE_PADRAO));
   };
 
   const salvarVeiculo = () => {
@@ -142,7 +150,7 @@ function Admin() {
     }
     setVeiculos((atual) => [
       ...atual,
-      { placa, modelo, cor, categoria, capacidade: CAPACIDADE_PADRAO },
+      { placa, modelo, cor, categoria, capacidade: capacidadeDaCategoria(categoria) },
     ]);
     toast.success("Veículo cadastrado.");
     setPlaca("");
@@ -222,7 +230,8 @@ function Admin() {
                     Veículo vinculado (obrigatório)
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Todo veículo atende até {CAPACIDADE_PADRAO} passageiros.
+                    {categoriaMotorista}: {capacidadeDaCategoria(categoriaMotorista)} ocupantes
+                    {cargaDaCategoria(categoriaMotorista) ? ` · ${cargaDaCategoria(categoriaMotorista)}` : ""}
                   </p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
                     <div className="space-y-2 sm:col-span-2">
@@ -253,20 +262,32 @@ function Admin() {
                       />
                     </div>
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {categorias.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setCategoriaMotorista(c)}
-                        className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                          categoriaMotorista === c
-                            ? "border-primary/50 bg-primary/15 text-primary"
-                            : "border-border text-muted-foreground"
-                        }`}
-                      >
-                        {c}
-                      </button>
+                  <div className="mt-3 space-y-3">
+                    {(
+                      [
+                        { titulo: "Passageiros", lista: CATEGORIAS_PASSAGEIROS },
+                        { titulo: "Carga (carretos e mudanças)", lista: CATEGORIAS_CARGA },
+                      ] as const
+                    ).map((grupo) => (
+                      <div key={grupo.titulo} className="space-y-2">
+                        <Label className="text-xs">{grupo.titulo}</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {grupo.lista.map((c) => (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => setCategoriaMotorista(c)}
+                              className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                                categoriaMotorista === c
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground"
+                              }`}
+                            >
+                              {c}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -280,6 +301,39 @@ function Admin() {
                     placeholder="320"
                   />
                 </div>
+                {ehCategoriaCarga(categoriaMotorista) ? (
+                  <div className="rounded-lg border border-border/60 bg-secondary/30 p-4">
+                    <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-primary">
+                      <Users className="size-3.5" /> Equipe de carga
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Taxa de referência da plataforma: {formatarBRL(Number(taxaAjudantePlataforma) || TAXA_AJUDANTE_PADRAO)} por
+                      ajudante. O motorista define livremente o seu valor.
+                    </p>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="ajudantes-motorista">Ajudantes disponíveis (até {MAX_AJUDANTES})</Label>
+                        <Input
+                          id="ajudantes-motorista"
+                          inputMode="numeric"
+                          value={ajudantesMotorista}
+                          onChange={(e) => setAjudantesMotorista(e.target.value)}
+                          placeholder="2"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="valor-ajudante">Valor por ajudante (R$)</Label>
+                        <Input
+                          id="valor-ajudante"
+                          inputMode="decimal"
+                          value={valorAjudante}
+                          onChange={(e) => setValorAjudante(e.target.value)}
+                          placeholder="80"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
                 <Button className="w-full" onClick={salvarMotorista}>
                   <UserPlus className="size-4" /> Cadastrar motorista
                 </Button>
@@ -301,6 +355,11 @@ function Admin() {
                       <p className="text-xs text-muted-foreground">
                         {m.veiculo} · nota {m.nota.toFixed(1)}
                       </p>
+                      {m.ajudantes > 0 ? (
+                        <p className="text-xs text-primary">
+                          Até {Math.min(m.ajudantes, MAX_AJUDANTES)} ajudante(s) · {formatarBRL(m.valorAjudante)} cada
+                        </p>
+                      ) : null}
                     </div>
                     <span className="text-sm text-gold">{formatarBRL(m.valor)}</span>
                   </li>
@@ -338,24 +397,37 @@ function Admin() {
                   />
                 </div>
               </div>
-              <div className="mt-4 space-y-2">
-                <Label>Categoria</Label>
-                <div className="flex flex-wrap gap-2">
-                  {categorias.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setCategoria(c)}
-                      className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                        categoria === c
-                          ? "border-primary/50 bg-primary/15 text-primary"
-                          : "border-border text-muted-foreground"
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
+              <div className="mt-4 space-y-4">
+                {(
+                  [
+                    { titulo: "Passageiros", lista: CATEGORIAS_PASSAGEIROS },
+                    { titulo: "Carga (carretos e mudanças)", lista: CATEGORIAS_CARGA },
+                  ] as const
+                ).map((grupo) => (
+                  <div key={grupo.titulo} className="space-y-2">
+                    <Label>{grupo.titulo}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {grupo.lista.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setCategoria(c)}
+                          className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                            categoria === c
+                              ? "border-primary/50 bg-primary/15 text-primary"
+                              : "border-border text-muted-foreground"
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground">
+                  {categoria}: {capacidadeDaCategoria(categoria)} ocupantes
+                  {cargaDaCategoria(categoria) ? ` · ${cargaDaCategoria(categoria)}` : ""}
+                </p>
               </div>
               <Button className="mt-5 w-full" onClick={salvarVeiculo}>
                 <Car className="size-4" /> Cadastrar veículo
@@ -384,6 +456,37 @@ function Admin() {
         </TabsContent>
 
         <TabsContent value="modalidades" className="mt-6">
+          <Card className="mb-6 border-border/60 p-6">
+            <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              <Users className="size-4 text-primary" /> Ajudantes de carga (carretos e mudanças)
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Taxa de referência da plataforma por ajudante. Cada motorista de veículo de carga define o próprio valor
+              no cadastro, e o cliente escolhe até {MAX_AJUDANTES} ajudantes na hora de agendar.
+            </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_1.6fr]">
+              <div className="space-y-2">
+                <Label htmlFor="taxa-ajudante">Taxa de referência por ajudante (R$)</Label>
+                <Input
+                  id="taxa-ajudante"
+                  inputMode="decimal"
+                  value={taxaAjudantePlataforma}
+                  onChange={(e) => setTaxaAjudantePlataforma(e.target.value)}
+                />
+              </div>
+              <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 text-sm">
+                <p className="text-xs font-medium uppercase tracking-wide text-primary">Exemplo</p>
+                <p className="mt-2 text-muted-foreground">
+                  2 ajudantes × {formatarBRL(Number(taxaAjudantePlataforma) || TAXA_AJUDANTE_PADRAO)} ={" "}
+                  <span className="text-primary">
+                    {formatarBRL(2 * (Number(taxaAjudantePlataforma) || TAXA_AJUDANTE_PADRAO))}
+                  </span>{" "}
+                  somados ao valor do carreto.
+                </p>
+              </div>
+            </div>
+          </Card>
+
           <Card className="mb-6 border-border/60 p-6">
             <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
               <Clock className="size-4 text-primary" /> Espera nas paradas intermediárias

@@ -5,7 +5,14 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CAPACIDADE_PADRAO, formatarBRL } from "@/lib/dados";
+import {
+  CATEGORIAS_CARGA,
+  CATEGORIAS_PASSAGEIROS,
+  capacidadeDaCategoria,
+  cargaDaCategoria,
+  formatarBRL,
+  type CategoriaVeiculo,
+} from "@/lib/dados";
 import {
   PRECO_UNITARIO_AVULSO,
   VALIDADE_CREDITOS_DIAS,
@@ -37,15 +44,13 @@ export const Route = createFileRoute("/")({
   component: Autenticacao,
 });
 
-const categorias = ["Sedan", "SUV", "Hatch"] as const;
-
 function Autenticacao() {
   const [perfil, setPerfil] = useState<"cliente" | "motorista">("cliente");
   const [criandoConta, setCriandoConta] = useState(false);
   const [modelo, setModelo] = useState("");
   const [placa, setPlaca] = useState("");
   const [cor, setCor] = useState("");
-  const [categoria, setCategoria] = useState<(typeof categorias)[number]>("Sedan");
+  const [categoria, setCategoria] = useState<CategoriaVeiculo>("Sedan");
   const [viagensPorMes, setViagensPorMes] = useState(VIAGENS_POR_MES_PADRAO);
   const navigate = useNavigate();
 
@@ -121,7 +126,8 @@ function Autenticacao() {
                   Seu veículo (obrigatório)
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Todo veículo atende até {CAPACIDADE_PADRAO} passageiros.
+                  {categoria}: {capacidadeDaCategoria(categoria)} ocupantes
+                  {cargaDaCategoria(categoria) ? ` · ${cargaDaCategoria(categoria)}` : ""}
                 </p>
                 <div className="mt-3 space-y-3">
                   <div className="space-y-2">
@@ -153,22 +159,32 @@ function Autenticacao() {
                       />
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {categorias.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setCategoria(c)}
-                        className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                          categoria === c
-                            ? "border-primary/50 bg-primary/15 text-primary"
-                            : "border-border text-muted-foreground"
-                        }`}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
+                  {(
+                    [
+                      { titulo: "Passageiros", lista: CATEGORIAS_PASSAGEIROS },
+                      { titulo: "Carga (carretos e mudanças)", lista: CATEGORIAS_CARGA },
+                    ] as const
+                  ).map((grupo) => (
+                    <div key={grupo.titulo} className="space-y-2">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">{grupo.titulo}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {grupo.lista.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setCategoria(c)}
+                            className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                              categoria === c
+                                ? "border-primary/50 bg-primary/15 text-primary"
+                                : "border-border text-muted-foreground"
+                            }`}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ) : null}
