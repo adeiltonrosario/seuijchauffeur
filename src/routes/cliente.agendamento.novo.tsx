@@ -763,17 +763,33 @@ function NovoAgendamento() {
                 </p>
               </div>
               {etapa === 2 && (
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Trajeto</p>
-                  <p className="text-xs text-muted-foreground">Embarque: {embarque || "—"}</p>
-                  {paradas
-                    .filter((p) => p.endereco.trim())
-                    .map((p) => (
-                      <p key={p.id} className="text-xs text-muted-foreground">
-                        Parada: {p.endereco} · espera {p.espera} min
-                      </p>
-                    ))}
-                  <p className="text-xs text-muted-foreground">Destino: {desembarque || "—"}</p>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Trajeto de ida</p>
+                    <p className="text-xs text-muted-foreground">Embarque: {embarque || "—"}</p>
+                    {paradas
+                      .filter((p) => p.endereco.trim())
+                      .map((p) => (
+                        <p key={p.id} className="text-xs text-muted-foreground">
+                          Parada: {p.endereco} · espera {p.espera} min
+                        </p>
+                      ))}
+                    <p className="text-xs text-muted-foreground">Destino: {desembarque || "—"}</p>
+                  </div>
+                  {idaEVolta && (
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">Trajeto de volta</p>
+                      <p className="text-xs text-muted-foreground">Embarque: {embarqueVoltaEfetivo || "—"}</p>
+                      {paradasVolta
+                        .filter((p) => p.endereco.trim())
+                        .map((p) => (
+                          <p key={p.id} className="text-xs text-muted-foreground">
+                            Parada: {p.endereco} · espera {p.espera} min
+                          </p>
+                        ))}
+                      <p className="text-xs text-muted-foreground">Destino: {desembarqueVoltaEfetivo || "—"}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -782,21 +798,35 @@ function NovoAgendamento() {
               <p className="flex justify-between text-muted-foreground">
                 <span>
                   {modoPreco === "zona"
-                    ? `Transfer ${transfer.zone_name}`
-                    : `Trajeto (${km.toLocaleString("pt-BR")} km)`}
+                    ? `Transfer ida (${transfer.zone_name})`
+                    : `Ida (${kmIda.toLocaleString("pt-BR")} km)`}
                 </span>
-                <span className="text-foreground">{formatarBRL(precoFinal)}</span>
+                <span className="text-foreground">
+                  {formatarBRL(modoPreco === "zona" ? transfer.fare_ida : valorIda)}
+                </span>
               </p>
-              {modoPreco === "zona" && transfer.package_discount > 0 && (
+              {idaEVolta && (
+                <p className="flex justify-between text-muted-foreground">
+                  <span>
+                    {modoPreco === "zona"
+                      ? `Transfer volta (${transfer.zone_name_retorno})`
+                      : `Volta (${kmVolta.toLocaleString("pt-BR")} km)`}
+                  </span>
+                  <span className="text-foreground">
+                    {formatarBRL(modoPreco === "zona" ? transfer.fare_retorno : valorVolta)}
+                  </span>
+                </p>
+              )}
+              {desconto > 0 && (
                 <p className="flex justify-between text-muted-foreground">
                   <span>Desconto ida e volta (15%)</span>
-                  <span className="text-success">−{formatarBRL(transfer.package_discount)}</span>
+                  <span className="text-success">−{formatarBRL(desconto)}</span>
                 </p>
               )}
               {modoPreco === "zona" && transfer.night_surcharge > 0 && (
                 <p className="flex justify-between text-muted-foreground">
                   <span>Adicional noturno (15%)</span>
-                  <span className="text-warning">incluso</span>
+                  <span className="text-warning">+{formatarBRL(transfer.night_surcharge)}</span>
                 </p>
               )}
               <p className="flex justify-between text-muted-foreground">
