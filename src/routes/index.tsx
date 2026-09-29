@@ -37,15 +37,13 @@ export const Route = createFileRoute("/")({
   component: Autenticacao,
 });
 
-const categorias = ["Sedan", "SUV", "Hatch"] as const;
-
 function Autenticacao() {
   const [perfil, setPerfil] = useState<"cliente" | "motorista">("cliente");
   const [criandoConta, setCriandoConta] = useState(false);
   const [modelo, setModelo] = useState("");
   const [placa, setPlaca] = useState("");
   const [cor, setCor] = useState("");
-  const [categoria, setCategoria] = useState<(typeof categorias)[number]>("Sedan");
+  const [categoria, setCategoria] = useState<CategoriaVeiculo>("Sedan");
   const [viagensPorMes, setViagensPorMes] = useState(VIAGENS_POR_MES_PADRAO);
   const navigate = useNavigate();
 
