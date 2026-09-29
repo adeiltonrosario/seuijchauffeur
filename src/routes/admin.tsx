@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Car, Clock, Plus, Route as RouteIcon, Ticket, Trash2, UserPlus, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Car, Clock, Megaphone, Plus, Route as RouteIcon, Ticket, Trash2, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,6 @@ import {
   type Anuncio,
   type PublicoAnuncio,
 } from "@/lib/publicidades";
-import { useEffect } from "react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
