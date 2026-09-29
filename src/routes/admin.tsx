@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { CATEGORIAS_CARGA, CATEGORIAS_PASSAGEIROS, MAX_AJUDANTES, TARIFA_PADRAO_POR_KM, TAXA_AJUDANTE_PADRAO, TOLERANCIA_ESPERA_MIN, VALOR_ESPERA_POR_MINUTO, VALOR_MINIMO_POR_KM, calcularValorEspera, capacidadeDaCategoria, cargaDaCategoria, ehCategoriaCarga, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais, type CategoriaVeiculo } from "@/lib/dados";
+import { CATEGORIAS_CARGA, CATEGORIAS_PASSAGEIROS, MAX_AJUDANTES, TARIFA_PADRAO_POR_KM, TAXA_AJUDANTE_PADRAO, TOLERANCIA_ESPERA_MIN, VALOR_ESPERA_POR_MINUTO, VALOR_MINIMO_POR_KM, ajudaCapacidade, calcularValorEspera, capacidadeDaCategoria, capacidadeValida, cargaDaCategoria, ehCategoriaCarga, faixaCapacidade, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais, type CategoriaVeiculo } from "@/lib/dados";
 import {
   DESCONTOS,
   PRECO_UNITARIO_AVULSO,
@@ -44,17 +44,29 @@ function Admin() {
   const [modeloMotorista, setModeloMotorista] = useState("");
   const [placaMotorista, setPlacaMotorista] = useState("");
   const [corMotorista, setCorMotorista] = useState("");
-  const [categoriaMotorista, setCategoriaMotorista] = useState<Categoria>("Sedan");
+  const [categoriaMotorista, setCategoriaMotoristaState] = useState<Categoria>("Sedan");
+  const [capacidadeMotorista, setCapacidadeMotorista] = useState(String(capacidadeDaCategoria("Sedan")));
   const [ajudantesMotorista, setAjudantesMotorista] = useState("0");
   const [valorAjudante, setValorAjudante] = useState(String(TAXA_AJUDANTE_PADRAO));
   const [taxaAjudantePlataforma, setTaxaAjudantePlataforma] = useState(String(TAXA_AJUDANTE_PADRAO));
+
+  const setCategoriaMotorista = (c: Categoria) => {
+    setCategoriaMotoristaState(c);
+    setCapacidadeMotorista(String(capacidadeDaCategoria(c)));
+  };
 
   // Veículos
   const [veiculos, setVeiculos] = useState(veiculosIniciais);
   const [placa, setPlaca] = useState("");
   const [modelo, setModelo] = useState("");
   const [cor, setCor] = useState("");
-  const [categoria, setCategoria] = useState<Categoria>("Sedan");
+  const [categoria, setCategoriaState] = useState<Categoria>("Sedan");
+  const [capacidadeVeiculo, setCapacidadeVeiculo] = useState(String(capacidadeDaCategoria("Sedan")));
+
+  const setCategoria = (c: Categoria) => {
+    setCategoriaState(c);
+    setCapacidadeVeiculo(String(capacidadeDaCategoria(c)));
+  };
 
   // Modalidades
   const [modalidades, setModalidades] = useState(
@@ -142,7 +154,7 @@ function Admin() {
             },
           ],
     );
-    toast.success("Motorista cadastrado com o veículo vinculado.");
+    toast.success(`Motorista cadastrado com o veículo vinculado (${capacidadeMot} ocupantes).`);
     setNome("");
     setValorMotorista("");
     setModeloMotorista("");
