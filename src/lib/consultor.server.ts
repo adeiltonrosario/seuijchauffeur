@@ -77,7 +77,10 @@ export async function recomendar(entrada: EntradaConsultor): Promise<Recomendaca
     prompt: `Origem: ${entrada.origem}\nDestino: ${entrada.destino}\nFrequência informada: ${entrada.frequencia}\nNecessidades e contexto: ${entrada.necessidades || "não informado"}`,
   });
 
-  const texto = await result.text;
+  console.log("[consultor] stream iniciado");
+  let texto = "";
+  for await (const parte of result.textStream) texto += parte;
+  console.log("[consultor] stream concluído", texto.length);
   const bruto = texto.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
   const inicio = bruto.indexOf("{");
   const fim = bruto.lastIndexOf("}");
