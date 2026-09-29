@@ -1136,6 +1136,14 @@ function NovoAgendamento() {
                 <span>Espera nas paradas ({minutosEspera} min)</span>
                 <span className="text-foreground">{formatarBRL(valorEspera)}</span>
               </p>
+              {ajudantesEfetivos > 0 && (
+                <p className="flex justify-between text-muted-foreground">
+                  <span>
+                    Ajudantes ({ajudantesEfetivos} × {formatarBRL(escolhido.valorAjudante)})
+                  </span>
+                  <span className="text-foreground">{formatarBRL(valorAjudantes)}</span>
+                </p>
+              )}
               <p className="flex justify-between text-muted-foreground">
                 <span>Taxa de serviço</span>
                 <span className="text-foreground">{formatarBRL(TAXA_SERVICO)}</span>
