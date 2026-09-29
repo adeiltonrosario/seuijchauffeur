@@ -103,6 +103,15 @@ function Admin() {
       toast.error("Todo motorista precisa de um veículo: informe modelo, placa e cor.");
       return;
     }
+    const faixaMot = faixaCapacidade(categoriaMotorista);
+    const informadaMot = Number(capacidadeMotorista);
+    if (faixaMot.ajustavel && (!Number.isFinite(informadaMot) || informadaMot < faixaMot.min || informadaMot > faixaMot.max)) {
+      toast.error(`Informe a lotação entre ${faixaMot.min} e ${faixaMot.max} ocupantes conforme o CRLV.`);
+      return;
+    }
+    const capacidadeMot = faixaMot.ajustavel
+      ? capacidadeValida(categoriaMotorista, informadaMot)
+      : capacidadeDaCategoria(categoriaMotorista);
     const ajudantesNum = ehCategoriaCarga(categoriaMotorista) ? Math.min(Number(ajudantesMotorista) || 0, MAX_AJUDANTES) : 0;
     const valorAjudanteNum = ajudantesNum > 0 ? Math.max(0, Number(valorAjudante) || TAXA_AJUDANTE_PADRAO) : 0;
     setMotoristas((atual) => [
@@ -129,7 +138,7 @@ function Admin() {
               modelo: modeloMotorista,
               cor: corMotorista,
               categoria: categoriaMotorista,
-              capacidade: capacidadeDaCategoria(categoriaMotorista),
+              capacidade: capacidadeMot,
             },
           ],
     );
