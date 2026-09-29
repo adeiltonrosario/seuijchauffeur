@@ -549,6 +549,80 @@ function NovoAgendamento() {
               </Card>
 
               <Card className="border-border/60 p-6">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                      <Ticket className="size-4 text-primary" /> Planos para {modalidade.nome}
+                    </h2>
+                    <p className="mt-2 max-w-md text-sm text-muted-foreground">
+                      Viagem avulsa desta modalidade: {formatarBRL(modalidade.precoAvulso)}. Assine e pague esta corrida
+                      com 1 crédito — válidos por {VALIDADE_CREDITOS_DIAS} dias.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs uppercase tracking-wide text-muted-foreground">Viagens por mês</span>
+                    {[2, 4, 8, 12].map((q) => (
+                      <button
+                        key={q}
+                        type="button"
+                        onClick={() => setViagensPorMes(q)}
+                        className={cn(
+                          "rounded-full border px-3 py-1.5 text-sm transition-colors",
+                          viagensPorMes === q
+                            ? "border-primary/50 bg-primary/15 text-primary"
+                            : "border-border text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                  {planosDaModalidade.map((plano) => (
+                    <div
+                      key={plano.periodicidade}
+                      className={cn(
+                        "rounded-lg border p-4",
+                        plano.periodicidade === "anual" ? "glow-gold border-primary/40" : "border-border/60",
+                      )}
+                    >
+                      {plano.periodicidade === "anual" ? (
+                        <span className="text-[11px] font-medium uppercase tracking-wide text-primary">
+                          Melhor economia
+                        </span>
+                      ) : null}
+                      <p className="mt-1 text-sm font-medium">Plano {plano.rotulo}</p>
+                      <p className="mt-1 font-display text-xl text-gold">{plano.exibicaoPrincipal}</p>
+                      <p className="mt-1 text-xs text-primary">{plano.exibicaoSecundaria}</p>
+                      <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                        <li>
+                          {plano.viagensPorMes} viagens/mês · {plano.creditosTotais} créditos
+                        </li>
+                        <li>Sem plano: {formatarBRL(plano.precoMensalSemDesconto)}/mês</li>
+                        <li>Desconto de {Math.round(plano.percentualDesconto * 100)}%</li>
+                        <li>Total do período: {formatarBRL(plano.valorTotalCiclo)}</li>
+                      </ul>
+                      <Button
+                        variant={plano.periodicidade === "anual" ? "default" : "secondary"}
+                        className="mt-4 w-full"
+                        onClick={() => assinarPlano(plano)}
+                      >
+                        Assinar e usar crédito
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="mt-4 text-xs text-muted-foreground">
+                  {saldoCreditos > 0
+                    ? `Você tem ${saldoCreditos} crédito(s) disponível(is) — esta corrida pode ser paga com 1 crédito.`
+                    : "Sem plano ativo: siga com a corrida avulsa e pague por Pix ou cartão na próxima etapa."}
+                </p>
+              </Card>
+
+              <Card className="border-border/60 p-6">
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
                   Motoristas disponíveis {dataIda ? `para ${dataIda.toLocaleDateString("pt-BR")} às ${horaIda}` : ""}
                 </h2>
