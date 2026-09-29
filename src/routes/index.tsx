@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import qrWhatsapp from "@/assets/qr-whatsapp.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -504,19 +505,15 @@ function Autenticacao() {
 }
 
 function QrCode() {
-  const celulas = Array.from({ length: 144 }, (_, i) => {
-    const linha = Math.floor(i / 12);
-    const coluna = i % 12;
-    const cantos =
-      (linha < 3 && coluna < 3) || (linha < 3 && coluna > 8) || (linha > 8 && coluna < 3);
-    return cantos || (linha * coluna + linha + coluna) % 3 === 0;
-  });
-
   return (
-    <div className="mx-auto grid w-36 grid-cols-12 gap-px rounded-md bg-foreground p-2">
-      {celulas.map((ativo, i) => (
-        <span key={i} className={`aspect-square ${ativo ? "bg-background" : "bg-foreground"}`} />
-      ))}
-    </div>
+    <a href={WHATSAPP} target="_blank" rel="noreferrer" className="block">
+      <img
+        src={qrWhatsapp.url}
+        alt="QR Code para agendar pelo WhatsApp com Adeilton Oliveira"
+        width={176}
+        height={176}
+        className="mx-auto w-44 rounded-lg border border-primary/40 bg-white p-2 shadow-lg"
+      />
+    </a>
   );
 }
