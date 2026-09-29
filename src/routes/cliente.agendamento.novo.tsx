@@ -22,6 +22,13 @@ import {
   motoristas,
 } from "@/lib/dados";
 import { carregarAgenda, motoristaDisponivel } from "@/lib/disponibilidade";
+import {
+  DIARIA_ESTACIONAMENTO,
+  ZONAS,
+  calcularTransferZonas,
+  identificarZona,
+  type ModalidadeViagem,
+} from "@/lib/precificacao-zonas";
 
 
 export const Route = createFileRoute("/cliente/agendamento/novo")({
@@ -74,6 +81,9 @@ function NovoAgendamento() {
   const [instrucoes, setInstrucoes] = useState("");
   const [distancia, setDistancia] = useState("20.5");
   const [pagamento, setPagamento] = useState<"Pix" | "Cartão de crédito" | "Plano mensal">("Pix");
+  const [modoPreco, setModoPreco] = useState<"km" | "zona">("km");
+  const [zonaManual, setZonaManual] = useState<number | undefined>(undefined);
+  const [diasViagem, setDiasViagem] = useState("3");
 
   const escolhido = motoristas.find((m) => m.nome === motorista)!;
   const agenda = useMemo(() => carregarAgenda(), []);
@@ -95,7 +105,34 @@ function NovoAgendamento() {
     () => calcularValorEspera(paradas.map((p) => p.espera)),
     [paradas],
   );
-  const total = valorTrajeto + valorEspera + TAXA_SERVICO;
+  const dias = Math.max(1, Math.floor(Number(diasViagem) || 1));
+  const modalidadeViagem: ModalidadeViagem = tipo === "Ida e retorno" ? "IDA_E_VOLTA" : "SOMENTE_IDA";
+  const pickup = useMemo(() => {
+    if (!dataIda) return undefined;
+    const [h, m] = horaIda.split(":").map(Number);
+    const d = new Date(dataIda);
+    d.setHours(h ?? 0, m ?? 0, 0, 0);
+    return d;
+  }, [dataIda, horaIda]);
+  const zonaDetectada = useMemo(() => identificarZona(`${embarque} ${desembarque}`), [embarque, desembarque]);
+  const transfer = useMemo(
+    () =>
+      calcularTransferZonas({
+        origem: embarque,
+        destino: desembarque,
+        modalidade: modalidadeViagem,
+        horaPartida: horaIda,
+        horaRetorno: horaRetorno,
+        diasViagem: dias,
+        pickup,
+        zonaManual,
+      }),
+    [embarque, desembarque, modalidadeViagem, horaIda, horaRetorno, dias, pickup, zonaManual],
+  );
+  const precoFinal = modoPreco === "zona" ? transfer.final_trip_price : valorTrajeto;
+  const total = precoFinal + valorEspera + TAXA_SERVICO;
+  const custoEstacionamento = dias * DIARIA_ESTACIONAMENTO;
+  const economia = Math.round((custoEstacionamento - total) * 100) / 100;
 
 
   const avancar = () => {
