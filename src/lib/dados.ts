@@ -154,11 +154,47 @@ export const agendamentos: Agendamento[] = [
   },
 ];
 
-export const motoristas = [
-  { nome: "Marcos Vinícius", nota: 4.9, veiculo: "Toyota Corolla — Sedan", placa: "FQR-4E21", valor: 320, favorito: true },
-  { nome: "Juliana Alves", nota: 4.8, veiculo: "Jeep Compass — SUV", placa: "GHT-9J04", valor: 365, favorito: true },
-  { nome: "Rafael Costa", nota: 4.7, veiculo: "Honda Fit — Hatch", placa: "KLM-2B77", valor: 280, favorito: false },
-  { nome: "Camila Duarte", nota: 5.0, veiculo: "Volvo XC60 — SUV", placa: "RPA-7C55", valor: 420, favorito: false },
+export type Motorista = {
+  nome: string;
+  nota: number;
+  veiculo: string;
+  placa: string;
+  valor: number;
+  favorito: boolean;
+  categoria: CategoriaVeiculo;
+  /** Quantos ajudantes de carga o motorista disponibiliza (0 = não oferece). */
+  ajudantes: number;
+  /** Valor por ajudante definido livremente pelo motorista. */
+  valorAjudante: number;
+};
+
+export const motoristas: Motorista[] = [
+  { nome: "Marcos Vinícius", nota: 4.9, veiculo: "Toyota Corolla — Sedan", placa: "FQR-4E21", valor: 320, favorito: true, categoria: "Sedan", ajudantes: 0, valorAjudante: 0 },
+  { nome: "Juliana Alves", nota: 4.8, veiculo: "Jeep Compass — SUV", placa: "GHT-9J04", valor: 365, favorito: true, categoria: "SUV", ajudantes: 0, valorAjudante: 0 },
+  { nome: "Rafael Costa", nota: 4.7, veiculo: "Honda Fit — Hatch", placa: "KLM-2B77", valor: 280, favorito: false, categoria: "Hatch", ajudantes: 0, valorAjudante: 0 },
+  { nome: "Camila Duarte", nota: 5.0, veiculo: "Volvo XC60 — SUV", placa: "RPA-7C55", valor: 420, favorito: false, categoria: "SUV", ajudantes: 0, valorAjudante: 0 },
+  {
+    nome: "Wagner Teixeira",
+    nota: 4.8,
+    veiculo: "Fiat Fiorino Furgão — Fiorino / Furgão leve",
+    placa: "TRK-5H19",
+    valor: 240,
+    favorito: false,
+    categoria: "Fiorino / Furgão leve",
+    ajudantes: 2,
+    valorAjudante: 80,
+  },
+  {
+    nome: "Cleber Nunes",
+    nota: 4.9,
+    veiculo: "Hyundai HR Baú — Caminhão VUC / Baú 3/4",
+    placa: "VUC-8D30",
+    valor: 390,
+    favorito: false,
+    categoria: "Caminhão VUC / Baú 3/4",
+    ajudantes: 2,
+    valorAjudante: 70,
+  },
 ];
 
 export const VALOR_MINIMO_POR_KM = 1.85;
