@@ -167,19 +167,19 @@ function Pagamento() {
               <span>Taxa de serviço</span>
               <span className="text-foreground">{formatarBRL(taxa)}</span>
             </li>
+            {usandoCredito ? (
+              <li className="flex justify-between text-muted-foreground">
+                <span>Crédito do plano (1 viagem)</span>
+                <span className="text-primary">−{formatarBRL(valor + taxa)}</span>
+              </li>
+            ) : null}
             <li className="flex justify-between border-t border-border/70 pt-3 text-muted-foreground">
               <span>Total</span>
-              <span className="font-display text-lg text-primary">{formatarBRL(valor + taxa)}</span>
+              <span className="font-display text-lg text-primary">{formatarBRL(total)}</span>
             </li>
           </ul>
-          <Button
-            className="mt-5 w-full"
-            onClick={() => {
-              toast.success("Pagamento registrado. Aguardando confirmação do motorista.");
-              navigate({ to: "/cliente" });
-            }}
-          >
-            Confirmar pagamento
+          <Button className="mt-5 w-full" onClick={confirmar}>
+            {usandoCredito ? "Usar 1 crédito e confirmar" : "Confirmar pagamento"}
           </Button>
         </Card>
       </div>
