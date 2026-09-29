@@ -5,7 +5,14 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CAPACIDADE_PADRAO, formatarBRL } from "@/lib/dados";
+import {
+  CATEGORIAS_CARGA,
+  CATEGORIAS_PASSAGEIROS,
+  capacidadeDaCategoria,
+  cargaDaCategoria,
+  formatarBRL,
+  type CategoriaVeiculo,
+} from "@/lib/dados";
 import {
   PRECO_UNITARIO_AVULSO,
   VALIDADE_CREDITOS_DIAS,
