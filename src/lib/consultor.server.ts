@@ -8,7 +8,9 @@ import {
   rotuloPeriodicidade,
   type Periodicidade,
 } from "@/lib/assinaturas";
-import { TAXA_SERVICO, VALOR_MINIMO_POR_KM, formatarBRL, modalidades } from "@/lib/dados";
+import { VALOR_MINIMO_POR_KM, formatarBRL, modalidades } from "@/lib/dados";
+
+const TAXA_SERVICO = 8;
 import { DIARIA_ESTACIONAMENTO, ZONAS } from "@/lib/precificacao-zonas";
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1";
