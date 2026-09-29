@@ -1,12 +1,14 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { BellRing, CheckCircle2, Clock, MessageCircle, PlayCircle, XCircle } from "lucide-react";
+import { BellRing, CheckCircle2, Clock, PlayCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { ChatCorrida } from "@/components/chat-corrida";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { agendamentos, caracteristicasDaModalidade, formatarBRL, type StatusAgendamento } from "@/lib/dados";
+
 
 export const Route = createFileRoute("/motorista/agendamentos/$id")({
   loader: ({ params }) => {
