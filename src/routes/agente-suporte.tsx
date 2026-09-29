@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { BookOpen, Bot, Car, Send, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, Bot, Car, Send, ShieldCheck, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { carregarConversa, type MensagemMediada } from "@/lib/chat-mediado";
 import { agendamentos, conversas, formatarBRL, mensagensMediadas, padroesAtendimento } from "@/lib/dados";
+
 
 export const Route = createFileRoute("/agente-suporte")({
   head: () => ({
@@ -42,12 +44,18 @@ function AgenteSuporte() {
   const [mensagens, setMensagens] = useState<Mensagem[]>(mensagensMediadas);
   const [rascunho, setRascunho] = useState("A IA sugere: seu motorista chega em 12 minutos.");
   const [verPadroes, setVerPadroes] = useState(false);
+  const [auditoria, setAuditoria] = useState<MensagemMediada[]>([]);
 
   const conversa = conversas.find((c) => c.id === ativa)!;
   const agendamento = agendamentos.find((a) => a.id === conversa.agendamento)!;
 
+  useEffect(() => {
+    setAuditoria(carregarConversa(agendamento.id));
+  }, [agendamento.id]);
+
   const hora = () =>
     new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
 
   const enviar = (autor: Mensagem["autor"], texto: string) => {
     if (!texto.trim()) return;
@@ -183,7 +191,36 @@ function AgenteSuporte() {
               </Button>
             </div>
           </Card>
+
+          <Card className="border-border/60 p-6">
+            <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              <ShieldCheck className="size-4" /> Auditoria da mediação · {agendamento.id}
+            </h2>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Somente a central de suporte vê o texto original digitado pelas partes.
+            </p>
+            {auditoria.length === 0 ? (
+              <p className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-3 text-sm text-muted-foreground">
+                Nenhuma mensagem mediada nesta corrida ainda.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {auditoria.map((m) => (
+                  <li key={m.id} className="rounded-lg border border-border/60 p-3">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      {m.origem === "cliente" ? "Cliente" : "Motorista"} · {m.hora}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">Original digitado</p>
+                    <p className="text-sm italic">{m.original}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">Publicado pela IA às duas partes</p>
+                    <p className="text-sm">{m.mediado}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
         </div>
+
       </div>
     </AppShell>
   );

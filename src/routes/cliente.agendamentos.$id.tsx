@@ -1,12 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { MessageCircle, Route as RouteIcon, Star, UserPlus, X } from "lucide-react";
+import { Route as RouteIcon, Star, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { ChatCorrida } from "@/components/chat-corrida";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+
 import {
   CATEGORIAS_CARGA,
   CATEGORIAS_PASSAGEIROS,
@@ -164,6 +166,18 @@ function DetalhesAgendamento() {
               </Button>
             </div>
           </Card>
+
+          <ChatCorrida
+            agendamentoId={agendamento.id}
+            origem="cliente"
+            cliente={agendamento.cliente}
+            motorista={agendamento.motorista}
+            veiculo={agendamento.veiculo}
+            embarque={agendamento.embarque}
+            desembarque={agendamento.desembarque}
+            modalidade={agendamento.modalidade}
+          />
+
         </div>
 
         <aside className="space-y-3">
@@ -176,11 +190,6 @@ function DetalhesAgendamento() {
             }}
           >
             <RouteIcon /> Ajustar rota
-          </Button>
-          <Button className="w-full" asChild>
-            <Link to="/agente-suporte">
-              <MessageCircle /> Abrir chat
-            </Link>
           </Button>
           <Button
             className="w-full"
