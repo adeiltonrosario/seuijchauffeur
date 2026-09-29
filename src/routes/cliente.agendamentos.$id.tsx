@@ -7,7 +7,15 @@ import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { agendamentos, caracteristicasDaModalidade, formatarBRL, veiculos } from "@/lib/dados";
+import {
+  CATEGORIAS_CARGA,
+  CATEGORIAS_PASSAGEIROS,
+  agendamentos,
+  capacidadeDaCategoria,
+  caracteristicasDaModalidade,
+  cargaDaCategoria,
+  formatarBRL,
+} from "@/lib/dados";
 
 export const Route = createFileRoute("/cliente/agendamentos/$id")({
   loader: ({ params }) => {
