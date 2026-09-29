@@ -256,6 +256,26 @@ function NovoAgendamento() {
   const [zonaManual, setZonaManual] = useState<number | undefined>(undefined);
   const [diasViagem, setDiasViagem] = useState("3");
 
+  // Planos de assinatura da modalidade escolhida
+  const [viagensPorMes, setViagensPorMes] = useState(4);
+  const [lotes, setLotes] = useState(() => carregarCreditos());
+  const saldoCreditos = useMemo(() => saldoDisponivel(lotes), [lotes]);
+  const planosDaModalidade = useMemo(
+    () => calcularTodosOsPlanos(viagensPorMes, modalidade.precoAvulso),
+    [viagensPorMes, modalidade.precoAvulso],
+  );
+
+  const assinarPlano = (plano: PlanoCalculado) => {
+    const atualizados = [...lotes, ...gerarLotes(plano)];
+    setLotes(atualizados);
+    salvarCreditos(atualizados);
+    setPagamento("Plano mensal");
+    toast.success(
+      `Plano ${plano.rotulo.toLowerCase()} de ${modalidade.nome} ativado: ${plano.creditosTotais} créditos. Esta corrida usará 1 crédito.`,
+    );
+  };
+
+
   const idaEVolta = tipo === "Ida e retorno";
   const embarqueVoltaEfetivo = embarqueVolta.trim() || desembarque;
   const desembarqueVoltaEfetivo = desembarqueVolta.trim() || embarque;
