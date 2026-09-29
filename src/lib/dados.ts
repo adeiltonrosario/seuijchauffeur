@@ -116,7 +116,12 @@ export type Modalidade = {
   nome: string;
   caracteristicas: string;
   valorPorKm: number;
+  /** Valor de referência de uma viagem avulsa desta modalidade (base do cálculo dos planos). */
+  precoAvulso: number;
 };
+
+export const precoAvulsoDaModalidade = (nome: string) =>
+  modalidades.find((m) => m.nome === nome)?.precoAvulso ?? 150;
 
 export const calcularValorCorrida = (distanciaKm: number, valorPorKm: number) => {
   const tarifa = Math.max(valorPorKm, VALOR_MINIMO_POR_KM);
