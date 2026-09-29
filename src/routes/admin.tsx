@@ -148,11 +148,15 @@ function Admin() {
       toast.error("Preencha placa, modelo e cor.");
       return;
     }
-    setVeiculos((atual) => [
-      ...atual,
-      { placa, modelo, cor, categoria, capacidade: capacidadeDaCategoria(categoria) },
-    ]);
-    toast.success("Veículo cadastrado.");
+    const faixa = faixaCapacidade(categoria);
+    const informada = Number(capacidadeVeiculo);
+    if (faixa.ajustavel && (!Number.isFinite(informada) || informada < faixa.min || informada > faixa.max)) {
+      toast.error(`Informe a lotação entre ${faixa.min} e ${faixa.max} ocupantes conforme o CRLV.`);
+      return;
+    }
+    const capacidadeFinal = faixa.ajustavel ? capacidadeValida(categoria, informada) : capacidadeDaCategoria(categoria);
+    setVeiculos((atual) => [...atual, { placa, modelo, cor, categoria, capacidade: capacidadeFinal }]);
+    toast.success(`Veículo cadastrado com ${capacidadeFinal} ocupantes.`);
     setPlaca("");
     setModelo("");
     setCor("");
