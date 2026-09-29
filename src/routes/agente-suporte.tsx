@@ -191,7 +191,36 @@ function AgenteSuporte() {
               </Button>
             </div>
           </Card>
+
+          <Card className="border-border/60 p-6">
+            <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              <ShieldCheck className="size-4" /> Auditoria da mediação · {agendamento.id}
+            </h2>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Somente a central de suporte vê o texto original digitado pelas partes.
+            </p>
+            {auditoria.length === 0 ? (
+              <p className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-3 text-sm text-muted-foreground">
+                Nenhuma mensagem mediada nesta corrida ainda.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {auditoria.map((m) => (
+                  <li key={m.id} className="rounded-lg border border-border/60 p-3">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      {m.origem === "cliente" ? "Cliente" : "Motorista"} · {m.hora}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">Original digitado</p>
+                    <p className="text-sm italic">{m.original}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">Publicado pela IA às duas partes</p>
+                    <p className="text-sm">{m.mediado}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
         </div>
+
       </div>
     </AppShell>
   );
