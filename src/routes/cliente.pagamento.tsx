@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Copy, CreditCard, QrCode, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
@@ -8,6 +8,15 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatarBRL } from "@/lib/dados";
+import {
+  VALIDADE_CREDITOS_DIAS,
+  carregarCreditos,
+  consumirCreditos,
+  creditosAVencer,
+  saldoDisponivel,
+  salvarCreditos,
+  type LoteCredito,
+} from "@/lib/assinaturas";
 
 export const Route = createFileRoute("/cliente/pagamento")({
   head: () => ({
@@ -25,10 +34,37 @@ const chavePix = "pix@seuchauffeur.com.br";
 
 function Pagamento() {
   const [metodo, setMetodo] = useState<"pix" | "cartao" | "plano">("pix");
+  const [lotes, setLotes] = useState<LoteCredito[]>([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setLotes(carregarCreditos());
+  }, []);
+
+  const saldo = saldoDisponivel(lotes);
+  const aVencer = creditosAVencer(lotes, 30);
+  const usandoCredito = metodo === "plano" && saldo > 0;
 
   const valor = 320;
   const taxa = 12.9;
+  const total = usandoCredito ? 0 : valor + taxa;
+
+  const confirmar = () => {
+    if (metodo === "plano") {
+      if (saldo < 1) {
+        toast.error("Você não tem créditos disponíveis. Assine um plano ou pague por Pix ou cartão.");
+        return;
+      }
+      const { lotes: atualizados } = consumirCreditos(lotes, 1);
+      setLotes(atualizados);
+      salvarCreditos(atualizados);
+      toast.success(`1 crédito usado nesta corrida. Saldo restante: ${saldo - 1}.`);
+      navigate({ to: "/cliente" });
+      return;
+    }
+    toast.success("Pagamento registrado. Aguardando confirmação do motorista.");
+    navigate({ to: "/cliente" });
+  };
 
   return (
     <AppShell titulo="Pagamento" descricao="O valor só é liberado ao motorista após a conclusão da corrida.">
@@ -100,10 +136,21 @@ function Pagamento() {
 
             {metodo === "plano" ? (
               <div className="rounded-lg bg-secondary/50 p-5">
-                <p className="text-sm font-medium">Plano Executivo — R$ 649/mês</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Esta corrida será debitada do seu plano e a cobrança recorrente segue no dia 10 de cada mês.
+                <p className="text-sm font-medium">
+                  {saldo > 0
+                    ? `${saldo} ${saldo === 1 ? "crédito disponível" : "créditos disponíveis"} na sua assinatura`
+                    : "Nenhum crédito disponível"}
                 </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {saldo > 0
+                    ? `Esta corrida consome 1 crédito, sem cobrança adicional. Cada crédito vale por ${VALIDADE_CREDITOS_DIAS} dias.`
+                    : "Assine um plano na tela inicial para receber créditos de viagem, ou pague por Pix ou cartão."}
+                </p>
+                {aVencer > 0 ? (
+                  <p className="mt-3 text-xs text-primary">
+                    {aVencer} {aVencer === 1 ? "crédito vence" : "créditos vencem"} nos próximos 30 dias.
+                  </p>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -120,19 +167,19 @@ function Pagamento() {
               <span>Taxa de serviço</span>
               <span className="text-foreground">{formatarBRL(taxa)}</span>
             </li>
+            {usandoCredito ? (
+              <li className="flex justify-between text-muted-foreground">
+                <span>Crédito do plano (1 viagem)</span>
+                <span className="text-primary">−{formatarBRL(valor + taxa)}</span>
+              </li>
+            ) : null}
             <li className="flex justify-between border-t border-border/70 pt-3 text-muted-foreground">
               <span>Total</span>
-              <span className="font-display text-lg text-primary">{formatarBRL(valor + taxa)}</span>
+              <span className="font-display text-lg text-primary">{formatarBRL(total)}</span>
             </li>
           </ul>
-          <Button
-            className="mt-5 w-full"
-            onClick={() => {
-              toast.success("Pagamento registrado. Aguardando confirmação do motorista.");
-              navigate({ to: "/cliente" });
-            }}
-          >
-            Confirmar pagamento
+          <Button className="mt-5 w-full" onClick={confirmar}>
+            {usandoCredito ? "Usar 1 crédito e confirmar" : "Confirmar pagamento"}
           </Button>
         </Card>
       </div>

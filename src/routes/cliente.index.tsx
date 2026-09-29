@@ -1,10 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarPlus, ChevronRight, Star, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CalendarPlus, ChevronRight, Star, Ticket, UserRound } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { agendamentos, formatarBRL, motoristas } from "@/lib/dados";
+import {
+  VALIDADE_CREDITOS_DIAS,
+  carregarCreditos,
+  creditosAVencer,
+  diasAteExpirar,
+  loteVigente,
+  rotuloPeriodicidade,
+  saldoDisponivel,
+  type LoteCredito,
+} from "@/lib/assinaturas";
 
 export const Route = createFileRoute("/cliente/")({
   head: () => ({
@@ -20,6 +31,17 @@ export const Route = createFileRoute("/cliente/")({
 
 function InicioCliente() {
   const proximos = agendamentos.filter((a) => a.status !== "concluido" && a.status !== "cancelado");
+  const [lotes, setLotes] = useState<LoteCredito[]>([]);
+
+  useEffect(() => {
+    setLotes(carregarCreditos());
+  }, []);
+
+  const saldo = saldoDisponivel(lotes);
+  const aVencer = creditosAVencer(lotes, 30);
+  const vigentes = lotes
+    .filter((l) => loteVigente(l))
+    .sort((a, b) => a.dataExpiracao.localeCompare(b.dataExpiracao));
 
   return (
     <AppShell
@@ -66,7 +88,47 @@ function InicioCliente() {
           ))}
         </section>
 
-        <aside>
+        <aside className="space-y-6">
+          <Card className="surface-luxe border-border/60 p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                Créditos do plano
+              </h2>
+              <Ticket className="size-4 text-primary" />
+            </div>
+            <p className="mt-3 font-display text-3xl text-gold">{saldo}</p>
+            <p className="text-xs text-muted-foreground">
+              {saldo === 1 ? "viagem disponível" : "viagens disponíveis"} · validade de {VALIDADE_CREDITOS_DIAS} dias
+            </p>
+            {aVencer > 0 ? (
+              <p className="mt-3 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-primary">
+                {aVencer} {aVencer === 1 ? "crédito vence" : "créditos vencem"} nos próximos 30 dias.
+              </p>
+            ) : null}
+            {vigentes.length ? (
+              <ul className="mt-4 space-y-2 text-xs text-muted-foreground">
+                {vigentes.slice(0, 4).map((l) => (
+                  <li key={l.id} className="flex justify-between gap-2">
+                    <span>
+                      {l.creditosRestantes} de {l.creditosDisponibilizados} · plano{" "}
+                      {rotuloPeriodicidade[l.origem].toLowerCase()}
+                    </span>
+                    <span className="text-foreground">vence em {diasAteExpirar(l.dataExpiracao)}d</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="mt-4">
+                <p className="text-xs text-muted-foreground">
+                  Você ainda não tem um plano ativo. Assine e ganhe até 30% de desconto.
+                </p>
+                <Button variant="secondary" size="sm" className="mt-3" asChild>
+                  <Link to="/">Ver planos</Link>
+                </Button>
+              </div>
+            )}
+          </Card>
+
           <Card className="border-border/60 p-5">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Favoritos</h2>

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Car, Clock, Plus, Route as RouteIcon, Trash2, UserPlus } from "lucide-react";
+import { Car, Clock, Plus, Route as RouteIcon, Ticket, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,15 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { CAPACIDADE_PADRAO, TARIFA_PADRAO_POR_KM, TOLERANCIA_ESPERA_MIN, VALOR_ESPERA_POR_MINUTO, VALOR_MINIMO_POR_KM, calcularValorEspera, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
+import {
+  DESCONTOS,
+  PRECO_UNITARIO_AVULSO,
+  VALIDADE_CREDITOS_DIAS,
+  VIAGENS_POR_MES_PADRAO,
+  calcularTodosOsPlanos,
+  rotuloPeriodicidade,
+  type Periodicidade,
+} from "@/lib/assinaturas";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -64,6 +73,24 @@ function Admin() {
   // Espera nas paradas
   const [tolerancia, setTolerancia] = useState(String(TOLERANCIA_ESPERA_MIN));
   const [valorEsperaMinuto, setValorEsperaMinuto] = useState(String(VALOR_ESPERA_POR_MINUTO));
+
+  // Assinaturas
+  const [viagensMes, setViagensMes] = useState(String(VIAGENS_POR_MES_PADRAO));
+  const [precoAvulso, setPrecoAvulso] = useState(String(PRECO_UNITARIO_AVULSO));
+  const [descontos, setDescontos] = useState({
+    mensal: String(DESCONTOS.mensal * 100),
+    trimestral: String(DESCONTOS.trimestral * 100),
+    anual: String(DESCONTOS.anual * 100),
+  });
+
+  const viagensMesNum = Math.max(1, Number(viagensMes) || VIAGENS_POR_MES_PADRAO);
+  const precoAvulsoNum = Math.max(0, Number(precoAvulso) || 0);
+  const precoSemDesconto = Math.round(viagensMesNum * precoAvulsoNum * 100) / 100;
+  const planosAdmin = calcularTodosOsPlanos(viagensMesNum, precoAvulsoNum, {
+    mensal: (Number(descontos.mensal) || 0) / 100,
+    trimestral: (Number(descontos.trimestral) || 0) / 100,
+    anual: (Number(descontos.anual) || 0) / 100,
+  });
 
 
   const salvarMotorista = () => {
@@ -178,6 +205,7 @@ function Admin() {
           <TabsTrigger value="motoristas">Motoristas</TabsTrigger>
           <TabsTrigger value="veiculos">Veículos</TabsTrigger>
           <TabsTrigger value="modalidades">Modalidades e valores</TabsTrigger>
+          <TabsTrigger value="assinaturas">Assinaturas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="motoristas" className="mt-6">
@@ -518,6 +546,83 @@ function Admin() {
                   </li>
                 ))}
               </ul>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="assinaturas" className="mt-6">
+          <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
+            <Card className="h-fit border-border/60 p-5">
+              <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                <Ticket className="size-4 text-primary" /> Parâmetros da assinatura
+              </h2>
+              <div className="mt-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="viagens-mes">Viagens por mês</Label>
+                  <Input
+                    id="viagens-mes"
+                    type="number"
+                    min={1}
+                    value={viagensMes}
+                    onChange={(e) => setViagensMes(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preco-avulso">Preço unitário avulso (R$)</Label>
+                  <Input
+                    id="preco-avulso"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={precoAvulso}
+                    onChange={(e) => setPrecoAvulso(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {(["mensal", "trimestral", "anual"] as Periodicidade[]).map((p) => (
+                    <div key={p} className="space-y-2">
+                      <Label htmlFor={`desc-${p}`}>{rotuloPeriodicidade[p]} (%)</Label>
+                      <Input
+                        id={`desc-${p}`}
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={descontos[p]}
+                        onChange={(e) => setDescontos((atual) => ({ ...atual, [p]: e.target.value }))}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 text-xs text-muted-foreground">
+                  Preço mensal sem desconto:{" "}
+                  <span className="text-foreground">{formatarBRL(precoSemDesconto)}</span>
+                  <br />
+                  Créditos válidos por {VALIDADE_CREDITOS_DIAS} dias, acumuláveis.
+                </div>
+              </div>
+            </Card>
+
+            <Card className="border-border/60 p-5">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                Planos calculados
+              </h2>
+              <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                {planosAdmin.map((plano) => (
+                  <div key={plano.periodicidade} className="rounded-lg border border-border/60 p-4">
+                    <p className="text-sm font-semibold">Plano {plano.rotulo}</p>
+                    <p className="mt-2 font-display text-xl text-gold">{plano.exibicaoPrincipal}</p>
+                    <p className="mt-1 text-xs text-primary">{plano.exibicaoSecundaria}</p>
+                    <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                      <li>Desconto: {Math.round(plano.percentualDesconto * 100)}%</li>
+                      <li>Total do ciclo: {formatarBRL(plano.valorTotalCiclo)}</li>
+                      <li>Sem desconto: {formatarBRL(plano.valorCicloSemDesconto)}</li>
+                      <li>Economia: {formatarBRL(plano.economiaCiclo)}</li>
+                      <li>Créditos: {plano.creditosTotais} viagens</li>
+                      <li>Equivale a {plano.mesesGratisEquivalentes} mês(es) grátis</li>
+                    </ul>
+                  </div>
+                ))}
+              </div>
             </Card>
           </div>
         </TabsContent>

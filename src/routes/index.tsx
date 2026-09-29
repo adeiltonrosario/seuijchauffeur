@@ -5,7 +5,18 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CAPACIDADE_PADRAO, planos } from "@/lib/dados";
+import { CAPACIDADE_PADRAO, formatarBRL } from "@/lib/dados";
+import {
+  PRECO_UNITARIO_AVULSO,
+  VALIDADE_CREDITOS_DIAS,
+  VIAGENS_POR_MES_PADRAO,
+  calcularTodosOsPlanos,
+  carregarCreditos,
+  chaveData,
+  gerarLotes,
+  salvarCreditos,
+  type PlanoCalculado,
+} from "@/lib/assinaturas";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,7 +46,19 @@ function Autenticacao() {
   const [placa, setPlaca] = useState("");
   const [cor, setCor] = useState("");
   const [categoria, setCategoria] = useState<(typeof categorias)[number]>("Sedan");
+  const [viagensPorMes, setViagensPorMes] = useState(VIAGENS_POR_MES_PADRAO);
   const navigate = useNavigate();
+
+  const planosCalculados = calcularTodosOsPlanos(viagensPorMes, PRECO_UNITARIO_AVULSO);
+
+  const assinar = (plano: PlanoCalculado) => {
+    const hoje = chaveData(new Date());
+    salvarCreditos([...carregarCreditos(), ...gerarLotes(plano, hoje)]);
+    toast.success(
+      `Plano ${plano.rotulo} contratado: ${plano.creditosTotais} créditos de viagem liberados.`,
+    );
+    navigate({ to: "/cliente" });
+  };
 
   const entrar = () => {
     if (criandoConta && perfil === "motorista" && (!modelo || !placa || !cor)) {
@@ -168,9 +191,26 @@ function Autenticacao() {
             <div>
               <h1 className="text-3xl font-semibold">Planos para quem viaja sempre</h1>
               <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-                Agende ida e retorno com pontos de parada, pague por Pix, cartão ou assinatura mensal e libere o valor
-                ao motorista apenas quando a corrida terminar.
+                Escolha quantas viagens você faz por mês e veja o desconto de cada período. Os créditos entram na sua
+                conta e valem por {VALIDADE_CREDITOS_DIAS} dias.
               </p>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs uppercase tracking-wide text-muted-foreground">Viagens por mês</span>
+                {[2, 4, 8, 12].map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => setViagensPorMes(q)}
+                    className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                      viagensPorMes === q
+                        ? "border-primary/50 bg-primary/15 text-primary"
+                        : "border-border text-muted-foreground"
+                    }`}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
             </div>
             <Card className="border-border/60 p-4 text-center">
               <QrCode />
@@ -182,20 +222,37 @@ function Autenticacao() {
             </Card>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {planos.map((plano) => (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {planosCalculados.map((plano) => (
               <Card
-                key={plano.nome}
-                className={`p-6 ${plano.destaque ? "glow-gold border-primary/40" : "border-border/60"}`}
+                key={plano.periodicidade}
+                className={`p-6 ${plano.periodicidade === "anual" ? "glow-gold border-primary/40" : "border-border/60"}`}
               >
-                {plano.destaque ? (
-                  <span className="text-xs font-medium uppercase tracking-wide text-primary">Mais escolhido</span>
+                {plano.periodicidade === "anual" ? (
+                  <span className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Melhor economia
+                  </span>
                 ) : null}
-                <h2 className="mt-2 text-lg font-semibold">{plano.nome}</h2>
-                <p className="mt-2 font-display text-2xl">{plano.preco}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{plano.corridas}</p>
-                <Button variant={plano.destaque ? "default" : "secondary"} className="mt-5 w-full">
-                  Assinar
+                <h2 className="mt-2 text-lg font-semibold">Plano {plano.rotulo}</h2>
+                <p className="mt-2 font-display text-2xl text-gold">{plano.exibicaoPrincipal}</p>
+                <p className="mt-1 text-xs text-primary">{plano.exibicaoSecundaria}</p>
+                <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
+                  <li>
+                    {plano.viagensPorMes} viagens por mês · {plano.creditosTotais} créditos no total
+                  </li>
+                  <li>
+                    Sem plano: {formatarBRL(plano.precoMensalSemDesconto)}/mês ({formatarBRL(plano.precoUnitarioAvulso)} por viagem)
+                  </li>
+                  <li>Desconto de {Math.round(plano.percentualDesconto * 100)}%</li>
+                  <li>Créditos válidos por {VALIDADE_CREDITOS_DIAS} dias</li>
+                  <li>Total do período: {formatarBRL(plano.valorTotalCiclo)}</li>
+                </ul>
+                <Button
+                  variant={plano.periodicidade === "anual" ? "default" : "secondary"}
+                  className="mt-5 w-full"
+                  onClick={() => assinar(plano)}
+                >
+                  Assinar {plano.rotulo.toLowerCase()}
                 </Button>
               </Card>
             ))}
