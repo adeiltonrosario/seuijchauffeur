@@ -124,11 +124,6 @@ function DetalhesMotorista() {
           >
             <XCircle /> Recusar agendamento
           </Button>
-          <Button className="w-full" variant="secondary" asChild>
-            <Link to="/agente-suporte">
-              <MessageCircle /> Abrir chat
-            </Link>
-          </Button>
           <Button
             className="w-full"
             variant="secondary"
