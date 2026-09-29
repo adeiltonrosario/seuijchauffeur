@@ -31,6 +31,17 @@ export const Route = createFileRoute("/cliente/")({
 
 function InicioCliente() {
   const proximos = agendamentos.filter((a) => a.status !== "concluido" && a.status !== "cancelado");
+  const [lotes, setLotes] = useState<LoteCredito[]>([]);
+
+  useEffect(() => {
+    setLotes(carregarCreditos());
+  }, []);
+
+  const saldo = saldoDisponivel(lotes);
+  const aVencer = creditosAVencer(lotes, 30);
+  const vigentes = lotes
+    .filter((l) => loteVigente(l))
+    .sort((a, b) => a.dataExpiracao.localeCompare(b.dataExpiracao));
 
   return (
     <AppShell
