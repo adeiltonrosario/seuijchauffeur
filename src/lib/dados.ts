@@ -78,7 +78,7 @@ export type Agendamento = {
   valor: number;
   status: StatusAgendamento;
   veiculo: string;
-  categoria: "Sedan" | "SUV" | "Hatch";
+  categoria: CategoriaVeiculo;
   ocupantes: string[];
   capacidade: number;
 };
