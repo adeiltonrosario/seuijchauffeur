@@ -522,6 +522,83 @@ function Admin() {
             </Card>
           </div>
         </TabsContent>
+
+        <TabsContent value="assinaturas" className="mt-6">
+          <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
+            <Card className="h-fit border-border/60 p-5">
+              <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                <Ticket className="size-4 text-primary" /> Parâmetros da assinatura
+              </h2>
+              <div className="mt-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="viagens-mes">Viagens por mês</Label>
+                  <Input
+                    id="viagens-mes"
+                    type="number"
+                    min={1}
+                    value={viagensMes}
+                    onChange={(e) => setViagensMes(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preco-avulso">Preço unitário avulso (R$)</Label>
+                  <Input
+                    id="preco-avulso"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={precoAvulso}
+                    onChange={(e) => setPrecoAvulso(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {(["mensal", "trimestral", "anual"] as Periodicidade[]).map((p) => (
+                    <div key={p} className="space-y-2">
+                      <Label htmlFor={`desc-${p}`}>{rotuloPeriodicidade[p]} (%)</Label>
+                      <Input
+                        id={`desc-${p}`}
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={descontos[p]}
+                        onChange={(e) => setDescontos((atual) => ({ ...atual, [p]: e.target.value }))}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 text-xs text-muted-foreground">
+                  Preço mensal sem desconto:{" "}
+                  <span className="text-foreground">{formatarBRL(precoSemDesconto)}</span>
+                  <br />
+                  Créditos válidos por {VALIDADE_CREDITOS_DIAS} dias, acumuláveis.
+                </div>
+              </div>
+            </Card>
+
+            <Card className="border-border/60 p-5">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                Planos calculados
+              </h2>
+              <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                {planosAdmin.map((plano) => (
+                  <div key={plano.periodicidade} className="rounded-lg border border-border/60 p-4">
+                    <p className="text-sm font-semibold">Plano {plano.rotulo}</p>
+                    <p className="mt-2 font-display text-xl text-gold">{plano.exibicaoPrincipal}</p>
+                    <p className="mt-1 text-xs text-primary">{plano.exibicaoSecundaria}</p>
+                    <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                      <li>Desconto: {Math.round(plano.percentualDesconto * 100)}%</li>
+                      <li>Total do ciclo: {formatarBRL(plano.valorTotalCiclo)}</li>
+                      <li>Sem desconto: {formatarBRL(plano.valorCicloSemDesconto)}</li>
+                      <li>Economia: {formatarBRL(plano.economiaCiclo)}</li>
+                      <li>Créditos: {plano.creditosTotais} viagens</li>
+                      <li>Equivale a {plano.mesesGratisEquivalentes} mês(es) grátis</li>
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </TabsContent>
       </Tabs>
     </AppShell>
   );
