@@ -552,7 +552,10 @@ function NovoAgendamento() {
                     <button
                       key={m.nome}
                       type="button"
-                      onClick={() => setModalidade(m)}
+                      onClick={() => {
+                        setModalidade(m);
+                        setAjudantes(0);
+                      }}
                       className={cn(
                         "rounded-full border px-4 py-2 text-sm transition-colors",
                         modalidade.nome === m.nome
@@ -560,6 +563,7 @@ function NovoAgendamento() {
                           : "border-border text-muted-foreground hover:text-foreground",
                       )}
                     >
+                      {ehModalidadeDeCarga(m) ? "🚚 " : ""}
                       {m.nome} · {formatarBRL(Math.max(m.valorPorKm, VALOR_MINIMO_POR_KM))}/km
                     </button>
                   ))}
