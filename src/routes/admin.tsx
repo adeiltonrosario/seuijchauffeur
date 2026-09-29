@@ -178,6 +178,7 @@ function Admin() {
           <TabsTrigger value="motoristas">Motoristas</TabsTrigger>
           <TabsTrigger value="veiculos">Veículos</TabsTrigger>
           <TabsTrigger value="modalidades">Modalidades e valores</TabsTrigger>
+          <TabsTrigger value="assinaturas">Assinaturas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="motoristas" className="mt-6">
