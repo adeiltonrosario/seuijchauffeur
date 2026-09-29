@@ -34,10 +34,37 @@ const chavePix = "pix@seuchauffeur.com.br";
 
 function Pagamento() {
   const [metodo, setMetodo] = useState<"pix" | "cartao" | "plano">("pix");
+  const [lotes, setLotes] = useState<LoteCredito[]>([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setLotes(carregarCreditos());
+  }, []);
+
+  const saldo = saldoDisponivel(lotes);
+  const aVencer = creditosAVencer(lotes, 30);
+  const usandoCredito = metodo === "plano" && saldo > 0;
 
   const valor = 320;
   const taxa = 12.9;
+  const total = usandoCredito ? 0 : valor + taxa;
+
+  const confirmar = () => {
+    if (metodo === "plano") {
+      if (saldo < 1) {
+        toast.error("Você não tem créditos disponíveis. Assine um plano ou pague por Pix ou cartão.");
+        return;
+      }
+      const { lotes: atualizados } = consumirCreditos(lotes, 1);
+      setLotes(atualizados);
+      salvarCreditos(atualizados);
+      toast.success(`1 crédito usado nesta corrida. Saldo restante: ${saldo - 1}.`);
+      navigate({ to: "/cliente" });
+      return;
+    }
+    toast.success("Pagamento registrado. Aguardando confirmação do motorista.");
+    navigate({ to: "/cliente" });
+  };
 
   return (
     <AppShell titulo="Pagamento" descricao="O valor só é liberado ao motorista após a conclusão da corrida.">
