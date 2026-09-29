@@ -4,6 +4,7 @@ import { CalendarPlus, ChevronRight, Star, Stethoscope, Ticket, UserRound } from
 import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
 import { ConsultorViagemIA } from "@/components/consultor-viagem-ia";
+import { BannerPublicidade } from "@/components/banner-publicidade";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { agendamentos, formatarBRL, motoristas } from "@/lib/dados";
@@ -66,6 +67,7 @@ function InicioCliente() {
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <section className="space-y-6">
           <ConsultorViagemIA />
+          <BannerPublicidade publico="clientes" />
           <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
             Próximos agendamentos
           </h2>
