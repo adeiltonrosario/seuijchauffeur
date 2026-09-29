@@ -136,10 +136,21 @@ function Pagamento() {
 
             {metodo === "plano" ? (
               <div className="rounded-lg bg-secondary/50 p-5">
-                <p className="text-sm font-medium">Plano Executivo — R$ 649/mês</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Esta corrida será debitada do seu plano e a cobrança recorrente segue no dia 10 de cada mês.
+                <p className="text-sm font-medium">
+                  {saldo > 0
+                    ? `${saldo} ${saldo === 1 ? "crédito disponível" : "créditos disponíveis"} na sua assinatura`
+                    : "Nenhum crédito disponível"}
                 </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {saldo > 0
+                    ? `Esta corrida consome 1 crédito, sem cobrança adicional. Cada crédito vale por ${VALIDADE_CREDITOS_DIAS} dias.`
+                    : "Assine um plano na tela inicial para receber créditos de viagem, ou pague por Pix ou cartão."}
+                </p>
+                {aVencer > 0 ? (
+                  <p className="mt-3 text-xs text-primary">
+                    {aVencer} {aVencer === 1 ? "crédito vence" : "créditos vencem"} nos próximos 30 dias.
+                  </p>
+                ) : null}
               </div>
             ) : null}
           </div>
