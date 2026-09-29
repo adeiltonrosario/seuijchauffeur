@@ -50,7 +50,7 @@ function DetalhesAgendamento() {
   const [novoOcupante, setNovoOcupante] = useState("");
   const [valor, setValor] = useState(agendamento.valor);
 
-  const capacidade = veiculos.find((v) => v.categoria === categoria)?.capacidade ?? 4;
+  const capacidade = capacidadeDaCategoria(categoria);
 
   const incluirOcupante = () => {
     if (!novoOcupante.trim()) return;
