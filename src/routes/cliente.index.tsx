@@ -1,10 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarPlus, ChevronRight, Star, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CalendarPlus, ChevronRight, Star, Ticket, UserRound } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { agendamentos, formatarBRL, motoristas } from "@/lib/dados";
+import {
+  VALIDADE_CREDITOS_DIAS,
+  carregarCreditos,
+  creditosAVencer,
+  diasAteExpirar,
+  loteVigente,
+  rotuloPeriodicidade,
+  saldoDisponivel,
+  type LoteCredito,
+} from "@/lib/assinaturas";
 
 export const Route = createFileRoute("/cliente/")({
   head: () => ({
