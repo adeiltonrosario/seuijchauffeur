@@ -5,7 +5,18 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CAPACIDADE_PADRAO, planos } from "@/lib/dados";
+import { CAPACIDADE_PADRAO, formatarBRL } from "@/lib/dados";
+import {
+  PRECO_UNITARIO_AVULSO,
+  VALIDADE_CREDITOS_DIAS,
+  VIAGENS_POR_MES_PADRAO,
+  calcularTodosOsPlanos,
+  carregarCreditos,
+  chaveData,
+  gerarLotes,
+  salvarCreditos,
+  type PlanoCalculado,
+} from "@/lib/assinaturas";
 
 export const Route = createFileRoute("/")({
   head: () => ({
