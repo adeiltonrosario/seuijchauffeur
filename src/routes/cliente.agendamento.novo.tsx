@@ -22,12 +22,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
-  CAPACIDADE_PADRAO,
+  MAX_AJUDANTES,
   TOLERANCIA_ESPERA_MIN,
   VALOR_ESPERA_POR_MINUTO,
   VALOR_MINIMO_POR_KM,
   calcularValorCorrida,
   calcularValorEspera,
+  capacidadeDaCategoria,
+  cargaDaCategoria,
+  categoriasDaModalidade,
+  ehModalidadeDeCarga,
   formatarBRL,
   minutosCobradosEspera,
   modalidades,
