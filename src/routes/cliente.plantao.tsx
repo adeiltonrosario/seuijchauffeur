@@ -15,7 +15,7 @@ import {
   modalidades,
   motoristas,
 } from "@/lib/dados";
-import { carregarAgenda, motoristaDisponivel } from "@/lib/disponibilidade";
+import { carregarAgenda } from "@/lib/disponibilidade";
 import {
   ANTECEDENCIA_EMBARQUE_MIN,
   BACKUP_LIMITE_MIN,
@@ -456,6 +456,3 @@ function RotaPlantonista() {
     </AppShell>
   );
 }
-
-/** Mantém a checagem de disponibilidade acessível para testes manuais. */
-export const _motoristaDisponivel = motoristaDisponivel;
