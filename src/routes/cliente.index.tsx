@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CalendarPlus, ChevronRight, Star, Ticket, UserRound } from "lucide-react";
+import { CalendarPlus, ChevronRight, Star, Stethoscope, Ticket, UserRound } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
 import { ConsultorViagemIA } from "@/components/consultor-viagem-ia";
