@@ -164,6 +164,18 @@ function DetalhesAgendamento() {
               </Button>
             </div>
           </Card>
+
+          <ChatCorrida
+            agendamentoId={agendamento.id}
+            origem="cliente"
+            cliente={agendamento.cliente}
+            motorista={agendamento.motorista}
+            veiculo={agendamento.veiculo}
+            embarque={agendamento.embarque}
+            desembarque={agendamento.desembarque}
+            modalidade={agendamento.modalidade}
+          />
+
         </div>
 
         <aside className="space-y-3">
