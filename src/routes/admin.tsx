@@ -10,6 +10,15 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { CAPACIDADE_PADRAO, TARIFA_PADRAO_POR_KM, TOLERANCIA_ESPERA_MIN, VALOR_ESPERA_POR_MINUTO, VALOR_MINIMO_POR_KM, calcularValorEspera, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
+import {
+  DESCONTOS,
+  PRECO_UNITARIO_AVULSO,
+  VALIDADE_CREDITOS_DIAS,
+  VIAGENS_POR_MES_PADRAO,
+  calcularTodosOsPlanos,
+  rotuloPeriodicidade,
+  type Periodicidade,
+} from "@/lib/assinaturas";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
