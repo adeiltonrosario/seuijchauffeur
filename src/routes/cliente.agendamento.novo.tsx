@@ -284,15 +284,21 @@ function NovoAgendamento() {
   const embarqueVoltaEfetivo = embarqueVolta.trim() || desembarque;
   const desembarqueVoltaEfetivo = desembarqueVolta.trim() || embarque;
 
-  const escolhido = motoristas.find((m) => m.nome === motorista)!;
+  const cargaSelecionada = ehModalidadeDeCarga(modalidade);
+  const categoriasAceitas = useMemo(() => categoriasDaModalidade(modalidade), [modalidade]);
   const agenda = useMemo(() => carregarAgenda(), []);
   const motoristasDisponiveis = useMemo(
     () =>
-      dataIda
-        ? motoristas.filter((m) => motoristaDisponivel(agenda, m.nome, dataIda, horaIda))
-        : motoristas,
-    [agenda, dataIda, horaIda],
+      motoristas
+        .filter((m) => categoriasAceitas.includes(m.categoria))
+        .filter((m) => (dataIda ? motoristaDisponivel(agenda, m.nome, dataIda, horaIda) : true)),
+    [agenda, dataIda, horaIda, categoriasAceitas],
   );
+  const escolhido =
+    motoristasDisponiveis.find((m) => m.nome === motorista) ?? motoristasDisponiveis[0] ?? motoristas[0]!;
+  const maxAjudantes = Math.min(escolhido.ajudantes, MAX_AJUDANTES);
+  const ajudantesEfetivos = cargaSelecionada ? Math.min(ajudantes, maxAjudantes) : 0;
+  const valorAjudantes = Math.round(ajudantesEfetivos * escolhido.valorAjudante * 100) / 100;
   const kmIda = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
   const kmVoltaInformado = Math.max(Number(distanciaVolta.replace(",", ".")) || 0, 0);
   const kmVolta = idaEVolta ? (kmVoltaInformado > 0 ? kmVoltaInformado : kmIda) : 0;
