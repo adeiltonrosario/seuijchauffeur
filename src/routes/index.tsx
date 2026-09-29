@@ -79,6 +79,14 @@ function Autenticacao() {
       toast.error("Para se cadastrar como motorista, informe modelo, placa e cor do seu veículo.");
       return;
     }
+    if (criandoConta && perfil === "motorista") {
+      const faixa = faixaCapacidade(categoria);
+      const informada = Number(capacidade);
+      if (faixa.ajustavel && (!Number.isFinite(informada) || informada < faixa.min || informada > faixa.max)) {
+        toast.error(`Informe a lotação entre ${faixa.min} e ${faixa.max} ocupantes conforme o CRLV.`);
+        return;
+      }
+    }
     navigate({ to: perfil === "cliente" ? "/cliente" : "/motorista/agendamentos" });
   };
 
