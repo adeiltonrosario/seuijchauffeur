@@ -102,6 +102,8 @@ function Admin() {
       toast.error("Todo motorista precisa de um veículo: informe modelo, placa e cor.");
       return;
     }
+    const ajudantesNum = ehCategoriaCarga(categoriaMotorista) ? Math.min(Number(ajudantesMotorista) || 0, MAX_AJUDANTES) : 0;
+    const valorAjudanteNum = ajudantesNum > 0 ? Math.max(0, Number(valorAjudante) || TAXA_AJUDANTE_PADRAO) : 0;
     setMotoristas((atual) => [
       ...atual,
       {
@@ -111,6 +113,9 @@ function Admin() {
         placa: placaMotorista,
         valor: Number(valorMotorista),
         favorito: false,
+        categoria: categoriaMotorista,
+        ajudantes: ajudantesNum,
+        valorAjudante: valorAjudanteNum,
       },
     ]);
     setVeiculos((atual) =>
@@ -123,7 +128,7 @@ function Admin() {
               modelo: modeloMotorista,
               cor: corMotorista,
               categoria: categoriaMotorista,
-              capacidade: CAPACIDADE_PADRAO,
+              capacidade: capacidadeDaCategoria(categoriaMotorista),
             },
           ],
     );
@@ -133,6 +138,8 @@ function Admin() {
     setModeloMotorista("");
     setPlacaMotorista("");
     setCorMotorista("");
+    setAjudantesMotorista("0");
+    setValorAjudante(String(TAXA_AJUDANTE_PADRAO));
   };
 
   const salvarVeiculo = () => {
@@ -142,7 +149,7 @@ function Admin() {
     }
     setVeiculos((atual) => [
       ...atual,
-      { placa, modelo, cor, categoria, capacidade: CAPACIDADE_PADRAO },
+      { placa, modelo, cor, categoria, capacidade: capacidadeDaCategoria(categoria) },
     ]);
     toast.success("Veículo cadastrado.");
     setPlaca("");
