@@ -81,7 +81,7 @@ type BlocoTrajetoProps = {
   setDesembarque: (v: string) => void;
   placeholderDesembarque?: string;
   paradas: Parada[];
-  setParadas: React.Dispatch<React.SetStateAction<Parada[]>>;
+  setParadas: Dispatch<SetStateAction<Parada[]>>;
 };
 
 function BlocoTrajeto({
