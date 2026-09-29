@@ -372,139 +372,51 @@ function NovoAgendamento() {
             <>
               <Card className="border-border/60 p-6">
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                  Pontos do percurso
+                  Pontos do percurso {idaEVolta ? "— ida" : ""}
                 </h2>
-                <div className="mt-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="embarque">Embarque (origem)</Label>
-                    <div className="relative">
-                      <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-success" />
-                      <Input
-                        id="embarque"
-                        value={embarque}
-                        onChange={(e) => setEmbarque(e.target.value)}
-                        className="pl-9"
-                      />
-                    </div>
-                  </div>
+                <BlocoTrajeto
+                  prefixo="ida"
+                  embarque={embarque}
+                  setEmbarque={setEmbarque}
+                  desembarque={desembarque}
+                  setDesembarque={setDesembarque}
+                  paradas={paradas}
+                  setParadas={setParadas}
+                />
 
-                  {paradas.map((p, i) => (
-                    <div key={p.id} className="space-y-2">
-                      <Label htmlFor={`parada-${p.id}`}>Parada {i + 1} (opcional)</Label>
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-warning" />
-                          <Input
-                            id={`parada-${p.id}`}
-                            value={p.endereco}
-                            onChange={(e) =>
-                              setParadas((atual) =>
-                                atual.map((x) => (x.id === p.id ? { ...x, endereco: e.target.value } : x)),
-                              )
-                            }
-                            className="pl-9"
-                          />
-                        </div>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label={`Remover parada ${i + 1}`}
-                          onClick={() => setParadas((atual) => atual.filter((x) => x.id !== p.id))}
-                        >
-                          <Trash2 />
-                        </Button>
-                      </div>
-
-                      <div className="rounded-lg border border-border/60 bg-secondary/30 p-3">
-                        <Label htmlFor={`espera-${p.id}`} className="flex items-center gap-2 text-xs">
-                          <Clock className="size-3.5 text-primary" /> Tempo de espera nesta parada (minutos)
-                        </Label>
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                          {[3, 10, 15, 30].map((min) => (
-                            <button
-                              key={min}
-                              type="button"
-                              onClick={() =>
-                                setParadas((atual) =>
-                                  atual.map((x) => (x.id === p.id ? { ...x, espera: min } : x)),
-                                )
-                              }
-                              className={cn(
-                                "rounded-full border px-3 py-1 text-xs transition-colors",
-                                p.espera === min
-                                  ? "border-primary/50 bg-primary/15 text-primary"
-                                  : "border-border text-muted-foreground hover:text-foreground",
-                              )}
-                            >
-                              {min} min{min === TOLERANCIA_ESPERA_MIN ? " (grátis)" : ""}
-                            </button>
-                          ))}
-                          <Input
-                            id={`espera-${p.id}`}
-                            inputMode="numeric"
-                            value={String(p.espera)}
-                            onChange={(e) =>
-                              setParadas((atual) =>
-                                atual.map((x) =>
-                                  x.id === p.id
-                                    ? { ...x, espera: Math.max(0, Number(e.target.value) || 0) }
-                                    : x,
-                                ),
-                              )
-                            }
-                            className="h-8 w-20"
-                          />
-                        </div>
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          {TOLERANCIA_ESPERA_MIN} minutos de cortesia; depois{" "}
-                          {formatarBRL(VALOR_ESPERA_POR_MINUTO)} por minuto. Cobrança desta parada:{" "}
-                          <span className="text-primary">
-                            {minutosCobradosEspera(p.espera)} min ={" "}
-                            {formatarBRL(calcularValorEspera([p.espera]))}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() =>
-                      setParadas((atual) => [
-                        ...atual,
-                        { id: Date.now(), endereco: "", espera: TOLERANCIA_ESPERA_MIN },
-                      ])
-                    }
-                  >
-
-                    <Plus /> Adicionar outra parada
-                  </Button>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="desembarque">Desembarque (destino)</Label>
-                    <div className="relative">
-                      <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-destructive" />
-                      <Input
-                        id="desembarque"
-                        value={desembarque}
-                        onChange={(e) => setDesembarque(e.target.value)}
-                        className="pl-9"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="instrucoes">Instruções de acesso ao motorista</Label>
-                    <Input
-                      id="instrucoes"
-                      value={instrucoes}
-                      onChange={(e) => setInstrucoes(e.target.value)}
-                      placeholder="Ex.: aguardar na portaria social, interfone 102."
-                    />
-                  </div>
+                <div className="mt-4 space-y-2">
+                  <Label htmlFor="instrucoes">Instruções de acesso ao motorista</Label>
+                  <Input
+                    id="instrucoes"
+                    value={instrucoes}
+                    onChange={(e) => setInstrucoes(e.target.value)}
+                    placeholder="Ex.: aguardar na portaria social, interfone 102."
+                  />
                 </div>
               </Card>
+
+              {idaEVolta && (
+                <Card className="border-border/60 p-6">
+                  <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                    Pontos do percurso — volta
+                  </h2>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Preenchemos automaticamente com o inverso da ida. Edite se o retorno partir ou terminar em outro
+                    endereço.
+                  </p>
+                  <BlocoTrajeto
+                    prefixo="volta"
+                    embarque={embarqueVolta}
+                    setEmbarque={setEmbarqueVolta}
+                    placeholderEmbarque={desembarque}
+                    desembarque={desembarqueVolta}
+                    setDesembarque={setDesembarqueVolta}
+                    placeholderDesembarque={embarque}
+                    paradas={paradasVolta}
+                    setParadas={setParadasVolta}
+                  />
+                </Card>
+              )}
 
               <Card className="border-border/60 p-6">
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
