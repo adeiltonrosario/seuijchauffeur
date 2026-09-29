@@ -10,6 +10,7 @@ import {
   PiggyBank,
   Plus,
   ShieldCheck,
+  Ticket,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -33,6 +34,15 @@ import {
   motoristas,
 } from "@/lib/dados";
 import { carregarAgenda, motoristaDisponivel } from "@/lib/disponibilidade";
+import {
+  VALIDADE_CREDITOS_DIAS,
+  calcularTodosOsPlanos,
+  carregarCreditos,
+  gerarLotes,
+  saldoDisponivel,
+  salvarCreditos,
+  type PlanoCalculado,
+} from "@/lib/assinaturas";
 import {
   DIARIA_ESTACIONAMENTO,
   PERCENTUAL_DESCONTO_PACOTE,
