@@ -147,11 +147,21 @@ export type EntradaPrecificacao = {
   canais?: CanalNotificacao[] | undefined;
   /** Permite fixar a zona manualmente, ignorando a detecção por CEP/bairro. */
   zonaManual?: number | undefined;
+  /** Endereços do trecho de retorno (quando diferentes do inverso da ida). */
+  origemRetorno?: string | undefined;
+  destinoRetorno?: string | undefined;
+  /** Permite fixar manualmente a zona do trecho de retorno. */
+  zonaManualRetorno?: number | undefined;
 };
 
 export type SaidaPrecificacao = {
   zone_id: number;
   zone_name: string;
+  /** Zona do trecho de retorno (igual à da ida quando somente ida). */
+  zone_id_retorno: number;
+  zone_name_retorno: string;
+  fare_ida: number;
+  fare_retorno: number;
   base_fare: number;
   night_surcharge: number;
   package_discount: number;
