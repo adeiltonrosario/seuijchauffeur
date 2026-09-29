@@ -34,9 +34,7 @@ export const Route = createFileRoute("/admin")({
   component: Admin,
 });
 
-type Categoria = "Sedan" | "SUV" | "Hatch";
-
-const categorias: Categoria[] = ["Sedan", "SUV", "Hatch"];
+type Categoria = CategoriaVeiculo;
 
 function Admin() {
   // Motoristas
@@ -47,6 +45,9 @@ function Admin() {
   const [placaMotorista, setPlacaMotorista] = useState("");
   const [corMotorista, setCorMotorista] = useState("");
   const [categoriaMotorista, setCategoriaMotorista] = useState<Categoria>("Sedan");
+  const [ajudantesMotorista, setAjudantesMotorista] = useState("0");
+  const [valorAjudante, setValorAjudante] = useState(String(TAXA_AJUDANTE_PADRAO));
+  const [taxaAjudantePlataforma, setTaxaAjudantePlataforma] = useState(String(TAXA_AJUDANTE_PADRAO));
 
   // Veículos
   const [veiculos, setVeiculos] = useState(veiculosIniciais);
