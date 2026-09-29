@@ -21,7 +21,7 @@ export const Route = createFileRoute("/motorista/veiculos")({
   component: Veiculos,
 });
 
-type Categoria = "Sedan" | "SUV" | "Hatch";
+type Categoria = CategoriaVeiculo;
 
 function Veiculos() {
   const [veiculos, setVeiculos] = useState(veiculosIniciais);
@@ -30,6 +30,8 @@ function Veiculos() {
   const [cor, setCor] = useState("");
   const [categoria, setCategoria] = useState<Categoria>("Sedan");
   const [foto, setFoto] = useState<string | null>(null);
+  const [ajudantes, setAjudantes] = useState("0");
+  const [valorAjudante, setValorAjudante] = useState(String(TAXA_AJUDANTE_PADRAO));
 
   const salvar = () => {
     if (!placa || !modelo || !cor) {
@@ -38,9 +40,13 @@ function Veiculos() {
     }
     setVeiculos((atual) => [
       ...atual,
-      { placa, modelo, cor, categoria, capacidade: CAPACIDADE_PADRAO },
+      { placa, modelo, cor, categoria, capacidade: capacidadeDaCategoria(categoria) },
     ]);
-    toast.success("Veículo salvo.");
+    toast.success(
+      ehCategoriaCarga(categoria) && Number(ajudantes) > 0
+        ? `Veículo de carga salvo com até ${Math.min(Number(ajudantes), MAX_AJUDANTES)} ajudante(s) a ${formatarBRL(Number(valorAjudante) || TAXA_AJUDANTE_PADRAO)} cada.`
+        : "Veículo salvo.",
+    );
     setPlaca("");
     setModelo("");
     setCor("");
