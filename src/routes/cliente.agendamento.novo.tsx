@@ -648,8 +648,12 @@ function NovoAgendamento() {
 
               <Card className="border-border/60 p-6">
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                  Motoristas disponíveis {dataIda ? `para ${dataIda.toLocaleDateString("pt-BR")} às ${horaIda}` : ""}
+                  {cargaSelecionada ? "Veículos de carga disponíveis" : "Motoristas disponíveis"}{" "}
+                  {dataIda ? `para ${dataIda.toLocaleDateString("pt-BR")} às ${horaIda}` : ""}
                 </h2>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Categorias aceitas nesta modalidade: {categoriasAceitas.join(" · ")}
+                </p>
                 <ul className="mt-4 grid gap-2 sm:grid-cols-2">
                   {motoristasDisponiveis.map((m) => (
                     <li key={m.nome}>
@@ -658,7 +662,7 @@ function NovoAgendamento() {
                         onClick={() => setMotorista(m.nome)}
                         className={cn(
                           "w-full rounded-lg border p-4 text-left transition-colors",
-                          motorista === m.nome ? "border-primary/50 bg-primary/10" : "border-border/70",
+                          escolhido.nome === m.nome ? "border-primary/50 bg-primary/10" : "border-border/70",
                         )}
                       >
                         <div className="flex items-center justify-between">
@@ -669,15 +673,23 @@ function NovoAgendamento() {
                           {m.veiculo} · {m.placa}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Capacidade: {CAPACIDADE_PADRAO} passageiros
+                          {capacidadeDaCategoria(m.categoria)} ocupantes
+                          {cargaDaCategoria(m.categoria) ? ` · ${cargaDaCategoria(m.categoria)}` : ""}
                         </p>
+                        {cargaSelecionada ? (
+                          <p className="text-xs text-primary">
+                            {m.ajudantes > 0
+                              ? `Até ${Math.min(m.ajudantes, MAX_AJUDANTES)} ajudante(s) · ${formatarBRL(m.valorAjudante)} cada`
+                              : "Não oferece ajudantes"}
+                          </p>
+                        ) : null}
                       </button>
                     </li>
                   ))}
                 </ul>
                 {motoristasDisponiveis.length === 0 ? (
                   <p className="mt-4 text-sm text-muted-foreground">
-                    Nenhum motorista disponível neste dia e horário. Tente outro horário ou outra data.
+                    Nenhum veículo desta modalidade disponível neste dia e horário. Tente outro horário ou outra data.
                   </p>
                 ) : null}
               </Card>
