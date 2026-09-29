@@ -230,7 +230,8 @@ function Admin() {
                     Veículo vinculado (obrigatório)
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Todo veículo atende até {CAPACIDADE_PADRAO} passageiros.
+                    {categoriaMotorista}: {capacidadeDaCategoria(categoriaMotorista)} ocupantes
+                    {cargaDaCategoria(categoriaMotorista) ? ` · ${cargaDaCategoria(categoriaMotorista)}` : ""}
                   </p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
                     <div className="space-y-2 sm:col-span-2">
@@ -261,20 +262,32 @@ function Admin() {
                       />
                     </div>
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {categorias.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setCategoriaMotorista(c)}
-                        className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                          categoriaMotorista === c
-                            ? "border-primary/50 bg-primary/15 text-primary"
-                            : "border-border text-muted-foreground"
-                        }`}
-                      >
-                        {c}
-                      </button>
+                  <div className="mt-3 space-y-3">
+                    {(
+                      [
+                        { titulo: "Passageiros", lista: CATEGORIAS_PASSAGEIROS },
+                        { titulo: "Carga (carretos e mudanças)", lista: CATEGORIAS_CARGA },
+                      ] as const
+                    ).map((grupo) => (
+                      <div key={grupo.titulo} className="space-y-2">
+                        <Label className="text-xs">{grupo.titulo}</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {grupo.lista.map((c) => (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => setCategoriaMotorista(c)}
+                              className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                                categoriaMotorista === c
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground"
+                              }`}
+                            >
+                              {c}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -288,6 +301,39 @@ function Admin() {
                     placeholder="320"
                   />
                 </div>
+                {ehCategoriaCarga(categoriaMotorista) ? (
+                  <div className="rounded-lg border border-border/60 bg-secondary/30 p-4">
+                    <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-primary">
+                      <Users className="size-3.5" /> Equipe de carga
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Taxa de referência da plataforma: {formatarBRL(Number(taxaAjudantePlataforma) || TAXA_AJUDANTE_PADRAO)} por
+                      ajudante. O motorista define livremente o seu valor.
+                    </p>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="ajudantes-motorista">Ajudantes disponíveis (até {MAX_AJUDANTES})</Label>
+                        <Input
+                          id="ajudantes-motorista"
+                          inputMode="numeric"
+                          value={ajudantesMotorista}
+                          onChange={(e) => setAjudantesMotorista(e.target.value)}
+                          placeholder="2"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="valor-ajudante">Valor por ajudante (R$)</Label>
+                        <Input
+                          id="valor-ajudante"
+                          inputMode="decimal"
+                          value={valorAjudante}
+                          onChange={(e) => setValorAjudante(e.target.value)}
+                          placeholder="80"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
                 <Button className="w-full" onClick={salvarMotorista}>
                   <UserPlus className="size-4" /> Cadastrar motorista
                 </Button>
