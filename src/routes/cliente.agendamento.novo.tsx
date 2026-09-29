@@ -260,6 +260,12 @@ function NovoAgendamento() {
   const [zonaManual, setZonaManual] = useState<number | undefined>(undefined);
   const [diasViagem, setDiasViagem] = useState("3");
 
+  // Carreto e mudanças
+  const [ajudantes, setAjudantes] = useState(0);
+  const [itensCarga, setItensCarga] = useState("");
+  const [acessoColeta, setAcessoColeta] = useState<"Térreo" | "Elevador de serviço" | "Escadas">("Térreo");
+  const [acessoEntrega, setAcessoEntrega] = useState<"Térreo" | "Elevador de serviço" | "Escadas">("Térreo");
+
   // Planos de assinatura da modalidade escolhida
   const [viagensPorMes, setViagensPorMes] = useState(4);
   const [lotes, setLotes] = useState(() => carregarCreditos());
