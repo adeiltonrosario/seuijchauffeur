@@ -65,6 +65,24 @@ function Admin() {
   const [tolerancia, setTolerancia] = useState(String(TOLERANCIA_ESPERA_MIN));
   const [valorEsperaMinuto, setValorEsperaMinuto] = useState(String(VALOR_ESPERA_POR_MINUTO));
 
+  // Assinaturas
+  const [viagensMes, setViagensMes] = useState(String(VIAGENS_POR_MES_PADRAO));
+  const [precoAvulso, setPrecoAvulso] = useState(String(PRECO_UNITARIO_AVULSO));
+  const [descontos, setDescontos] = useState({
+    mensal: String(DESCONTOS.mensal * 100),
+    trimestral: String(DESCONTOS.trimestral * 100),
+    anual: String(DESCONTOS.anual * 100),
+  });
+
+  const viagensMesNum = Math.max(1, Number(viagensMes) || VIAGENS_POR_MES_PADRAO);
+  const precoAvulsoNum = Math.max(0, Number(precoAvulso) || 0);
+  const precoSemDesconto = Math.round(viagensMesNum * precoAvulsoNum * 100) / 100;
+  const planosAdmin = calcularTodosOsPlanos(viagensMesNum, precoAvulsoNum, {
+    mensal: (Number(descontos.mensal) || 0) / 100,
+    trimestral: (Number(descontos.trimestral) || 0) / 100,
+    anual: (Number(descontos.anual) || 0) / 100,
+  });
+
 
   const salvarMotorista = () => {
     if (!nome || !valorMotorista) {
