@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { CAPACIDADE_PADRAO, TARIFA_PADRAO_POR_KM, TOLERANCIA_ESPERA_MIN, VALOR_ESPERA_POR_MINUTO, VALOR_MINIMO_POR_KM, calcularValorEspera, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais } from "@/lib/dados";
+import { CATEGORIAS_CARGA, CATEGORIAS_PASSAGEIROS, MAX_AJUDANTES, TARIFA_PADRAO_POR_KM, TAXA_AJUDANTE_PADRAO, TOLERANCIA_ESPERA_MIN, VALOR_ESPERA_POR_MINUTO, VALOR_MINIMO_POR_KM, calcularValorEspera, capacidadeDaCategoria, cargaDaCategoria, ehCategoriaCarga, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais, type CategoriaVeiculo } from "@/lib/dados";
 import {
   DESCONTOS,
   PRECO_UNITARIO_AVULSO,
