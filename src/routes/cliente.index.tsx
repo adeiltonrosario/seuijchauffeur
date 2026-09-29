@@ -88,6 +88,18 @@ function InicioCliente() {
               </Card>
             </Link>
           ))}
+
+          <Card className="surface-luxe border-primary/30 p-5">
+            <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              <Stethoscope className="size-4 text-primary" /> É profissional de plantão?
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Monte sua escala com os trechos do dia: ida ao plantão, troca de hospital e retorno para casa.
+            </p>
+            <Button variant="secondary" className="mt-3" asChild>
+              <Link to="/cliente/plantao">Montar minha escala</Link>
+            </Button>
+          </Card>
         </section>
 
         <aside className="space-y-6">
