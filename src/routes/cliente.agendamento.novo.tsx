@@ -577,6 +577,19 @@ function NovoAgendamento() {
                   </p>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{modalidade.caracteristicas}</p>
                 </div>
+
+                {modalidade.nome === "Rota de plantonista" ? (
+                  <div className="glow-gold mt-4 rounded-lg border border-primary/40 p-4">
+                    <p className="text-sm font-medium">Monte sua escala de plantão</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Esta modalidade tem vários trechos no mesmo dia (ida ao plantão, troca de hospital e retorno) e
+                      repetição por escala 12x36, 24x72 ou semanal.
+                    </p>
+                    <Button className="mt-3" asChild>
+                      <Link to="/cliente/plantao">Abrir jornada de plantão</Link>
+                    </Button>
+                  </div>
+                ) : null}
               </Card>
 
               <Card className="border-border/60 p-6">
