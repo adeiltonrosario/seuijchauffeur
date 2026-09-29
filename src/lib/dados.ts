@@ -1,5 +1,59 @@
 export const CAPACIDADE_PADRAO = 4;
 
+/** Categorias de veículos de passageiros. */
+export const CATEGORIAS_PASSAGEIROS = ["Sedan", "SUV", "Hatch", "Minivan executiva"] as const;
+
+/** Categorias de veículos utilitários de carga (carretos e mudanças). */
+export const CATEGORIAS_CARGA = [
+  "Fiorino / Furgão leve",
+  "Picape / Caçamba aberta",
+  "Van de carga / Furgão médio",
+  "Caminhão VUC / Baú 3/4",
+] as const;
+
+export const CATEGORIAS = [...CATEGORIAS_PASSAGEIROS, ...CATEGORIAS_CARGA] as const;
+
+export type CategoriaVeiculo = (typeof CATEGORIAS)[number];
+
+export const ehCategoriaCarga = (categoria: string) =>
+  (CATEGORIAS_CARGA as readonly string[]).includes(categoria);
+
+/** Capacidade de ocupantes por categoria (utilitários levam menos gente e mais carga). */
+export const capacidadeDaCategoria = (categoria: string) => {
+  switch (categoria) {
+    case "Minivan executiva":
+      return 6;
+    case "Fiorino / Furgão leve":
+    case "Picape / Caçamba aberta":
+      return 2;
+    case "Van de carga / Furgão médio":
+    case "Caminhão VUC / Baú 3/4":
+      return 3;
+    default:
+      return CAPACIDADE_PADRAO;
+  }
+};
+
+/** Capacidade de carga informativa de cada utilitário. */
+export const cargaDaCategoria = (categoria: string) => {
+  switch (categoria) {
+    case "Fiorino / Furgão leve":
+      return "até 650 kg · 3 m³ — eletrodomésticos avulsos (geladeira, fogão, TV)";
+    case "Picape / Caçamba aberta":
+      return "até 700 kg · carroceria aberta — entregas rápidas e volumes soltos";
+    case "Van de carga / Furgão médio":
+      return "até 1.500 kg · 10 a 14 m³ — móveis desmontados e pequenas mudanças";
+    case "Caminhão VUC / Baú 3/4":
+      return "até 3.000 kg · baú amplo — mudança residencial completa";
+    default:
+      return "";
+  }
+};
+
+/** Taxa de referência da plataforma por ajudante de carga (o motorista pode definir a sua). */
+export const TAXA_AJUDANTE_PADRAO = 60;
+export const MAX_AJUDANTES = 2;
+
 export type StatusAgendamento = "pendente" | "confirmado" | "em-andamento" | "concluido" | "cancelado";
 
 export const rotuloStatus: Record<StatusAgendamento, string> = {
