@@ -453,6 +453,37 @@ function Admin() {
         <TabsContent value="modalidades" className="mt-6">
           <Card className="mb-6 border-border/60 p-6">
             <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              <Users className="size-4 text-primary" /> Ajudantes de carga (carretos e mudanças)
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Taxa de referência da plataforma por ajudante. Cada motorista de veículo de carga define o próprio valor
+              no cadastro, e o cliente escolhe até {MAX_AJUDANTES} ajudantes na hora de agendar.
+            </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_1.6fr]">
+              <div className="space-y-2">
+                <Label htmlFor="taxa-ajudante">Taxa de referência por ajudante (R$)</Label>
+                <Input
+                  id="taxa-ajudante"
+                  inputMode="decimal"
+                  value={taxaAjudantePlataforma}
+                  onChange={(e) => setTaxaAjudantePlataforma(e.target.value)}
+                />
+              </div>
+              <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 text-sm">
+                <p className="text-xs font-medium uppercase tracking-wide text-primary">Exemplo</p>
+                <p className="mt-2 text-muted-foreground">
+                  2 ajudantes × {formatarBRL(Number(taxaAjudantePlataforma) || TAXA_AJUDANTE_PADRAO)} ={" "}
+                  <span className="text-primary">
+                    {formatarBRL(2 * (Number(taxaAjudantePlataforma) || TAXA_AJUDANTE_PADRAO))}
+                  </span>{" "}
+                  somados ao valor do carreto.
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="mb-6 border-border/60 p-6">
+            <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
               <Clock className="size-4 text-primary" /> Espera nas paradas intermediárias
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
