@@ -41,6 +41,7 @@ export function ConsultorViagemIA() {
   const [resultado, setResultado] = useState<{ recomendacao: Recomendacao; plano: PlanoCalculado } | null>(null);
 
   const pedirRecomendacao = async () => {
+    console.log("[consultor] clique", { origem, destino });
     if (!origem.trim() || !destino.trim()) {
       toast.error("Informe o local de embarque e o destino.");
       return;
