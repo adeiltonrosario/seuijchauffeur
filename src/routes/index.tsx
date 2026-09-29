@@ -8,7 +8,10 @@ import { toast } from "sonner";
 import {
   CATEGORIAS_CARGA,
   CATEGORIAS_PASSAGEIROS,
+  ajudaCapacidade,
   capacidadeDaCategoria,
+  capacidadeValida,
+  faixaCapacidade,
   cargaDaCategoria,
   formatarBRL,
   type CategoriaVeiculo,
@@ -50,7 +53,13 @@ function Autenticacao() {
   const [modelo, setModelo] = useState("");
   const [placa, setPlaca] = useState("");
   const [cor, setCor] = useState("");
-  const [categoria, setCategoria] = useState<CategoriaVeiculo>("Sedan");
+  const [categoria, setCategoriaState] = useState<CategoriaVeiculo>("Sedan");
+  const [capacidade, setCapacidade] = useState(String(capacidadeDaCategoria("Sedan")));
+
+  const setCategoria = (c: CategoriaVeiculo) => {
+    setCategoriaState(c);
+    setCapacidade(String(capacidadeDaCategoria(c)));
+  };
   const [viagensPorMes, setViagensPorMes] = useState(VIAGENS_POR_MES_PADRAO);
   const navigate = useNavigate();
 
@@ -126,7 +135,10 @@ function Autenticacao() {
                   Seu veículo (obrigatório)
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {categoria}: {capacidadeDaCategoria(categoria)} ocupantes
+                  {categoria}:{" "}
+                  {faixaCapacidade(categoria).ajustavel
+                    ? `${capacidadeValida(categoria, Number(capacidade))} ocupantes`
+                    : `${capacidadeDaCategoria(categoria)} ocupantes`}
                   {cargaDaCategoria(categoria) ? ` · ${cargaDaCategoria(categoria)}` : ""}
                 </p>
                 <div className="mt-3 space-y-3">
@@ -185,6 +197,40 @@ function Autenticacao() {
                       </div>
                     </div>
                   ))}
+                  {faixaCapacidade(categoria).ajustavel ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="capacidade-cadastro">
+                        Ocupantes ({faixaCapacidade(categoria).min} a {faixaCapacidade(categoria).max})
+                      </Label>
+                      {categoria === "Minivan executiva" ? (
+                        <div className="flex flex-wrap gap-2">
+                          {[5, 6, 7].map((n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              onClick={() => setCapacidade(String(n))}
+                              className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                                Number(capacidade) === n
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground"
+                              }`}
+                            >
+                              {n} lugares
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <Input
+                          id="capacidade-cadastro"
+                          inputMode="numeric"
+                          value={capacidade}
+                          onChange={(e) => setCapacidade(e.target.value)}
+                          placeholder="15"
+                        />
+                      )}
+                      <p className="text-xs text-muted-foreground">{ajudaCapacidade(categoria)}</p>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ) : null}
