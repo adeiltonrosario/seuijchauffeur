@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -35,6 +35,7 @@ import {
 import { carregarAgenda, motoristaDisponivel } from "@/lib/disponibilidade";
 import {
   DIARIA_ESTACIONAMENTO,
+  PERCENTUAL_DESCONTO_PACOTE,
   ZONAS,
   calcularTransferZonas,
   identificarZona,
@@ -69,6 +70,148 @@ const TAXA_SERVICO = 8;
 const dataLonga = (d: Date) =>
   d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "long", year: "numeric" });
 
+type Parada = { id: number; endereco: string; espera: number };
+
+type BlocoTrajetoProps = {
+  prefixo: string;
+  embarque: string;
+  setEmbarque: (v: string) => void;
+  placeholderEmbarque?: string;
+  desembarque: string;
+  setDesembarque: (v: string) => void;
+  placeholderDesembarque?: string;
+  paradas: Parada[];
+  setParadas: Dispatch<SetStateAction<Parada[]>>;
+};
+
+function BlocoTrajeto({
+  prefixo,
+  embarque,
+  setEmbarque,
+  placeholderEmbarque,
+  desembarque,
+  setDesembarque,
+  placeholderDesembarque,
+  paradas,
+  setParadas,
+}: BlocoTrajetoProps) {
+  return (
+    <div className="mt-4 space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor={`embarque-${prefixo}`}>Embarque (origem)</Label>
+        <div className="relative">
+          <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-success" />
+          <Input
+            id={`embarque-${prefixo}`}
+            value={embarque}
+            placeholder={placeholderEmbarque}
+            onChange={(e) => setEmbarque(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+      </div>
+
+      {paradas.map((p, i) => (
+        <div key={p.id} className="space-y-2">
+          <Label htmlFor={`parada-${prefixo}-${p.id}`}>Parada {i + 1} (opcional)</Label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-warning" />
+              <Input
+                id={`parada-${prefixo}-${p.id}`}
+                value={p.endereco}
+                onChange={(e) =>
+                  setParadas((atual) =>
+                    atual.map((x) => (x.id === p.id ? { ...x, endereco: e.target.value } : x)),
+                  )
+                }
+                className="pl-9"
+              />
+            </div>
+            <Button
+              size="icon"
+              variant="ghost"
+              aria-label={`Remover parada ${i + 1}`}
+              onClick={() => setParadas((atual) => atual.filter((x) => x.id !== p.id))}
+            >
+              <Trash2 />
+            </Button>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-secondary/30 p-3">
+            <Label htmlFor={`espera-${prefixo}-${p.id}`} className="flex items-center gap-2 text-xs">
+              <Clock className="size-3.5 text-primary" /> Tempo de espera nesta parada (minutos)
+            </Label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {[3, 10, 15, 30].map((min) => (
+                <button
+                  key={min}
+                  type="button"
+                  onClick={() =>
+                    setParadas((atual) => atual.map((x) => (x.id === p.id ? { ...x, espera: min } : x)))
+                  }
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-xs transition-colors",
+                    p.espera === min
+                      ? "border-primary/50 bg-primary/15 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {min} min{min === TOLERANCIA_ESPERA_MIN ? " (grátis)" : ""}
+                </button>
+              ))}
+              <Input
+                id={`espera-${prefixo}-${p.id}`}
+                inputMode="numeric"
+                value={String(p.espera)}
+                onChange={(e) =>
+                  setParadas((atual) =>
+                    atual.map((x) =>
+                      x.id === p.id ? { ...x, espera: Math.max(0, Number(e.target.value) || 0) } : x,
+                    ),
+                  )
+                }
+                className="h-8 w-20"
+              />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {TOLERANCIA_ESPERA_MIN} minutos de cortesia; depois {formatarBRL(VALOR_ESPERA_POR_MINUTO)} por
+              minuto. Cobrança desta parada:{" "}
+              <span className="text-primary">
+                {minutosCobradosEspera(p.espera)} min = {formatarBRL(calcularValorEspera([p.espera]))}
+              </span>
+            </p>
+          </div>
+        </div>
+      ))}
+
+      <Button
+        size="sm"
+        variant="secondary"
+        onClick={() =>
+          setParadas((atual) => [...atual, { id: Date.now(), endereco: "", espera: TOLERANCIA_ESPERA_MIN }])
+        }
+      >
+        <Plus /> Adicionar outra parada
+      </Button>
+
+      <div className="space-y-2">
+        <Label htmlFor={`desembarque-${prefixo}`}>Desembarque (destino)</Label>
+        <div className="relative">
+          <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-destructive" />
+          <Input
+            id={`desembarque-${prefixo}`}
+            value={desembarque}
+            placeholder={placeholderDesembarque}
+            onChange={(e) => setDesembarque(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function NovoAgendamento() {
   const navigate = useNavigate();
   const [etapa, setEtapa] = useState<1 | 2>(1);
@@ -82,19 +225,30 @@ function NovoAgendamento() {
   const [modalidade, setModalidade] = useState(modalidades[0]!);
   const [motorista, setMotorista] = useState(motoristas[0]!.nome);
 
-  // Etapa 2
+  // Etapa 2 — ida
   const [embarque, setEmbarque] = useState("Av. Paulista, 1400 — Bela Vista, São Paulo");
-  const [paradas, setParadas] = useState<{ id: number; endereco: string; espera: number }[]>([
+  const [paradas, setParadas] = useState<Parada[]>([
     { id: 1, endereco: "Rua Augusta, 900 — Consolação", espera: TOLERANCIA_ESPERA_MIN },
   ]);
-
   const [desembarque, setDesembarque] = useState("Aeroporto de Congonhas — Portão 2");
-  const [instrucoes, setInstrucoes] = useState("");
   const [distancia, setDistancia] = useState("20.5");
+
+  // Etapa 2 — volta
+  const [embarqueVolta, setEmbarqueVolta] = useState("");
+  const [desembarqueVolta, setDesembarqueVolta] = useState("");
+  const [paradasVolta, setParadasVolta] = useState<Parada[]>([]);
+  const [distanciaVolta, setDistanciaVolta] = useState("");
+  const [zonaManualVolta, setZonaManualVolta] = useState<number | undefined>(undefined);
+
+  const [instrucoes, setInstrucoes] = useState("");
   const [pagamento, setPagamento] = useState<"Pix" | "Cartão de crédito" | "Plano mensal">("Pix");
   const [modoPreco, setModoPreco] = useState<"km" | "zona">("km");
   const [zonaManual, setZonaManual] = useState<number | undefined>(undefined);
   const [diasViagem, setDiasViagem] = useState("3");
+
+  const idaEVolta = tipo === "Ida e retorno";
+  const embarqueVoltaEfetivo = embarqueVolta.trim() || desembarque;
+  const desembarqueVoltaEfetivo = desembarqueVolta.trim() || embarque;
 
   const escolhido = motoristas.find((m) => m.nome === motorista)!;
   const agenda = useMemo(() => carregarAgenda(), []);
@@ -105,19 +259,35 @@ function NovoAgendamento() {
         : motoristas,
     [agenda, dataIda, horaIda],
   );
-  const km = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
+  const kmIda = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
+  const kmVoltaInformado = Math.max(Number(distanciaVolta.replace(",", ".")) || 0, 0);
+  const kmVolta = idaEVolta ? (kmVoltaInformado > 0 ? kmVoltaInformado : kmIda) : 0;
+  const km = kmIda + kmVolta;
   const tarifa = Math.max(modalidade.valorPorKm, VALOR_MINIMO_POR_KM);
-  const valorTrajeto = useMemo(() => calcularValorCorrida(km, tarifa), [km, tarifa]);
+  const valorIda = useMemo(() => calcularValorCorrida(kmIda, tarifa), [kmIda, tarifa]);
+  const valorVolta = useMemo(
+    () => (idaEVolta ? calcularValorCorrida(kmVolta, tarifa) : 0),
+    [idaEVolta, kmVolta, tarifa],
+  );
+  const descontoKm = idaEVolta
+    ? Math.round((valorIda + valorVolta) * PERCENTUAL_DESCONTO_PACOTE * 100) / 100
+    : 0;
+  const valorTrajeto = Math.round((valorIda + valorVolta - descontoKm) * 100) / 100;
+
+  const paradasTodas = useMemo(
+    () => [...paradas, ...(idaEVolta ? paradasVolta : [])],
+    [paradas, paradasVolta, idaEVolta],
+  );
   const minutosEspera = useMemo(
-    () => paradas.reduce((t, p) => t + minutosCobradosEspera(p.espera), 0),
-    [paradas],
+    () => paradasTodas.reduce((t, p) => t + minutosCobradosEspera(p.espera), 0),
+    [paradasTodas],
   );
   const valorEspera = useMemo(
-    () => calcularValorEspera(paradas.map((p) => p.espera)),
-    [paradas],
+    () => calcularValorEspera(paradasTodas.map((p) => p.espera)),
+    [paradasTodas],
   );
   const dias = Math.max(1, Math.floor(Number(diasViagem) || 1));
-  const modalidadeViagem: ModalidadeViagem = tipo === "Ida e retorno" ? "IDA_E_VOLTA" : "SOMENTE_IDA";
+  const modalidadeViagem: ModalidadeViagem = idaEVolta ? "IDA_E_VOLTA" : "SOMENTE_IDA";
   const pickup = useMemo(() => {
     if (!dataIda) return undefined;
     const [h, m] = horaIda.split(":").map(Number);
@@ -137,10 +307,26 @@ function NovoAgendamento() {
         diasViagem: dias,
         pickup,
         zonaManual,
+        origemRetorno: embarqueVoltaEfetivo,
+        destinoRetorno: desembarqueVoltaEfetivo,
+        zonaManualRetorno: zonaManualVolta,
       }),
-    [embarque, desembarque, modalidadeViagem, horaIda, horaRetorno, dias, pickup, zonaManual],
+    [
+      embarque,
+      desembarque,
+      modalidadeViagem,
+      horaIda,
+      horaRetorno,
+      dias,
+      pickup,
+      zonaManual,
+      embarqueVoltaEfetivo,
+      desembarqueVoltaEfetivo,
+      zonaManualVolta,
+    ],
   );
   const precoFinal = modoPreco === "zona" ? transfer.final_trip_price : valorTrajeto;
+  const desconto = modoPreco === "zona" ? transfer.package_discount : descontoKm;
   const total = precoFinal + valorEspera + TAXA_SERVICO;
   const custoEstacionamento = dias * DIARIA_ESTACIONAMENTO;
   const economia = Math.round((custoEstacionamento - total) * 100) / 100;
@@ -372,139 +558,51 @@ function NovoAgendamento() {
             <>
               <Card className="border-border/60 p-6">
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                  Pontos do percurso
+                  Pontos do percurso {idaEVolta ? "— ida" : ""}
                 </h2>
-                <div className="mt-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="embarque">Embarque (origem)</Label>
-                    <div className="relative">
-                      <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-success" />
-                      <Input
-                        id="embarque"
-                        value={embarque}
-                        onChange={(e) => setEmbarque(e.target.value)}
-                        className="pl-9"
-                      />
-                    </div>
-                  </div>
+                <BlocoTrajeto
+                  prefixo="ida"
+                  embarque={embarque}
+                  setEmbarque={setEmbarque}
+                  desembarque={desembarque}
+                  setDesembarque={setDesembarque}
+                  paradas={paradas}
+                  setParadas={setParadas}
+                />
 
-                  {paradas.map((p, i) => (
-                    <div key={p.id} className="space-y-2">
-                      <Label htmlFor={`parada-${p.id}`}>Parada {i + 1} (opcional)</Label>
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-warning" />
-                          <Input
-                            id={`parada-${p.id}`}
-                            value={p.endereco}
-                            onChange={(e) =>
-                              setParadas((atual) =>
-                                atual.map((x) => (x.id === p.id ? { ...x, endereco: e.target.value } : x)),
-                              )
-                            }
-                            className="pl-9"
-                          />
-                        </div>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label={`Remover parada ${i + 1}`}
-                          onClick={() => setParadas((atual) => atual.filter((x) => x.id !== p.id))}
-                        >
-                          <Trash2 />
-                        </Button>
-                      </div>
-
-                      <div className="rounded-lg border border-border/60 bg-secondary/30 p-3">
-                        <Label htmlFor={`espera-${p.id}`} className="flex items-center gap-2 text-xs">
-                          <Clock className="size-3.5 text-primary" /> Tempo de espera nesta parada (minutos)
-                        </Label>
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                          {[3, 10, 15, 30].map((min) => (
-                            <button
-                              key={min}
-                              type="button"
-                              onClick={() =>
-                                setParadas((atual) =>
-                                  atual.map((x) => (x.id === p.id ? { ...x, espera: min } : x)),
-                                )
-                              }
-                              className={cn(
-                                "rounded-full border px-3 py-1 text-xs transition-colors",
-                                p.espera === min
-                                  ? "border-primary/50 bg-primary/15 text-primary"
-                                  : "border-border text-muted-foreground hover:text-foreground",
-                              )}
-                            >
-                              {min} min{min === TOLERANCIA_ESPERA_MIN ? " (grátis)" : ""}
-                            </button>
-                          ))}
-                          <Input
-                            id={`espera-${p.id}`}
-                            inputMode="numeric"
-                            value={String(p.espera)}
-                            onChange={(e) =>
-                              setParadas((atual) =>
-                                atual.map((x) =>
-                                  x.id === p.id
-                                    ? { ...x, espera: Math.max(0, Number(e.target.value) || 0) }
-                                    : x,
-                                ),
-                              )
-                            }
-                            className="h-8 w-20"
-                          />
-                        </div>
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          {TOLERANCIA_ESPERA_MIN} minutos de cortesia; depois{" "}
-                          {formatarBRL(VALOR_ESPERA_POR_MINUTO)} por minuto. Cobrança desta parada:{" "}
-                          <span className="text-primary">
-                            {minutosCobradosEspera(p.espera)} min ={" "}
-                            {formatarBRL(calcularValorEspera([p.espera]))}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() =>
-                      setParadas((atual) => [
-                        ...atual,
-                        { id: Date.now(), endereco: "", espera: TOLERANCIA_ESPERA_MIN },
-                      ])
-                    }
-                  >
-
-                    <Plus /> Adicionar outra parada
-                  </Button>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="desembarque">Desembarque (destino)</Label>
-                    <div className="relative">
-                      <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-destructive" />
-                      <Input
-                        id="desembarque"
-                        value={desembarque}
-                        onChange={(e) => setDesembarque(e.target.value)}
-                        className="pl-9"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="instrucoes">Instruções de acesso ao motorista</Label>
-                    <Input
-                      id="instrucoes"
-                      value={instrucoes}
-                      onChange={(e) => setInstrucoes(e.target.value)}
-                      placeholder="Ex.: aguardar na portaria social, interfone 102."
-                    />
-                  </div>
+                <div className="mt-4 space-y-2">
+                  <Label htmlFor="instrucoes">Instruções de acesso ao motorista</Label>
+                  <Input
+                    id="instrucoes"
+                    value={instrucoes}
+                    onChange={(e) => setInstrucoes(e.target.value)}
+                    placeholder="Ex.: aguardar na portaria social, interfone 102."
+                  />
                 </div>
               </Card>
+
+              {idaEVolta && (
+                <Card className="border-border/60 p-6">
+                  <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                    Pontos do percurso — volta
+                  </h2>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Preenchemos automaticamente com o inverso da ida. Edite se o retorno partir ou terminar em outro
+                    endereço.
+                  </p>
+                  <BlocoTrajeto
+                    prefixo="volta"
+                    embarque={embarqueVolta}
+                    setEmbarque={setEmbarqueVolta}
+                    placeholderEmbarque={desembarque}
+                    desembarque={desembarqueVolta}
+                    setDesembarque={setDesembarqueVolta}
+                    placeholderDesembarque={embarque}
+                    paradas={paradasVolta}
+                    setParadas={setParadasVolta}
+                  />
+                </Card>
+              )}
 
               <Card className="border-border/60 p-6">
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
@@ -574,12 +672,61 @@ function NovoAgendamento() {
                       </div>
                     </div>
 
+                    {idaEVolta && (
+                      <div>
+                        <p className="text-sm font-medium">
+                          Zona do retorno: {transfer.zone_name_retorno} ·{" "}
+                          <span className="text-primary">{formatarBRL(transfer.fare_retorno)} por trecho</span>
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Detectada pelos endereços do trajeto de volta. Ajuste manualmente se precisar.
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setZonaManualVolta(undefined)}
+                            className={cn(
+                              "rounded-full border px-3 py-1 text-xs transition-colors",
+                              zonaManualVolta === undefined
+                                ? "border-primary/50 bg-primary/15 text-primary"
+                                : "border-border text-muted-foreground",
+                            )}
+                          >
+                            Automática
+                          </button>
+                          {ZONAS.map((z) => (
+                            <button
+                              key={z.zone_id}
+                              type="button"
+                              onClick={() => setZonaManualVolta(z.zone_id)}
+                              className={cn(
+                                "rounded-full border px-3 py-1 text-xs transition-colors",
+                                zonaManualVolta === z.zone_id
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground",
+                              )}
+                            >
+                              {z.nome} · {formatarBRL(z.valor)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="rounded-lg bg-secondary/50 p-4 text-sm">
                       <p className="text-xs font-medium uppercase tracking-wide text-primary">
                         Memória de cálculo por zona
                       </p>
                       <p className="mt-2 text-muted-foreground">
-                        Trechos: {formatarBRL(transfer.base_fare)}
+                        Ida ({transfer.zone_name}): {formatarBRL(transfer.fare_ida)}
+                      </p>
+                      {idaEVolta && (
+                        <p className="text-muted-foreground">
+                          Volta ({transfer.zone_name_retorno}): {formatarBRL(transfer.fare_retorno)}
+                        </p>
+                      )}
+                      <p className="text-muted-foreground">
+                        Soma dos trechos: {formatarBRL(transfer.base_fare)}
                       </p>
                       {transfer.package_discount > 0 && (
                         <p className="text-success">
@@ -676,24 +823,52 @@ function NovoAgendamento() {
                   Distância e cálculo do valor
                 </h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="distancia">Distância estimada do trajeto (km)</Label>
-                    <Input
-                      id="distancia"
-                      inputMode="decimal"
-                      value={distancia}
-                      onChange={(e) => setDistancia(e.target.value)}
-                    />
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="distancia">Distância estimada da ida (km)</Label>
+                      <Input
+                        id="distancia"
+                        inputMode="decimal"
+                        value={distancia}
+                        onChange={(e) => setDistancia(e.target.value)}
+                      />
+                    </div>
+                    {idaEVolta && (
+                      <div className="space-y-2">
+                        <Label htmlFor="distancia-volta">Distância estimada da volta (km)</Label>
+                        <Input
+                          id="distancia-volta"
+                          inputMode="decimal"
+                          value={distanciaVolta}
+                          placeholder={distancia}
+                          onChange={(e) => setDistanciaVolta(e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Em branco, usamos a mesma distância da ida.
+                        </p>
+                      </div>
+                    )}
                     <p className="text-xs text-muted-foreground">
-                      Soma de todos os trechos, incluindo as paradas.
+                      Soma de todos os trechos de cada percurso, incluindo as paradas.
                     </p>
                   </div>
                   <div className="rounded-lg bg-secondary/50 p-4 text-sm">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Memória de cálculo</p>
                     <p className="mt-2 text-muted-foreground">
-                      {km.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
-                      {formatarBRL(valorTrajeto)}
+                      Ida: {kmIda.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
+                      {formatarBRL(valorIda)}
                     </p>
+                    {idaEVolta && (
+                      <>
+                        <p className="text-muted-foreground">
+                          Volta: {kmVolta.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
+                          {formatarBRL(valorVolta)}
+                        </p>
+                        <p className="text-success">
+                          Desconto pacote ida e volta (15%): −{formatarBRL(descontoKm)}
+                        </p>
+                      </>
+                    )}
                     <p className="text-muted-foreground">
                       Espera: {minutosEspera} min × {formatarBRL(VALOR_ESPERA_POR_MINUTO)} ={" "}
                       {formatarBRL(valorEspera)}
@@ -763,17 +938,33 @@ function NovoAgendamento() {
                 </p>
               </div>
               {etapa === 2 && (
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Trajeto</p>
-                  <p className="text-xs text-muted-foreground">Embarque: {embarque || "—"}</p>
-                  {paradas
-                    .filter((p) => p.endereco.trim())
-                    .map((p) => (
-                      <p key={p.id} className="text-xs text-muted-foreground">
-                        Parada: {p.endereco} · espera {p.espera} min
-                      </p>
-                    ))}
-                  <p className="text-xs text-muted-foreground">Destino: {desembarque || "—"}</p>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Trajeto de ida</p>
+                    <p className="text-xs text-muted-foreground">Embarque: {embarque || "—"}</p>
+                    {paradas
+                      .filter((p) => p.endereco.trim())
+                      .map((p) => (
+                        <p key={p.id} className="text-xs text-muted-foreground">
+                          Parada: {p.endereco} · espera {p.espera} min
+                        </p>
+                      ))}
+                    <p className="text-xs text-muted-foreground">Destino: {desembarque || "—"}</p>
+                  </div>
+                  {idaEVolta && (
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">Trajeto de volta</p>
+                      <p className="text-xs text-muted-foreground">Embarque: {embarqueVoltaEfetivo || "—"}</p>
+                      {paradasVolta
+                        .filter((p) => p.endereco.trim())
+                        .map((p) => (
+                          <p key={p.id} className="text-xs text-muted-foreground">
+                            Parada: {p.endereco} · espera {p.espera} min
+                          </p>
+                        ))}
+                      <p className="text-xs text-muted-foreground">Destino: {desembarqueVoltaEfetivo || "—"}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -782,21 +973,35 @@ function NovoAgendamento() {
               <p className="flex justify-between text-muted-foreground">
                 <span>
                   {modoPreco === "zona"
-                    ? `Transfer ${transfer.zone_name}`
-                    : `Trajeto (${km.toLocaleString("pt-BR")} km)`}
+                    ? `Transfer ida (${transfer.zone_name})`
+                    : `Ida (${kmIda.toLocaleString("pt-BR")} km)`}
                 </span>
-                <span className="text-foreground">{formatarBRL(precoFinal)}</span>
+                <span className="text-foreground">
+                  {formatarBRL(modoPreco === "zona" ? transfer.fare_ida : valorIda)}
+                </span>
               </p>
-              {modoPreco === "zona" && transfer.package_discount > 0 && (
+              {idaEVolta && (
+                <p className="flex justify-between text-muted-foreground">
+                  <span>
+                    {modoPreco === "zona"
+                      ? `Transfer volta (${transfer.zone_name_retorno})`
+                      : `Volta (${kmVolta.toLocaleString("pt-BR")} km)`}
+                  </span>
+                  <span className="text-foreground">
+                    {formatarBRL(modoPreco === "zona" ? transfer.fare_retorno : valorVolta)}
+                  </span>
+                </p>
+              )}
+              {desconto > 0 && (
                 <p className="flex justify-between text-muted-foreground">
                   <span>Desconto ida e volta (15%)</span>
-                  <span className="text-success">−{formatarBRL(transfer.package_discount)}</span>
+                  <span className="text-success">−{formatarBRL(desconto)}</span>
                 </p>
               )}
               {modoPreco === "zona" && transfer.night_surcharge > 0 && (
                 <p className="flex justify-between text-muted-foreground">
                   <span>Adicional noturno (15%)</span>
-                  <span className="text-warning">incluso</span>
+                  <span className="text-warning">+{formatarBRL(transfer.night_surcharge)}</span>
                 </p>
               )}
               <p className="flex justify-between text-muted-foreground">

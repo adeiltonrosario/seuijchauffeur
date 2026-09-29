@@ -147,11 +147,21 @@ export type EntradaPrecificacao = {
   canais?: CanalNotificacao[] | undefined;
   /** Permite fixar a zona manualmente, ignorando a detecção por CEP/bairro. */
   zonaManual?: number | undefined;
+  /** Endereços do trecho de retorno (quando diferentes do inverso da ida). */
+  origemRetorno?: string | undefined;
+  destinoRetorno?: string | undefined;
+  /** Permite fixar manualmente a zona do trecho de retorno. */
+  zonaManualRetorno?: number | undefined;
 };
 
 export type SaidaPrecificacao = {
   zone_id: number;
   zone_name: string;
+  /** Zona do trecho de retorno (igual à da ida quando somente ida). */
+  zone_id_retorno: number;
+  zone_name_retorno: string;
+  fare_ida: number;
+  fare_retorno: number;
   base_fare: number;
   night_surcharge: number;
   package_discount: number;
@@ -183,24 +193,37 @@ export const calcularTransferZonas = (entrada: EntradaPrecificacao): SaidaPrecif
       : identificarZona(`${entrada.origem} ${entrada.destino}`);
 
   const idaEVolta = entrada.modalidade === "IDA_E_VOLTA";
-  const trechos = idaEVolta ? 2 : 1;
+
+  // O retorno pode ter endereços próprios; por padrão é o inverso da ida.
+  const origemRetorno = entrada.origemRetorno?.trim() || entrada.destino;
+  const destinoRetorno = entrada.destinoRetorno?.trim() || entrada.origem;
+  const zonaRetorno = !idaEVolta
+    ? zona
+    : entrada.zonaManualRetorno != null
+      ? zonaPorId(entrada.zonaManualRetorno)
+      : entrada.zonaManual != null && !entrada.origemRetorno && !entrada.destinoRetorno
+        ? zona
+        : identificarZona(`${origemRetorno} ${destinoRetorno}`);
+
+  const fare_ida = centavos(zona.valor);
+  const fare_retorno = idaEVolta ? centavos(zonaRetorno.valor) : 0;
 
   // Valor bruto dos trechos, antes do desconto de pacote.
-  const base_fare = centavos(zona.valor * trechos);
+  const base_fare = centavos(fare_ida + fare_retorno);
 
   // Desconto de 15% sobre a soma dos dois trechos no pacote ida e volta.
   const package_discount = idaEVolta ? centavos(base_fare * PERCENTUAL_DESCONTO_PACOTE) : 0;
   const valorComDesconto = centavos(base_fare - package_discount);
 
-  // Adicional noturno de 15% sobre o valor do trecho correspondente.
-  const valorTrechoLiquido = centavos(valorComDesconto / trechos);
+  // Adicional noturno de 15% sobre o valor líquido do trecho correspondente.
+  const fator = idaEVolta ? 1 - PERCENTUAL_DESCONTO_PACOTE : 1;
   let night_surcharge = 0;
   if (ehHorarioNoturno(entrada.horaPartida)) {
-    night_surcharge += valorTrechoLiquido * PERCENTUAL_ADICIONAL_NOTURNO;
+    night_surcharge += fare_ida * fator * PERCENTUAL_ADICIONAL_NOTURNO;
   }
   const horaVolta = entrada.modalidade === "SOMENTE_VOLTA" ? entrada.horaPartida : entrada.horaRetorno;
   if (idaEVolta && horaVolta && ehHorarioNoturno(horaVolta)) {
-    night_surcharge += valorTrechoLiquido * PERCENTUAL_ADICIONAL_NOTURNO;
+    night_surcharge += fare_retorno * fator * PERCENTUAL_ADICIONAL_NOTURNO;
   }
   night_surcharge = centavos(night_surcharge);
 
@@ -213,6 +236,10 @@ export const calcularTransferZonas = (entrada: EntradaPrecificacao): SaidaPrecif
   return {
     zone_id: zona.zone_id,
     zone_name: zona.nome,
+    zone_id_retorno: zonaRetorno.zone_id,
+    zone_name_retorno: zonaRetorno.nome,
+    fare_ida,
+    fare_retorno,
     base_fare,
     night_surcharge,
     package_discount,
