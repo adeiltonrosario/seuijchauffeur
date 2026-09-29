@@ -574,12 +574,61 @@ function NovoAgendamento() {
                       </div>
                     </div>
 
+                    {idaEVolta && (
+                      <div>
+                        <p className="text-sm font-medium">
+                          Zona do retorno: {transfer.zone_name_retorno} ·{" "}
+                          <span className="text-primary">{formatarBRL(transfer.fare_retorno)} por trecho</span>
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Detectada pelos endereços do trajeto de volta. Ajuste manualmente se precisar.
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setZonaManualVolta(undefined)}
+                            className={cn(
+                              "rounded-full border px-3 py-1 text-xs transition-colors",
+                              zonaManualVolta === undefined
+                                ? "border-primary/50 bg-primary/15 text-primary"
+                                : "border-border text-muted-foreground",
+                            )}
+                          >
+                            Automática
+                          </button>
+                          {ZONAS.map((z) => (
+                            <button
+                              key={z.zone_id}
+                              type="button"
+                              onClick={() => setZonaManualVolta(z.zone_id)}
+                              className={cn(
+                                "rounded-full border px-3 py-1 text-xs transition-colors",
+                                zonaManualVolta === z.zone_id
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground",
+                              )}
+                            >
+                              {z.nome} · {formatarBRL(z.valor)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="rounded-lg bg-secondary/50 p-4 text-sm">
                       <p className="text-xs font-medium uppercase tracking-wide text-primary">
                         Memória de cálculo por zona
                       </p>
                       <p className="mt-2 text-muted-foreground">
-                        Trechos: {formatarBRL(transfer.base_fare)}
+                        Ida ({transfer.zone_name}): {formatarBRL(transfer.fare_ida)}
+                      </p>
+                      {idaEVolta && (
+                        <p className="text-muted-foreground">
+                          Volta ({transfer.zone_name_retorno}): {formatarBRL(transfer.fare_retorno)}
+                        </p>
+                      )}
+                      <p className="text-muted-foreground">
+                        Soma dos trechos: {formatarBRL(transfer.base_fare)}
                       </p>
                       {transfer.package_discount > 0 && (
                         <p className="text-success">
