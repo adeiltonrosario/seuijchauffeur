@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { CalendarPlus, ChevronRight, Star, Ticket, UserRound } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
+import { ConsultorViagemIA } from "@/components/consultor-viagem-ia";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { agendamentos, formatarBRL, motoristas } from "@/lib/dados";
@@ -63,7 +64,8 @@ function InicioCliente() {
       }
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <section className="space-y-3">
+        <section className="space-y-6">
+          <ConsultorViagemIA />
           <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
             Próximos agendamentos
           </h2>
