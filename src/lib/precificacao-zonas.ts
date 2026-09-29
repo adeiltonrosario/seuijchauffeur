@@ -141,12 +141,12 @@ export type EntradaPrecificacao = {
   destino: string;
   modalidade: ModalidadeViagem;
   horaPartida: string;
-  horaRetorno?: string;
+  horaRetorno?: string | undefined;
   diasViagem: number;
-  pickup?: Date;
-  canais?: CanalNotificacao[];
+  pickup?: Date | undefined;
+  canais?: CanalNotificacao[] | undefined;
   /** Permite fixar a zona manualmente, ignorando a detecção por CEP/bairro. */
-  zonaManual?: number;
+  zonaManual?: number | undefined;
 };
 
 export type SaidaPrecificacao = {
