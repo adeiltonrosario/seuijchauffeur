@@ -46,7 +46,19 @@ function Autenticacao() {
   const [placa, setPlaca] = useState("");
   const [cor, setCor] = useState("");
   const [categoria, setCategoria] = useState<(typeof categorias)[number]>("Sedan");
+  const [viagensPorMes, setViagensPorMes] = useState(VIAGENS_POR_MES_PADRAO);
   const navigate = useNavigate();
+
+  const planosCalculados = calcularTodosOsPlanos(viagensPorMes, PRECO_UNITARIO_AVULSO);
+
+  const assinar = (plano: PlanoCalculado) => {
+    const hoje = chaveData(new Date());
+    salvarCreditos([...carregarCreditos(), ...gerarLotes(plano, hoje)]);
+    toast.success(
+      `Plano ${plano.rotulo} contratado: ${plano.creditosTotais} créditos de viagem liberados.`,
+    );
+    navigate({ to: "/cliente" });
+  };
 
   const entrar = () => {
     if (criandoConta && perfil === "motorista" && (!modelo || !placa || !cor)) {
