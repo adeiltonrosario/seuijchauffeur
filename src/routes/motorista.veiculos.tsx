@@ -1,13 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Car, ImagePlus } from "lucide-react";
+import { Car, ImagePlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CAPACIDADE_PADRAO, veiculos as veiculosIniciais } from "@/lib/dados";
+import {
+  CATEGORIAS_CARGA,
+  CATEGORIAS_PASSAGEIROS,
+  MAX_AJUDANTES,
+  TAXA_AJUDANTE_PADRAO,
+  capacidadeDaCategoria,
+  cargaDaCategoria,
+  ehCategoriaCarga,
+  formatarBRL,
+  veiculos as veiculosIniciais,
+  type CategoriaVeiculo,
+} from "@/lib/dados";
 
 export const Route = createFileRoute("/motorista/veiculos")({
   head: () => ({
