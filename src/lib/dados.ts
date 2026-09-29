@@ -172,10 +172,24 @@ export type Modalidade = {
   valorPorKm: number;
   /** Valor de referência de uma viagem avulsa desta modalidade (base do cálculo dos planos). */
   precoAvulso: number;
+  /** "passageiros" (padrão) ou "carga" para carretos e mudanças. */
+  tipo?: "passageiros" | "carga";
+  /** Categorias de veículo que podem atender esta modalidade. */
+  categoriasPermitidas?: CategoriaVeiculo[];
+  /** Permite contratar ajudantes de carga junto com o motorista. */
+  permiteAjudantes?: boolean;
 };
 
 export const precoAvulsoDaModalidade = (nome: string) =>
   modalidades.find((m) => m.nome === nome)?.precoAvulso ?? 150;
+
+/** Categorias aceitas pela modalidade — passageiros por padrão. */
+export const categoriasDaModalidade = (m: Modalidade): readonly CategoriaVeiculo[] =>
+  m.categoriasPermitidas && m.categoriasPermitidas.length > 0
+    ? m.categoriasPermitidas
+    : CATEGORIAS_PASSAGEIROS;
+
+export const ehModalidadeDeCarga = (m: Modalidade) => m.tipo === "carga";
 
 export const calcularValorCorrida = (distanciaKm: number, valorPorKm: number) => {
   const tarifa = Math.max(valorPorKm, VALOR_MINIMO_POR_KM);
