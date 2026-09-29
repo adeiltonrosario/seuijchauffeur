@@ -373,7 +373,7 @@ function NovoAgendamento() {
   );
   const precoFinal = modoPreco === "zona" ? transfer.final_trip_price : valorTrajeto;
   const desconto = modoPreco === "zona" ? transfer.package_discount : descontoKm;
-  const total = precoFinal + valorEspera + TAXA_SERVICO;
+  const total = Math.round((precoFinal + valorEspera + valorAjudantes + TAXA_SERVICO) * 100) / 100;
   const custoEstacionamento = dias * DIARIA_ESTACIONAMENTO;
   const economia = Math.round((custoEstacionamento - total) * 100) / 100;
 
@@ -385,6 +385,10 @@ function NovoAgendamento() {
     }
     if (tipo === "Ida e retorno" && !dataRetorno) {
       toast.error("Escolha também a data de retorno.");
+      return;
+    }
+    if (motoristasDisponiveis.length === 0) {
+      toast.error("Nenhum veículo desta modalidade está disponível neste dia e horário.");
       return;
     }
     setEtapa(2);
@@ -399,7 +403,11 @@ function NovoAgendamento() {
       toast.error("Informe a distância estimada do trajeto.");
       return;
     }
-    toast.success(`Agendamento enviado a ${motorista}. Total ${formatarBRL(total)}.`);
+    if (cargaSelecionada && !itensCarga.trim()) {
+      toast.error("Liste os itens que serão transportados no carreto.");
+      return;
+    }
+    toast.success(`Agendamento enviado a ${escolhido.nome}. Total ${formatarBRL(total)}.`);
     navigate({ to: "/cliente/pagamento" });
   };
 
