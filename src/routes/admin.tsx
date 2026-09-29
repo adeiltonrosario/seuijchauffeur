@@ -19,6 +19,15 @@ import {
   rotuloPeriodicidade,
   type Periodicidade,
 } from "@/lib/assinaturas";
+import {
+  carregarAnuncios,
+  novoId,
+  rotuloPublico,
+  salvarAnuncios,
+  type Anuncio,
+  type PublicoAnuncio,
+} from "@/lib/publicidades";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -49,6 +58,50 @@ function Admin() {
   const [ajudantesMotorista, setAjudantesMotorista] = useState("0");
   const [valorAjudante, setValorAjudante] = useState(String(TAXA_AJUDANTE_PADRAO));
   const [taxaAjudantePlataforma, setTaxaAjudantePlataforma] = useState(String(TAXA_AJUDANTE_PADRAO));
+
+  // Publicidades
+  const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
+  const [adTitulo, setAdTitulo] = useState("");
+  const [adChamada, setAdChamada] = useState("");
+  const [adImagem, setAdImagem] = useState("");
+  const [adLink, setAdLink] = useState("");
+  const [adCta, setAdCta] = useState("Conhecer agora");
+  const [adPublico, setAdPublico] = useState<PublicoAnuncio>("ambos");
+
+  useEffect(() => {
+    setAnuncios(carregarAnuncios());
+  }, []);
+
+  const gravarAnuncios = (lista: Anuncio[]) => {
+    setAnuncios(lista);
+    salvarAnuncios(lista);
+  };
+
+  const salvarAnuncio = () => {
+    if (!adTitulo.trim() || !adChamada.trim() || !adLink.trim()) {
+      toast.error("Informe título, chamada e link de destino do anúncio.");
+      return;
+    }
+    gravarAnuncios([
+      ...anuncios,
+      {
+        id: novoId(),
+        titulo: adTitulo.trim(),
+        chamada: adChamada.trim(),
+        imagem: adImagem.trim(),
+        link: adLink.trim(),
+        cta: adCta.trim() || "Conhecer agora",
+        publico: adPublico,
+        ativo: true,
+      },
+    ]);
+    setAdTitulo("");
+    setAdChamada("");
+    setAdImagem("");
+    setAdLink("");
+    setAdCta("Conhecer agora");
+    toast.success("Anúncio publicado na rotação.");
+  };
 
   const setCategoriaMotorista = (c: Categoria) => {
     setCategoriaMotoristaState(c);
@@ -239,6 +292,7 @@ function Admin() {
           <TabsTrigger value="veiculos">Veículos</TabsTrigger>
           <TabsTrigger value="modalidades">Modalidades e valores</TabsTrigger>
           <TabsTrigger value="assinaturas">Assinaturas</TabsTrigger>
+          <TabsTrigger value="publicidades">Publicidades</TabsTrigger>
         </TabsList>
 
         <TabsContent value="motoristas" className="mt-6">
@@ -821,6 +875,106 @@ function Admin() {
                   </div>
                 ))}
               </div>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="publicidades" className="mt-6">
+          <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+            <Card className="surface-luxe border-border/60 p-5">
+              <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                <Megaphone className="size-4 text-primary" /> Novo anúncio
+              </h2>
+              <div className="mt-4 space-y-3">
+                <div>
+                  <Label>Título do aplicativo</Label>
+                  <Input value={adTitulo} onChange={(e) => setAdTitulo(e.target.value)} placeholder="Entregas Express Bahia" />
+                </div>
+                <div>
+                  <Label>Chamada</Label>
+                  <Textarea
+                    value={adChamada}
+                    onChange={(e) => setAdChamada(e.target.value)}
+                    placeholder="Envios rápidos com rastreio em tempo real."
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label>Imagem (endereço da figura)</Label>
+                  <Input value={adImagem} onChange={(e) => setAdImagem(e.target.value)} placeholder="https://..." />
+                </div>
+                <div>
+                  <Label>Link de destino</Label>
+                  <Input value={adLink} onChange={(e) => setAdLink(e.target.value)} placeholder="https://play.google.com/store" />
+                </div>
+                <div>
+                  <Label>Texto do botão</Label>
+                  <Input value={adCta} onChange={(e) => setAdCta(e.target.value)} placeholder="Baixar na Play Store" />
+                </div>
+                <div>
+                  <Label>Onde exibir</Label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {(["clientes", "motoristas", "ambos"] as PublicoAnuncio[]).map((p) => (
+                      <Button
+                        key={p}
+                        type="button"
+                        size="sm"
+                        variant={adPublico === p ? "default" : "secondary"}
+                        onClick={() => setAdPublico(p)}
+                      >
+                        {rotuloPublico[p]}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <Button className="w-full" onClick={salvarAnuncio}>
+                  <Plus /> Publicar anúncio
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="border-border/60 p-5">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                Anúncios em rotação
+              </h2>
+              <ul className="mt-4 space-y-3">
+                {anuncios.map((a) => (
+                  <li
+                    key={a.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 p-4"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold">{a.titulo}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{a.chamada}</p>
+                      <p className="mt-1 text-xs text-primary">
+                        {rotuloPublico[a.publico]} · {a.cta} · {a.ativo ? "Ativo" : "Pausado"}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() =>
+                          gravarAnuncios(anuncios.map((x) => (x.id === a.id ? { ...x, ativo: !x.ativo } : x)))
+                        }
+                      >
+                        {a.ativo ? "Pausar" : "Ativar"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Excluir ${a.titulo}`}
+                        onClick={() => gravarAnuncios(anuncios.filter((x) => x.id !== a.id))}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+                {!anuncios.length ? (
+                  <li className="text-sm text-muted-foreground">Nenhum anúncio cadastrado ainda.</li>
+                ) : null}
+              </ul>
             </Card>
           </div>
         </TabsContent>
