@@ -290,6 +290,40 @@ function Admin() {
                       </div>
                     ))}
                   </div>
+                  {faixaCapacidade(categoriaMotorista).ajustavel ? (
+                    <div className="mt-3 space-y-2 rounded-lg border border-border/60 bg-secondary/30 p-4">
+                      <Label htmlFor="capacidade-motorista">
+                        Ocupantes ({faixaCapacidade(categoriaMotorista).min} a {faixaCapacidade(categoriaMotorista).max})
+                      </Label>
+                      {categoriaMotorista === "Minivan executiva" ? (
+                        <div className="flex flex-wrap gap-2">
+                          {[5, 6, 7].map((n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              onClick={() => setCapacidadeMotorista(String(n))}
+                              className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                                Number(capacidadeMotorista) === n
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground"
+                              }`}
+                            >
+                              {n} lugares
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <Input
+                          id="capacidade-motorista"
+                          inputMode="numeric"
+                          value={capacidadeMotorista}
+                          onChange={(e) => setCapacidadeMotorista(e.target.value)}
+                          placeholder="15"
+                        />
+                      )}
+                      <p className="text-xs text-muted-foreground">{ajudaCapacidade(categoriaMotorista)}</p>
+                    </div>
+                  ) : null}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="valor-motorista">Valor acordado por corrida (R$)</Label>
@@ -424,8 +458,44 @@ function Admin() {
                     </div>
                   </div>
                 ))}
+                {faixaCapacidade(categoria).ajustavel ? (
+                  <div className="space-y-2 rounded-lg border border-border/60 bg-secondary/30 p-4">
+                    <Label htmlFor="admin-capacidade">
+                      Ocupantes ({faixaCapacidade(categoria).min} a {faixaCapacidade(categoria).max})
+                    </Label>
+                    {categoria === "Minivan executiva" ? (
+                      <div className="flex flex-wrap gap-2">
+                        {[5, 6, 7].map((n) => (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => setCapacidadeVeiculo(String(n))}
+                            className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                              Number(capacidadeVeiculo) === n
+                                ? "border-primary/50 bg-primary/15 text-primary"
+                                : "border-border text-muted-foreground"
+                            }`}
+                          >
+                            {n} lugares
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <Input
+                        id="admin-capacidade"
+                        inputMode="numeric"
+                        value={capacidadeVeiculo}
+                        onChange={(e) => setCapacidadeVeiculo(e.target.value)}
+                        placeholder="15"
+                      />
+                    )}
+                    <p className="text-xs text-muted-foreground">{ajudaCapacidade(categoria)}</p>
+                  </div>
+                ) : null}
                 <p className="text-xs text-muted-foreground">
-                  {categoria}: {capacidadeDaCategoria(categoria)} ocupantes
+                  {categoria}: {faixaCapacidade(categoria).ajustavel
+                    ? `${capacidadeValida(categoria, Number(capacidadeVeiculo))} ocupantes`
+                    : `${capacidadeDaCategoria(categoria)} ocupantes`}
                   {cargaDaCategoria(categoria) ? ` · ${cargaDaCategoria(categoria)}` : ""}
                 </p>
               </div>
