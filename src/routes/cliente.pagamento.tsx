@@ -8,6 +8,15 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatarBRL } from "@/lib/dados";
+import {
+  VALIDADE_CREDITOS_DIAS,
+  carregarCreditos,
+  consumirCreditos,
+  creditosAVencer,
+  saldoDisponivel,
+  salvarCreditos,
+  type LoteCredito,
+} from "@/lib/assinaturas";
 
 export const Route = createFileRoute("/cliente/pagamento")({
   head: () => ({
