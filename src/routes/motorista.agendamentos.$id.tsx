@@ -88,7 +88,19 @@ function DetalhesMotorista() {
               {caracteristicasDaModalidade(agendamento.modalidade)}
             </p>
           </Card>
+
+          <ChatCorrida
+            agendamentoId={agendamento.id}
+            origem="motorista"
+            cliente={agendamento.cliente}
+            motorista={agendamento.motorista}
+            veiculo={agendamento.veiculo}
+            embarque={agendamento.embarque}
+            desembarque={agendamento.desembarque}
+            modalidade={agendamento.modalidade}
+          />
         </div>
+
 
         <aside className="space-y-3">
           <Button
