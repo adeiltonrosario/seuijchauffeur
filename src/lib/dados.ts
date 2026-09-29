@@ -324,6 +324,14 @@ export const modalidades: Modalidade[] = [
       "Embarque: identificar o responsável, conferir o nome do aluno e checar o cinto antes de sair. Desembarque: entregar o aluno somente ao responsável cadastrado ou à equipe da escola, com confirmação no aplicativo. Rota fixa e horários repetidos nos dias úteis.",
   },
   {
+    nome: "Rota de plantonista",
+    valorPorKm: 3.1,
+    precoAvulso: 140,
+    caracteristicas:
+      "Para médicos, enfermeiros, policiais e demais profissionais de escala. Embarque: o motorista chega 10 minutos antes no ponto de acesso indicado (portaria do corpo clínico, entrada da emergência, batalhão ou recepção) para não atrasar a passagem de plantão. Conexão entre plantões: cada trecho tem horário próprio, com margem de trânsito entre as unidades. Retorno pós-plantão: viagem silenciosa e climatizada para descanso após 12h ou 24h de jornada. Confirmação de prontidão do motorista 45 minutos antes de cada trecho; sem confirmação até 30 minutos antes, a plataforma aciona automaticamente um motorista de backup e avisa o cliente.",
+  },
+
+  {
     nome: "Carreto e pequenas mudanças",
     valorPorKm: 3.4,
     precoAvulso: 190,
