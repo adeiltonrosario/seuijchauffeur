@@ -238,6 +238,16 @@ export const modalidades: Modalidade[] = [
     caracteristicas:
       "Embarque: identificar o responsável, conferir o nome do aluno e checar o cinto antes de sair. Desembarque: entregar o aluno somente ao responsável cadastrado ou à equipe da escola, com confirmação no aplicativo. Rota fixa e horários repetidos nos dias úteis.",
   },
+  {
+    nome: "Carreto e pequenas mudanças",
+    valorPorKm: 3.4,
+    precoAvulso: 190,
+    tipo: "carga",
+    categoriasPermitidas: [...CATEGORIAS_CARGA],
+    permiteAjudantes: true,
+    caracteristicas:
+      "Coleta: o motorista confere a lista de itens informada pelo cliente, avalia a integridade de móveis e eletrodomésticos, protege com cobertores e amarra a carga com cintas antes de sair. O cliente deve indicar se há escadas ou elevador de serviço. Entrega: descarregamento no local combinado, conferência item por item na presença do cliente e montagem básica somente se contratados ajudantes. Itens frágeis (TV, vidros, mármore) viajam em pé e protegidos; o motorista não transporta produtos inflamáveis, animais ou cargas sem nota quando exigida.",
+  },
 ];
 
 export const caracteristicasDaModalidade = (nome: string) =>
