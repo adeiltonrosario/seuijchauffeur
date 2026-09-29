@@ -1,12 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { MessageCircle, Route as RouteIcon, Star, UserPlus, X } from "lucide-react";
+import { Route as RouteIcon, Star, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { ChatCorrida } from "@/components/chat-corrida";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+
 import {
   CATEGORIAS_CARGA,
   CATEGORIAS_PASSAGEIROS,
