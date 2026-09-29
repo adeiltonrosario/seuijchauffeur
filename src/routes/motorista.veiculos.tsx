@@ -67,25 +67,71 @@ function Veiculos() {
             </div>
           </div>
 
-          <div className="mt-4 space-y-2">
-            <Label>Categoria</Label>
-            <div className="flex flex-wrap gap-2">
-              {(["Sedan", "SUV", "Hatch"] as const).map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCategoria(c)}
-                  className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                    categoria === c
-                      ? "border-primary/50 bg-primary/15 text-primary"
-                      : "border-border text-muted-foreground"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
+          <div className="mt-4 space-y-4">
+            {(
+              [
+                { titulo: "Passageiros", lista: CATEGORIAS_PASSAGEIROS },
+                { titulo: "Carga (carretos e mudanças)", lista: CATEGORIAS_CARGA },
+              ] as const
+            ).map((grupo) => (
+              <div key={grupo.titulo} className="space-y-2">
+                <Label>{grupo.titulo}</Label>
+                <div className="flex flex-wrap gap-2">
+                  {grupo.lista.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setCategoria(c)}
+                      className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                        categoria === c
+                          ? "border-primary/50 bg-primary/15 text-primary"
+                          : "border-border text-muted-foreground"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <p className="text-xs text-muted-foreground">
+              {categoria}: {capacidadeDaCategoria(categoria)} ocupantes
+              {cargaDaCategoria(categoria) ? ` · ${cargaDaCategoria(categoria)}` : ""}
+            </p>
           </div>
+
+          {ehCategoriaCarga(categoria) ? (
+            <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-4">
+              <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-primary">
+                <Users className="size-3.5" /> Ajudantes de carga
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Referência da plataforma: {formatarBRL(TAXA_AJUDANTE_PADRAO)} por ajudante. Você define o seu valor.
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="ajudantes">Ajudantes disponíveis (até {MAX_AJUDANTES})</Label>
+                  <Input
+                    id="ajudantes"
+                    inputMode="numeric"
+                    value={ajudantes}
+                    onChange={(e) => setAjudantes(e.target.value)}
+                    placeholder="2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="valor-ajudante">Valor por ajudante (R$)</Label>
+                  <Input
+                    id="valor-ajudante"
+                    inputMode="decimal"
+                    value={valorAjudante}
+                    onChange={(e) => setValorAjudante(e.target.value)}
+                    placeholder="80"
+                  />
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-4 space-y-2">
             <Label htmlFor="foto">Foto do veículo</Label>
