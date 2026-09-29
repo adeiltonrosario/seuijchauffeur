@@ -346,24 +346,37 @@ function Admin() {
                   />
                 </div>
               </div>
-              <div className="mt-4 space-y-2">
-                <Label>Categoria</Label>
-                <div className="flex flex-wrap gap-2">
-                  {categorias.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setCategoria(c)}
-                      className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                        categoria === c
-                          ? "border-primary/50 bg-primary/15 text-primary"
-                          : "border-border text-muted-foreground"
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
+              <div className="mt-4 space-y-4">
+                {(
+                  [
+                    { titulo: "Passageiros", lista: CATEGORIAS_PASSAGEIROS },
+                    { titulo: "Carga (carretos e mudanças)", lista: CATEGORIAS_CARGA },
+                  ] as const
+                ).map((grupo) => (
+                  <div key={grupo.titulo} className="space-y-2">
+                    <Label>{grupo.titulo}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {grupo.lista.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setCategoria(c)}
+                          className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                            categoria === c
+                              ? "border-primary/50 bg-primary/15 text-primary"
+                              : "border-border text-muted-foreground"
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground">
+                  {categoria}: {capacidadeDaCategoria(categoria)} ocupantes
+                  {cargaDaCategoria(categoria) ? ` · ${cargaDaCategoria(categoria)}` : ""}
+                </p>
               </div>
               <Button className="mt-5 w-full" onClick={salvarVeiculo}>
                 <Car className="size-4" /> Cadastrar veículo
