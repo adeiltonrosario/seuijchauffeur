@@ -1,6 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, CalendarDays, Clock, MapPin, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bell,
+  CalendarDays,
+  Clock,
+  MapPin,
+  PiggyBank,
+  Plus,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -497,6 +508,171 @@ function NovoAgendamento() {
 
               <Card className="border-border/60 p-6">
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                  Forma de cobrança
+                </h2>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {(
+                    [
+                      { v: "km" as const, r: "Por quilômetro rodado" },
+                      { v: "zona" as const, r: "Preço fixo por zona (transfer aeroporto)" },
+                    ]
+                  ).map((o) => (
+                    <button
+                      key={o.v}
+                      type="button"
+                      onClick={() => setModoPreco(o.v)}
+                      className={cn(
+                        "rounded-full border px-4 py-2 text-sm transition-colors",
+                        modoPreco === o.v
+                          ? "border-primary/50 bg-primary/15 text-primary"
+                          : "border-border text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {o.r}
+                    </button>
+                  ))}
+                </div>
+
+                {modoPreco === "zona" && (
+                  <div className="mt-5 space-y-4">
+                    <div>
+                      <p className="text-sm font-medium">
+                        Zona identificada pelo endereço: {transfer.zone_name} ·{" "}
+                        <span className="text-primary">{formatarBRL(ZONAS.find((z) => z.zone_id === transfer.zone_id)!.valor)} por trecho</span>
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Detectada por bairro ou CEP ({zonaDetectada.nome}). Você pode ajustar manualmente abaixo.
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setZonaManual(undefined)}
+                          className={cn(
+                            "rounded-full border px-3 py-1 text-xs transition-colors",
+                            zonaManual === undefined
+                              ? "border-primary/50 bg-primary/15 text-primary"
+                              : "border-border text-muted-foreground",
+                          )}
+                        >
+                          Automática
+                        </button>
+                        {ZONAS.map((z) => (
+                          <button
+                            key={z.zone_id}
+                            type="button"
+                            onClick={() => setZonaManual(z.zone_id)}
+                            className={cn(
+                              "rounded-full border px-3 py-1 text-xs transition-colors",
+                              zonaManual === z.zone_id
+                                ? "border-primary/50 bg-primary/15 text-primary"
+                                : "border-border text-muted-foreground",
+                            )}
+                          >
+                            {z.nome} · {formatarBRL(z.valor)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg bg-secondary/50 p-4 text-sm">
+                      <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                        Memória de cálculo por zona
+                      </p>
+                      <p className="mt-2 text-muted-foreground">
+                        Trechos: {formatarBRL(transfer.base_fare)}
+                      </p>
+                      {transfer.package_discount > 0 && (
+                        <p className="text-success">
+                          Desconto pacote ida e volta (15%): −{formatarBRL(transfer.package_discount)}
+                        </p>
+                      )}
+                      {transfer.night_surcharge > 0 && (
+                        <p className="text-warning">
+                          Adicional noturno (23h às 05h, 15%): +{formatarBRL(transfer.night_surcharge)}
+                        </p>
+                      )}
+                      <p className="font-display text-lg text-primary">
+                        {formatarBRL(transfer.final_trip_price)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-6 space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="dias-viagem" className="flex items-center gap-2">
+                      <PiggyBank className="size-4 text-success" /> Quantos dias durará sua viagem?
+                    </Label>
+                    <Input
+                      id="dias-viagem"
+                      inputMode="numeric"
+                      value={diasViagem}
+                      onChange={(e) => setDiasViagem(e.target.value)}
+                      className="w-24"
+                    />
+                  </div>
+                  <div className="rounded-lg border border-success/40 bg-success/10 p-4 text-sm">
+                    <p className="text-xs font-medium uppercase tracking-wide text-success">
+                      Compare com o estacionamento do aeroporto
+                    </p>
+                    <p className="mt-2 text-muted-foreground">
+                      Estacionamento por {dias} {dias === 1 ? "dia" : "dias"} ({formatarBRL(DIARIA_ESTACIONAMENTO)}/dia):{" "}
+                      <span className="text-foreground">{formatarBRL(custoEstacionamento)}</span>
+                    </p>
+                    <p className="text-muted-foreground">
+                      Seu transfer: <span className="text-foreground">{formatarBRL(total)}</span>
+                    </p>
+                    {economia > 0 ? (
+                      <p className="mt-1 font-display text-base text-success">
+                        Você economiza {formatarBRL(economia)}!
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Nesta duração o estacionamento sai mais barato; o transfer entrega conforto porta a porta.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h3 className="flex items-center gap-2 text-sm font-medium">
+                    <Bell className="size-4 text-primary" /> Lembretes automáticos
+                  </h3>
+                  {transfer.scheduled_notifications.length > 0 ? (
+                    <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
+                      {transfer.scheduled_notifications.map((n) => (
+                        <li
+                          key={n.id}
+                          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-secondary/30 px-3 py-2"
+                        >
+                          <span>
+                            {n.marco === "24h_antes" ? "24 horas antes" : "2 horas antes"} ·{" "}
+                            {n.canal === "WHATSAPP" ? "WhatsApp" : "Notificação no app"}
+                          </span>
+                          <span className="text-primary">
+                            {new Date(n.datetime).toLocaleString("pt-BR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Escolha a data e o horário da ida para programar os lembretes.
+                    </p>
+                  )}
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Mensagem enviada: “{transfer.scheduled_notifications[0]?.mensagem ?? "Olá! Seu transfer executivo para o aeroporto está agendado. Nosso motorista estará à sua disposição no local combinado com antecedência."}”
+                  </p>
+                </div>
+              </Card>
+
+              <Card className="border-border/60 p-6">
+                <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
                   Distância e cálculo do valor
                 </h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -604,9 +780,25 @@ function NovoAgendamento() {
 
             <div className="mt-5 space-y-1 border-t border-border/70 pt-4 text-sm">
               <p className="flex justify-between text-muted-foreground">
-                <span>Trajeto ({km.toLocaleString("pt-BR")} km)</span>
-                <span className="text-foreground">{formatarBRL(valorTrajeto)}</span>
+                <span>
+                  {modoPreco === "zona"
+                    ? `Transfer ${transfer.zone_name}`
+                    : `Trajeto (${km.toLocaleString("pt-BR")} km)`}
+                </span>
+                <span className="text-foreground">{formatarBRL(precoFinal)}</span>
               </p>
+              {modoPreco === "zona" && transfer.package_discount > 0 && (
+                <p className="flex justify-between text-muted-foreground">
+                  <span>Desconto ida e volta (15%)</span>
+                  <span className="text-success">−{formatarBRL(transfer.package_discount)}</span>
+                </p>
+              )}
+              {modoPreco === "zona" && transfer.night_surcharge > 0 && (
+                <p className="flex justify-between text-muted-foreground">
+                  <span>Adicional noturno (15%)</span>
+                  <span className="text-warning">incluso</span>
+                </p>
+              )}
               <p className="flex justify-between text-muted-foreground">
                 <span>Espera nas paradas ({minutosEspera} min)</span>
                 <span className="text-foreground">{formatarBRL(valorEspera)}</span>
