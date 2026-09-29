@@ -137,3 +137,39 @@ export function horarioMenos(horario: string, minutos: number): string {
   const normal = ((total % 1440) + 1440) % 1440;
   return `${String(Math.floor(normal / 60)).padStart(2, "0")}:${String(normal % 60).padStart(2, "0")}`;
 }
+
+export type TrechoReservado = {
+  rotulo: string;
+  origem: string;
+  destino: string;
+  horario: string;
+  acesso: PontoAcesso;
+  distancia: number;
+  motorista: string | null;
+  backup: string | null;
+};
+
+export type JornadaReservada = {
+  id: string;
+  cliente: string;
+  /** Datas AAAA-MM-DD da escala. */
+  dias: string[];
+  trechos: TrechoReservado[];
+  totalPorDia: number;
+};
+
+const CHAVE_JORNADAS = "seuchauffeur-plantoes";
+
+export function carregarJornadas(): JornadaReservada[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(window.localStorage.getItem(CHAVE_JORNADAS) ?? "[]") as JornadaReservada[];
+  } catch {
+    return [];
+  }
+}
+
+export function salvarJornada(j: JornadaReservada) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(CHAVE_JORNADAS, JSON.stringify([...carregarJornadas(), j]));
+}

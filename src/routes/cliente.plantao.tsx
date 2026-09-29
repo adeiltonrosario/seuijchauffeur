@@ -15,7 +15,8 @@ import {
   modalidades,
   motoristas,
 } from "@/lib/dados";
-import { carregarAgenda } from "@/lib/disponibilidade";
+import { carregarAgenda, chaveData } from "@/lib/disponibilidade";
+import { salvarJornada } from "@/lib/plantao";
 import {
   ANTECEDENCIA_EMBARQUE_MIN,
   BACKUP_LIMITE_MIN,
@@ -153,6 +154,16 @@ function RotaPlantonista() {
       toast.error("Há trecho sem motorista disponível. Ajuste o horário ou escolha outro dia.");
       return;
     }
+    salvarJornada({
+      id: `PL-${Date.now().toString().slice(-5)}`,
+      cliente: "Adeilton Oliveira",
+      dias: diasEscala.map(chaveData),
+      totalPorDia: resumo.porDia,
+      trechos: trechos.map((t) => {
+        const a = alocacao.find((x) => x.trechoId === t.id);
+        return { rotulo: t.rotulo, origem: t.origem, destino: t.destino, horario: t.horario, acesso: t.acesso, distancia: t.distancia, motorista: a?.motorista ?? null, backup: a?.backup ?? null };
+      }),
+    });
     toast.success(
       `Jornada de plantão agendada: ${trechos.length} trechos em ${diasEscala.length} dia(s) — ${formatarBRL(resumo.total)}.`,
     );

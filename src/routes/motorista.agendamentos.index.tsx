@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronRight, HeartPulse, BellRing } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { agendamentos, formatarBRL } from "@/lib/dados";
+import { MOTORISTA_ATUAL } from "@/lib/disponibilidade";
+import {
+  BACKUP_LIMITE_MIN,
+  CHECKIN_ANTECEDENCIA_MIN,
+  carregarJornadas,
+  horarioMenos,
+  type JornadaReservada,
+} from "@/lib/plantao";
 
 export const Route = createFileRoute("/motorista/agendamentos/")({
   head: () => ({
@@ -24,6 +32,18 @@ export const Route = createFileRoute("/motorista/agendamentos/")({
 function AgendamentosMotorista() {
   const [disponivel, setDisponivel] = useState(true);
   const [data, setData] = useState("");
+  const [jornadas, setJornadas] = useState<JornadaReservada[]>([]);
+  useEffect(() => setJornadas(carregarJornadas()), []);
+
+  const plantoes = jornadas.flatMap((j) =>
+    j.dias
+      .filter((d) => data === "" || d === data)
+      .flatMap((d) =>
+        j.trechos
+          .filter((t) => t.motorista === MOTORISTA_ATUAL || t.backup === MOTORISTA_ATUAL)
+          .map((t) => ({ j, d, t, papel: t.motorista === MOTORISTA_ATUAL ? "Titular" : "Backup" })),
+      ),
+  ).sort((a, b) => (a.d + a.t.horario).localeCompare(b.d + b.t.horario));
 
   const lista = agendamentos.filter(
     (a) => a.status !== "cancelado" && (data === "" || a.ida.startsWith(formatarData(data))),
@@ -46,6 +66,37 @@ function AgendamentosMotorista() {
         <Label htmlFor="filtro-data">Filtrar por data</Label>
         <Input id="filtro-data" type="date" value={data} onChange={(e) => setData(e.target.value)} />
       </div>
+
+      {plantoes.length > 0 ? (
+        <div className="mb-6 space-y-3">
+          <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
+            <HeartPulse className="size-5 text-gold" /> Plantões ({plantoes.length})
+          </h2>
+          {plantoes.map(({ j, d, t, papel }, i) => (
+            <Card key={`${j.id}-${d}-${i}`} className="surface-luxe border-border/60 p-5">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="font-display text-base font-semibold">
+                  {formatarData(d)} {t.horario}
+                </span>
+                <span className="rounded-full border border-primary/40 px-2 py-0.5 text-xs text-gold">{papel}</span>
+                <span className="text-xs text-muted-foreground">{j.id} · {t.rotulo}</span>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">{t.origem} → {t.destino}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {j.cliente} · Rota de plantonista · ponto de encontro: {t.acesso} · {t.distancia} km
+              </p>
+              <div className="mt-3 flex items-start gap-2 rounded-md border border-primary/30 bg-primary/10 p-3 text-xs">
+                <BellRing className="mt-0.5 size-4 shrink-0 text-gold" />
+                <span>
+                  {papel === "Titular"
+                    ? `Confirme sua prontidão às ${horarioMenos(t.horario, CHECKIN_ANTECEDENCIA_MIN)} (${CHECKIN_ANTECEDENCIA_MIN} min antes). Sem confirmação até ${horarioMenos(t.horario, BACKUP_LIMITE_MIN)}, o backup${t.backup ? ` (${t.backup})` : ""} assume o trecho.`
+                    : `Você é o backup de ${t.motorista ?? "—"}. Fique de prontidão: se o titular não confirmar até ${horarioMenos(t.horario, BACKUP_LIMITE_MIN)}, este trecho passa para você.`}
+                </span>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : null}
 
       <div className="space-y-3">
         {lista.map((a) => (
