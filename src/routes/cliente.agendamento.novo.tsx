@@ -709,6 +709,97 @@ function NovoAgendamento() {
                 </div>
               </Card>
 
+              {cargaSelecionada && (
+                <Card className="border-border/60 p-6">
+                  <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                    <PackageOpen className="size-4 text-primary" /> Carga, itens e ajudantes
+                  </h2>
+
+                  <div className="mt-4 space-y-2">
+                    <Label htmlFor="itens-carga">Itens a transportar</Label>
+                    <Textarea
+                      id="itens-carga"
+                      value={itensCarga}
+                      onChange={(e) => setItensCarga(e.target.value)}
+                      rows={3}
+                      placeholder="Ex.: 1 geladeira frost free, 1 fogão 4 bocas, 1 TV 65 polegadas e 6 caixas."
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Veículo do motorista: {escolhido.veiculo} — {cargaDaCategoria(escolhido.categoria)}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    {(
+                      [
+                        { rotulo: "Acesso na coleta", valor: acessoColeta, set: setAcessoColeta },
+                        { rotulo: "Acesso na entrega", valor: acessoEntrega, set: setAcessoEntrega },
+                      ] as const
+                    ).map((campo) => (
+                      <div key={campo.rotulo} className="space-y-2">
+                        <Label>{campo.rotulo}</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {(["Térreo", "Elevador de serviço", "Escadas"] as const).map((op) => (
+                            <button
+                              key={op}
+                              type="button"
+                              onClick={() => campo.set(op)}
+                              className={cn(
+                                "rounded-full border px-3 py-1.5 text-xs transition-colors",
+                                campo.valor === op
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              {op}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 rounded-lg border border-border/60 bg-secondary/30 p-4">
+                    <Label className="flex items-center gap-2 text-xs">
+                      <Users className="size-3.5 text-primary" /> Ajudantes de carga
+                    </Label>
+                    {maxAjudantes > 0 ? (
+                      <>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {Array.from({ length: maxAjudantes + 1 }, (_, n) => n).map((n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              onClick={() => setAjudantes(n)}
+                              className={cn(
+                                "rounded-full border px-4 py-2 text-sm transition-colors",
+                                ajudantesEfetivos === n
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              {n === 0 ? "Sem ajudante" : `${n} ajudante${n > 1 ? "s" : ""}`}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="mt-3 text-xs text-muted-foreground">
+                          {ajudantesEfetivos === 0
+                            ? "Sem ajudante o motorista apenas dirige e acomoda a carga no veículo; o carregamento pesado fica com você."
+                            : `${ajudantesEfetivos} ajudante(s) × ${formatarBRL(escolhido.valorAjudante)} = ${formatarBRL(valorAjudantes)} — carregam e descarregam móveis e eletrodomésticos.`}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="mt-3 text-xs text-muted-foreground">
+                        Este motorista não disponibiliza ajudantes. Escolha outro veículo de carga na etapa anterior se
+                        precisar de equipe.
+                      </p>
+                    )}
+                  </div>
+                </Card>
+              )}
+
+
+
               {idaEVolta && (
                 <Card className="border-border/60 p-6">
                   <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
