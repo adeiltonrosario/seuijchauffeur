@@ -191,11 +191,6 @@ function DetalhesAgendamento() {
           >
             <RouteIcon /> Ajustar rota
           </Button>
-          <Button className="w-full" asChild>
-            <Link to="/agente-suporte">
-              <MessageCircle /> Abrir chat
-            </Link>
-          </Button>
           <Button
             className="w-full"
             variant="secondary"
