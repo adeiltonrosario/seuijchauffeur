@@ -676,24 +676,52 @@ function NovoAgendamento() {
                   Distância e cálculo do valor
                 </h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="distancia">Distância estimada do trajeto (km)</Label>
-                    <Input
-                      id="distancia"
-                      inputMode="decimal"
-                      value={distancia}
-                      onChange={(e) => setDistancia(e.target.value)}
-                    />
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="distancia">Distância estimada da ida (km)</Label>
+                      <Input
+                        id="distancia"
+                        inputMode="decimal"
+                        value={distancia}
+                        onChange={(e) => setDistancia(e.target.value)}
+                      />
+                    </div>
+                    {idaEVolta && (
+                      <div className="space-y-2">
+                        <Label htmlFor="distancia-volta">Distância estimada da volta (km)</Label>
+                        <Input
+                          id="distancia-volta"
+                          inputMode="decimal"
+                          value={distanciaVolta}
+                          placeholder={distancia}
+                          onChange={(e) => setDistanciaVolta(e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Em branco, usamos a mesma distância da ida.
+                        </p>
+                      </div>
+                    )}
                     <p className="text-xs text-muted-foreground">
-                      Soma de todos os trechos, incluindo as paradas.
+                      Soma de todos os trechos de cada percurso, incluindo as paradas.
                     </p>
                   </div>
                   <div className="rounded-lg bg-secondary/50 p-4 text-sm">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Memória de cálculo</p>
                     <p className="mt-2 text-muted-foreground">
-                      {km.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
-                      {formatarBRL(valorTrajeto)}
+                      Ida: {kmIda.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
+                      {formatarBRL(valorIda)}
                     </p>
+                    {idaEVolta && (
+                      <>
+                        <p className="text-muted-foreground">
+                          Volta: {kmVolta.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
+                          {formatarBRL(valorVolta)}
+                        </p>
+                        <p className="text-success">
+                          Desconto pacote ida e volta (15%): −{formatarBRL(descontoKm)}
+                        </p>
+                      </>
+                    )}
                     <p className="text-muted-foreground">
                       Espera: {minutosEspera} min × {formatarBRL(VALOR_ESPERA_POR_MINUTO)} ={" "}
                       {formatarBRL(valorEspera)}
