@@ -1062,7 +1062,7 @@ function NovoAgendamento() {
                   {escolhido.nome} ({escolhido.nota} ★)
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {escolhido.veiculo} · {CAPACIDADE_PADRAO} passageiros
+                  {escolhido.veiculo} · {capacidadeDaCategoria(escolhido.categoria)} ocupantes
                 </p>
               </div>
               {etapa === 2 && (
