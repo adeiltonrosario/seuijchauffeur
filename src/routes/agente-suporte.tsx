@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { BookOpen, Bot, Car, Send, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, Bot, Car, Send, ShieldCheck, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { carregarConversa, type MensagemMediada } from "@/lib/chat-mediado";
 import { agendamentos, conversas, formatarBRL, mensagensMediadas, padroesAtendimento } from "@/lib/dados";
+
 
 export const Route = createFileRoute("/agente-suporte")({
   head: () => ({
