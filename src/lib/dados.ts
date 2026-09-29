@@ -1,7 +1,7 @@
 export const CAPACIDADE_PADRAO = 4;
 
 /** Categorias de veículos de passageiros. */
-export const CATEGORIAS_PASSAGEIROS = ["Sedan", "SUV", "Hatch", "Minivan executiva"] as const;
+export const CATEGORIAS_PASSAGEIROS = ["Sedan", "SUV", "Hatch", "Minivan executiva", "Van executiva"] as const;
 
 /** Categorias de veículos utilitários de carga (carretos e mudanças). */
 export const CATEGORIAS_CARGA = [
@@ -23,6 +23,8 @@ export const capacidadeDaCategoria = (categoria: string) => {
   switch (categoria) {
     case "Minivan executiva":
       return 6;
+    case "Van executiva":
+      return 10;
     case "Fiorino / Furgão leve":
     case "Picape / Caçamba aberta":
       return 2;
@@ -31,6 +33,39 @@ export const capacidadeDaCategoria = (categoria: string) => {
       return 3;
     default:
       return CAPACIDADE_PADRAO;
+  }
+};
+
+/** Faixa de lotação permitida no cadastro de cada categoria. */
+export const faixaCapacidade = (categoria: string): { min: number; max: number; ajustavel: boolean } => {
+  switch (categoria) {
+    case "Minivan executiva":
+      return { min: 5, max: 7, ajustavel: true };
+    case "Van executiva":
+      return { min: 10, max: 30, ajustavel: true };
+    default: {
+      const fixa = capacidadeDaCategoria(categoria);
+      return { min: fixa, max: fixa, ajustavel: false };
+    }
+  }
+};
+
+/** Garante que a lotação informada respeite a faixa da categoria. */
+export const capacidadeValida = (categoria: string, valor: number) => {
+  const { min, max } = faixaCapacidade(categoria);
+  if (!Number.isFinite(valor)) return min;
+  return Math.min(max, Math.max(min, Math.round(valor)));
+};
+
+/** Texto de apoio sobre a lotação exigida no cadastro. */
+export const ajudaCapacidade = (categoria: string) => {
+  switch (categoria) {
+    case "Minivan executiva":
+      return "Escolha a lotação do veículo: 5, 6 ou 7 ocupantes.";
+    case "Van executiva":
+      return "Informe a lotação homologada no CRLV do veículo (mínimo 10 ocupantes, ex.: 10, 12, 15, 18 ou 20).";
+    default:
+      return "";
   }
 };
 

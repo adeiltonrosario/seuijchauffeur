@@ -12,7 +12,10 @@ import {
   CATEGORIAS_PASSAGEIROS,
   MAX_AJUDANTES,
   TAXA_AJUDANTE_PADRAO,
+  ajudaCapacidade,
   capacidadeDaCategoria,
+  capacidadeValida,
+  faixaCapacidade,
   cargaDaCategoria,
   ehCategoriaCarga,
   formatarBRL,
@@ -39,24 +42,34 @@ function Veiculos() {
   const [placa, setPlaca] = useState("");
   const [modelo, setModelo] = useState("");
   const [cor, setCor] = useState("");
-  const [categoria, setCategoria] = useState<Categoria>("Sedan");
+  const [categoria, setCategoriaState] = useState<Categoria>("Sedan");
+  const [capacidade, setCapacidade] = useState(String(capacidadeDaCategoria("Sedan")));
   const [foto, setFoto] = useState<string | null>(null);
   const [ajudantes, setAjudantes] = useState("0");
   const [valorAjudante, setValorAjudante] = useState(String(TAXA_AJUDANTE_PADRAO));
+
+  const setCategoria = (c: Categoria) => {
+    setCategoriaState(c);
+    setCapacidade(String(capacidadeDaCategoria(c)));
+  };
 
   const salvar = () => {
     if (!placa || !modelo || !cor) {
       toast.error("Preencha placa, modelo e cor.");
       return;
     }
-    setVeiculos((atual) => [
-      ...atual,
-      { placa, modelo, cor, categoria, capacidade: capacidadeDaCategoria(categoria) },
-    ]);
+    const faixa = faixaCapacidade(categoria);
+    const informada = Number(capacidade);
+    if (faixa.ajustavel && (!Number.isFinite(informada) || informada < faixa.min || informada > faixa.max)) {
+      toast.error(`Informe a lotação entre ${faixa.min} e ${faixa.max} ocupantes conforme o CRLV.`);
+      return;
+    }
+    const capacidadeFinal = faixa.ajustavel ? capacidadeValida(categoria, informada) : capacidadeDaCategoria(categoria);
+    setVeiculos((atual) => [...atual, { placa, modelo, cor, categoria, capacidade: capacidadeFinal }]);
     toast.success(
       ehCategoriaCarga(categoria) && Number(ajudantes) > 0
         ? `Veículo de carga salvo com até ${Math.min(Number(ajudantes), MAX_AJUDANTES)} ajudante(s) a ${formatarBRL(Number(valorAjudante) || TAXA_AJUDANTE_PADRAO)} cada.`
-        : "Veículo salvo.",
+        : `Veículo salvo com ${capacidadeFinal} ocupantes.`,
     );
     setPlaca("");
     setModelo("");
@@ -111,8 +124,45 @@ function Veiculos() {
                 </div>
               </div>
             ))}
+            {faixaCapacidade(categoria).ajustavel ? (
+              <div className="space-y-2 rounded-lg border border-border/60 bg-secondary/30 p-4">
+                <Label htmlFor="capacidade">
+                  Ocupantes ({faixaCapacidade(categoria).min} a {faixaCapacidade(categoria).max})
+                </Label>
+                {categoria === "Minivan executiva" ? (
+                  <div className="flex flex-wrap gap-2">
+                    {[5, 6, 7].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setCapacidade(String(n))}
+                        className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                          Number(capacidade) === n
+                            ? "border-primary/50 bg-primary/15 text-primary"
+                            : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {n} lugares
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <Input
+                    id="capacidade"
+                    inputMode="numeric"
+                    value={capacidade}
+                    onChange={(e) => setCapacidade(e.target.value)}
+                    placeholder="15"
+                  />
+                )}
+                <p className="text-xs text-muted-foreground">{ajudaCapacidade(categoria)}</p>
+              </div>
+            ) : null}
             <p className="text-xs text-muted-foreground">
-              {categoria}: {capacidadeDaCategoria(categoria)} ocupantes
+              {categoria}:{" "}
+              {faixaCapacidade(categoria).ajustavel
+                ? `${capacidadeValida(categoria, Number(capacidade))} ocupantes`
+                : `${capacidadeDaCategoria(categoria)} ocupantes`}
               {cargaDaCategoria(categoria) ? ` · ${cargaDaCategoria(categoria)}` : ""}
             </p>
           </div>
