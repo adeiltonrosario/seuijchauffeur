@@ -355,6 +355,11 @@ function Admin() {
                       <p className="text-xs text-muted-foreground">
                         {m.veiculo} · nota {m.nota.toFixed(1)}
                       </p>
+                      {m.ajudantes > 0 ? (
+                        <p className="text-xs text-primary">
+                          Até {Math.min(m.ajudantes, MAX_AJUDANTES)} ajudante(s) · {formatarBRL(m.valorAjudante)} cada
+                        </p>
+                      ) : null}
                     </div>
                     <span className="text-sm text-gold">{formatarBRL(m.valor)}</span>
                   </li>
