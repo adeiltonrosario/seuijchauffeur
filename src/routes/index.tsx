@@ -191,9 +191,26 @@ function Autenticacao() {
             <div>
               <h1 className="text-3xl font-semibold">Planos para quem viaja sempre</h1>
               <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-                Agende ida e retorno com pontos de parada, pague por Pix, cartão ou assinatura mensal e libere o valor
-                ao motorista apenas quando a corrida terminar.
+                Escolha quantas viagens você faz por mês e veja o desconto de cada período. Os créditos entram na sua
+                conta e valem por {VALIDADE_CREDITOS_DIAS} dias.
               </p>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs uppercase tracking-wide text-muted-foreground">Viagens por mês</span>
+                {[2, 4, 8, 12].map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => setViagensPorMes(q)}
+                    className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                      viagensPorMes === q
+                        ? "border-primary/50 bg-primary/15 text-primary"
+                        : "border-border text-muted-foreground"
+                    }`}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
             </div>
             <Card className="border-border/60 p-4 text-center">
               <QrCode />
