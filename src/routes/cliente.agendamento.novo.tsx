@@ -69,6 +69,148 @@ const TAXA_SERVICO = 8;
 const dataLonga = (d: Date) =>
   d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "long", year: "numeric" });
 
+type Parada = { id: number; endereco: string; espera: number };
+
+type BlocoTrajetoProps = {
+  prefixo: string;
+  embarque: string;
+  setEmbarque: (v: string) => void;
+  placeholderEmbarque?: string;
+  desembarque: string;
+  setDesembarque: (v: string) => void;
+  placeholderDesembarque?: string;
+  paradas: Parada[];
+  setParadas: React.Dispatch<React.SetStateAction<Parada[]>>;
+};
+
+function BlocoTrajeto({
+  prefixo,
+  embarque,
+  setEmbarque,
+  placeholderEmbarque,
+  desembarque,
+  setDesembarque,
+  placeholderDesembarque,
+  paradas,
+  setParadas,
+}: BlocoTrajetoProps) {
+  return (
+    <div className="mt-4 space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor={`embarque-${prefixo}`}>Embarque (origem)</Label>
+        <div className="relative">
+          <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-success" />
+          <Input
+            id={`embarque-${prefixo}`}
+            value={embarque}
+            placeholder={placeholderEmbarque}
+            onChange={(e) => setEmbarque(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+      </div>
+
+      {paradas.map((p, i) => (
+        <div key={p.id} className="space-y-2">
+          <Label htmlFor={`parada-${prefixo}-${p.id}`}>Parada {i + 1} (opcional)</Label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-warning" />
+              <Input
+                id={`parada-${prefixo}-${p.id}`}
+                value={p.endereco}
+                onChange={(e) =>
+                  setParadas((atual) =>
+                    atual.map((x) => (x.id === p.id ? { ...x, endereco: e.target.value } : x)),
+                  )
+                }
+                className="pl-9"
+              />
+            </div>
+            <Button
+              size="icon"
+              variant="ghost"
+              aria-label={`Remover parada ${i + 1}`}
+              onClick={() => setParadas((atual) => atual.filter((x) => x.id !== p.id))}
+            >
+              <Trash2 />
+            </Button>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-secondary/30 p-3">
+            <Label htmlFor={`espera-${prefixo}-${p.id}`} className="flex items-center gap-2 text-xs">
+              <Clock className="size-3.5 text-primary" /> Tempo de espera nesta parada (minutos)
+            </Label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {[3, 10, 15, 30].map((min) => (
+                <button
+                  key={min}
+                  type="button"
+                  onClick={() =>
+                    setParadas((atual) => atual.map((x) => (x.id === p.id ? { ...x, espera: min } : x)))
+                  }
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-xs transition-colors",
+                    p.espera === min
+                      ? "border-primary/50 bg-primary/15 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {min} min{min === TOLERANCIA_ESPERA_MIN ? " (grátis)" : ""}
+                </button>
+              ))}
+              <Input
+                id={`espera-${prefixo}-${p.id}`}
+                inputMode="numeric"
+                value={String(p.espera)}
+                onChange={(e) =>
+                  setParadas((atual) =>
+                    atual.map((x) =>
+                      x.id === p.id ? { ...x, espera: Math.max(0, Number(e.target.value) || 0) } : x,
+                    ),
+                  )
+                }
+                className="h-8 w-20"
+              />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {TOLERANCIA_ESPERA_MIN} minutos de cortesia; depois {formatarBRL(VALOR_ESPERA_POR_MINUTO)} por
+              minuto. Cobrança desta parada:{" "}
+              <span className="text-primary">
+                {minutosCobradosEspera(p.espera)} min = {formatarBRL(calcularValorEspera([p.espera]))}
+              </span>
+            </p>
+          </div>
+        </div>
+      ))}
+
+      <Button
+        size="sm"
+        variant="secondary"
+        onClick={() =>
+          setParadas((atual) => [...atual, { id: Date.now(), endereco: "", espera: TOLERANCIA_ESPERA_MIN }])
+        }
+      >
+        <Plus /> Adicionar outra parada
+      </Button>
+
+      <div className="space-y-2">
+        <Label htmlFor={`desembarque-${prefixo}`}>Desembarque (destino)</Label>
+        <div className="relative">
+          <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-destructive" />
+          <Input
+            id={`desembarque-${prefixo}`}
+            value={desembarque}
+            placeholder={placeholderDesembarque}
+            onChange={(e) => setDesembarque(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function NovoAgendamento() {
   const navigate = useNavigate();
   const [etapa, setEtapa] = useState<1 | 2>(1);
@@ -82,19 +224,30 @@ function NovoAgendamento() {
   const [modalidade, setModalidade] = useState(modalidades[0]!);
   const [motorista, setMotorista] = useState(motoristas[0]!.nome);
 
-  // Etapa 2
+  // Etapa 2 — ida
   const [embarque, setEmbarque] = useState("Av. Paulista, 1400 — Bela Vista, São Paulo");
-  const [paradas, setParadas] = useState<{ id: number; endereco: string; espera: number }[]>([
+  const [paradas, setParadas] = useState<Parada[]>([
     { id: 1, endereco: "Rua Augusta, 900 — Consolação", espera: TOLERANCIA_ESPERA_MIN },
   ]);
-
   const [desembarque, setDesembarque] = useState("Aeroporto de Congonhas — Portão 2");
-  const [instrucoes, setInstrucoes] = useState("");
   const [distancia, setDistancia] = useState("20.5");
+
+  // Etapa 2 — volta
+  const [embarqueVolta, setEmbarqueVolta] = useState("");
+  const [desembarqueVolta, setDesembarqueVolta] = useState("");
+  const [paradasVolta, setParadasVolta] = useState<Parada[]>([]);
+  const [distanciaVolta, setDistanciaVolta] = useState("");
+  const [zonaManualVolta, setZonaManualVolta] = useState<number | undefined>(undefined);
+
+  const [instrucoes, setInstrucoes] = useState("");
   const [pagamento, setPagamento] = useState<"Pix" | "Cartão de crédito" | "Plano mensal">("Pix");
   const [modoPreco, setModoPreco] = useState<"km" | "zona">("km");
   const [zonaManual, setZonaManual] = useState<number | undefined>(undefined);
   const [diasViagem, setDiasViagem] = useState("3");
+
+  const idaEVolta = tipo === "Ida e retorno";
+  const embarqueVoltaEfetivo = embarqueVolta.trim() || desembarque;
+  const desembarqueVoltaEfetivo = desembarqueVolta.trim() || embarque;
 
   const escolhido = motoristas.find((m) => m.nome === motorista)!;
   const agenda = useMemo(() => carregarAgenda(), []);
@@ -105,19 +258,35 @@ function NovoAgendamento() {
         : motoristas,
     [agenda, dataIda, horaIda],
   );
-  const km = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
+  const kmIda = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
+  const kmVoltaInformado = Math.max(Number(distanciaVolta.replace(",", ".")) || 0, 0);
+  const kmVolta = idaEVolta ? (kmVoltaInformado > 0 ? kmVoltaInformado : kmIda) : 0;
+  const km = kmIda + kmVolta;
   const tarifa = Math.max(modalidade.valorPorKm, VALOR_MINIMO_POR_KM);
-  const valorTrajeto = useMemo(() => calcularValorCorrida(km, tarifa), [km, tarifa]);
+  const valorIda = useMemo(() => calcularValorCorrida(kmIda, tarifa), [kmIda, tarifa]);
+  const valorVolta = useMemo(
+    () => (idaEVolta ? calcularValorCorrida(kmVolta, tarifa) : 0),
+    [idaEVolta, kmVolta, tarifa],
+  );
+  const descontoKm = idaEVolta
+    ? Math.round((valorIda + valorVolta) * PERCENTUAL_DESCONTO_PACOTE * 100) / 100
+    : 0;
+  const valorTrajeto = Math.round((valorIda + valorVolta - descontoKm) * 100) / 100;
+
+  const paradasTodas = useMemo(
+    () => [...paradas, ...(idaEVolta ? paradasVolta : [])],
+    [paradas, paradasVolta, idaEVolta],
+  );
   const minutosEspera = useMemo(
-    () => paradas.reduce((t, p) => t + minutosCobradosEspera(p.espera), 0),
-    [paradas],
+    () => paradasTodas.reduce((t, p) => t + minutosCobradosEspera(p.espera), 0),
+    [paradasTodas],
   );
   const valorEspera = useMemo(
-    () => calcularValorEspera(paradas.map((p) => p.espera)),
-    [paradas],
+    () => calcularValorEspera(paradasTodas.map((p) => p.espera)),
+    [paradasTodas],
   );
   const dias = Math.max(1, Math.floor(Number(diasViagem) || 1));
-  const modalidadeViagem: ModalidadeViagem = tipo === "Ida e retorno" ? "IDA_E_VOLTA" : "SOMENTE_IDA";
+  const modalidadeViagem: ModalidadeViagem = idaEVolta ? "IDA_E_VOLTA" : "SOMENTE_IDA";
   const pickup = useMemo(() => {
     if (!dataIda) return undefined;
     const [h, m] = horaIda.split(":").map(Number);
@@ -137,10 +306,26 @@ function NovoAgendamento() {
         diasViagem: dias,
         pickup,
         zonaManual,
+        origemRetorno: embarqueVoltaEfetivo,
+        destinoRetorno: desembarqueVoltaEfetivo,
+        zonaManualRetorno: zonaManualVolta,
       }),
-    [embarque, desembarque, modalidadeViagem, horaIda, horaRetorno, dias, pickup, zonaManual],
+    [
+      embarque,
+      desembarque,
+      modalidadeViagem,
+      horaIda,
+      horaRetorno,
+      dias,
+      pickup,
+      zonaManual,
+      embarqueVoltaEfetivo,
+      desembarqueVoltaEfetivo,
+      zonaManualVolta,
+    ],
   );
   const precoFinal = modoPreco === "zona" ? transfer.final_trip_price : valorTrajeto;
+  const desconto = modoPreco === "zona" ? transfer.package_discount : descontoKm;
   const total = precoFinal + valorEspera + TAXA_SERVICO;
   const custoEstacionamento = dias * DIARIA_ESTACIONAMENTO;
   const economia = Math.round((custoEstacionamento - total) * 100) / 100;
