@@ -265,7 +265,11 @@ function Admin() {
     setNovasCaracteristicas("");
   };
 
-  const atualizarModalidade = (indice: number, campo: "valorBase" | "porKm", valor: string) => {
+  const atualizarModalidade = (
+    indice: number,
+    campo: "valorBase" | "porKm" | "valorTurno" | "franquiaKm",
+    valor: string,
+  ) => {
     const numero = Number(valor) || 0;
     if (campo === "porKm" && numero > 0 && numero < VALOR_MINIMO_POR_KM) {
       toast.error(`Piso mínimo do sistema: ${formatarBRL(VALOR_MINIMO_POR_KM)} por km.`);
