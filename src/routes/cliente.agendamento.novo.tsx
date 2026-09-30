@@ -927,7 +927,7 @@ function NovoAgendamento() {
                 </Card>
               )}
 
-              <Card className="border-border/60 p-6">
+              <Card className={cn("border-border/60 p-6", porTurno && "hidden")}>
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
                   Forma de cobrança
                 </h2>
