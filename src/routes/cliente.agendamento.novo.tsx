@@ -386,9 +386,10 @@ function NovoAgendamento() {
       zonaManualVolta,
     ],
   );
-  const precoFinal = modoPreco === "zona" ? transfer.final_trip_price : valorTrajeto;
-  const desconto = modoPreco === "zona" ? transfer.package_discount : descontoKm;
-  const total = Math.round((precoFinal + valorEspera + valorAjudantes + TAXA_SERVICO) * 100) / 100;
+  const precoFinal = porTurno ? valorDoTurno : modoPreco === "zona" ? transfer.final_trip_price : valorTrajeto;
+  const desconto = porTurno ? 0 : modoPreco === "zona" ? transfer.package_discount : descontoKm;
+  const esperaCobrada = porTurno ? 0 : valorEspera;
+  const total = Math.round((precoFinal + esperaCobrada + valorAjudantes + TAXA_SERVICO) * 100) / 100;
   const custoEstacionamento = dias * DIARIA_ESTACIONAMENTO;
   const economia = Math.round((custoEstacionamento - total) * 100) / 100;
 
@@ -398,7 +399,7 @@ function NovoAgendamento() {
       toast.error("Escolha a data da ida no calendário.");
       return;
     }
-    if (tipo === "Ida e retorno" && !dataRetorno) {
+    if (!porTurno && tipo === "Ida e retorno" && !dataRetorno) {
       toast.error("Escolha também a data de retorno.");
       return;
     }
