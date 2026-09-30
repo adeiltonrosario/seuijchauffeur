@@ -259,6 +259,9 @@ function Admin() {
         caracteristicas: novasCaracteristicas.trim(),
         valorBase: Number(novoValorBase),
         porKm,
+        porTurno: false,
+        valorTurno: 0,
+        franquiaKm: 0,
       },
     ]);
     toast.success("Modalidade criada.");
