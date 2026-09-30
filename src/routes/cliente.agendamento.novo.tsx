@@ -466,26 +466,33 @@ function NovoAgendamento() {
                   Selecione o dia e o horário
                 </h2>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {(["Somente ida", "Ida e retorno"] as const).map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => {
-                        setTipo(t);
-                        if (t === "Somente ida") setDataRetorno(undefined);
-                      }}
-                      className={cn(
-                        "rounded-full border px-4 py-2 text-sm transition-colors",
-                        tipo === t
-                          ? "border-primary/50 bg-primary/15 text-primary"
-                          : "border-border text-muted-foreground hover:text-foreground",
-                      )}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
+                {porTurno ? (
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    Este serviço é fechado por turno: o motorista leva você de casa ao supermercado, acompanha as
+                    compras e volta com você — tudo dentro do turno escolhido.
+                  </p>
+                ) : (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {(["Somente ida", "Ida e retorno"] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => {
+                          setTipo(t);
+                          if (t === "Somente ida") setDataRetorno(undefined);
+                        }}
+                        className={cn(
+                          "rounded-full border px-4 py-2 text-sm transition-colors",
+                          tipo === t
+                            ? "border-primary/50 bg-primary/15 text-primary"
+                            : "border-border text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 <div className="mt-5 grid gap-6 md:grid-cols-2">
                   <div>
