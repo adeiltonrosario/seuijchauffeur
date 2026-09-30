@@ -792,6 +792,30 @@ function Admin() {
                       </div>
 
                     </div>
+                    {m.porTurno && (
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Valor do turno</Label>
+                          <Input
+                            inputMode="decimal"
+                            value={String(m.valorTurno)}
+                            onChange={(e) => atualizarModalidade(i, "valorTurno", e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Franquia de km inclusa</Label>
+                          <Input
+                            inputMode="decimal"
+                            value={String(m.franquiaKm)}
+                            onChange={(e) => atualizarModalidade(i, "franquiaKm", e.target.value)}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground sm:col-span-2">
+                          Turnos atendidos:{" "}
+                          {TURNOS_COMPRAS.map((t) => `${t.rotulo} ${t.inicio}–${t.fim}`).join(" · ")}
+                        </p>
+                      </div>
+                    )}
                     <div className="mt-3 space-y-1">
                       <Label className="text-xs text-muted-foreground">Características e procedimentos</Label>
                       <Textarea
