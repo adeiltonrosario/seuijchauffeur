@@ -88,6 +88,12 @@ const MODALIDADES_VITRINE = [
     nome: "Escolar recorrente",
     resumo: "Rota fixa nos dias úteis e entrega apenas ao responsável cadastrado.",
   },
+  {
+    icone: ShoppingBasket,
+    nome: "Compras & Supermercado",
+    resumo:
+      "Turno de manhã, tarde ou noite: acompanhamento dentro da loja e apoio com as sacolas até a sua porta.",
+  },
 ];
 
 const BENEFICIOS_PLANO: Record<string, string[]> = {
