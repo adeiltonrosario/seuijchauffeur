@@ -331,6 +331,9 @@ function NovoAgendamento() {
     ? Math.round((valorIda + valorVolta) * PERCENTUAL_DESCONTO_PACOTE * 100) / 100
     : 0;
   const valorTrajeto = Math.round((valorIda + valorVolta - descontoKm) * 100) / 100;
+  const kmExcedente = porTurno ? Math.max(0, Math.round((kmIda - franquiaKm) * 100) / 100) : 0;
+  const valorExcedente = porTurno ? calcularExcedenteFranquia(kmIda, franquiaKm, modalidade.valorPorKm) : 0;
+  const valorDoTurno = porTurno ? Math.round((valorTurno + valorExcedente) * 100) / 100 : 0;
 
   const paradasTodas = useMemo(
     () => [...paradas, ...(idaEVolta ? paradasVolta : [])],
