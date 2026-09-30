@@ -244,6 +244,7 @@ function NovoAgendamento() {
   const [horaRetorno, setHoraRetorno] = useState("21:00");
   const [modalidade, setModalidade] = useState(modalidades[0]!);
   const [motorista, setMotorista] = useState(motoristas[0]!.nome);
+  const [turnoId, setTurnoId] = useState<(typeof TURNOS_COMPRAS)[number]["id"]>("manha");
 
   // Etapa 2 — ida
   const [embarque, setEmbarque] = useState("Av. Paulista, 1400 — Bela Vista, São Paulo");
