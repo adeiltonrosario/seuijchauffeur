@@ -506,38 +506,68 @@ function NovoAgendamento() {
                       disabled={{ before: new Date() }}
                       className={cn("pointer-events-auto rounded-lg border border-border/60 p-3")}
                     />
-                    <div className="mt-3 space-y-2">
-                      <Label htmlFor="hora-ida" className="flex items-center gap-2">
-                        <Clock className="size-4 text-primary" /> Horário de embarque
-                      </Label>
-                      <Input
-                        id="hora-ida"
-                        type="time"
-                        value={horaIda}
-                        onChange={(e) => setHoraIda(e.target.value)}
-                        className="w-32"
-                      />
-                      <div className="flex flex-wrap gap-2">
-                        {HORARIOS_RAPIDOS.map((h) => (
-                          <button
-                            key={h}
-                            type="button"
-                            onClick={() => setHoraIda(h)}
-                            className={cn(
-                              "rounded-full border px-3 py-1 text-xs transition-colors",
-                              horaIda === h
-                                ? "border-primary/50 bg-primary/15 text-primary"
-                                : "border-border text-muted-foreground hover:text-foreground",
-                            )}
-                          >
-                            {h}
-                          </button>
-                        ))}
+                    {porTurno ? (
+                      <div className="mt-3 space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Clock className="size-4 text-primary" /> Turno do atendimento
+                        </Label>
+                        <div className="flex flex-wrap gap-2">
+                          {TURNOS_COMPRAS.map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => {
+                                setTurnoId(t.id);
+                                setHoraIda(t.inicio);
+                              }}
+                              className={cn(
+                                "rounded-lg border px-3 py-2 text-left text-xs transition-colors",
+                                turnoId === t.id
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              <span className="block text-sm font-medium">{t.rotulo}</span>
+                              {t.inicio} às {t.fim} · {t.horas}h
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{turno.resumo}</p>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="mt-3 space-y-2">
+                        <Label htmlFor="hora-ida" className="flex items-center gap-2">
+                          <Clock className="size-4 text-primary" /> Horário de embarque
+                        </Label>
+                        <Input
+                          id="hora-ida"
+                          type="time"
+                          value={horaIda}
+                          onChange={(e) => setHoraIda(e.target.value)}
+                          className="w-32"
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          {HORARIOS_RAPIDOS.map((h) => (
+                            <button
+                              key={h}
+                              type="button"
+                              onClick={() => setHoraIda(h)}
+                              className={cn(
+                                "rounded-full border px-3 py-1 text-xs transition-colors",
+                                horaIda === h
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              {h}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {tipo === "Ida e retorno" && (
+                  {!porTurno && tipo === "Ida e retorno" && (
                     <div>
                       <p className="mb-2 flex items-center gap-2 text-sm font-medium">
                         <CalendarDays className="size-4 text-primary" /> Data do retorno
