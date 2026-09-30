@@ -16,6 +16,7 @@ import {
   MessageCircle,
   Plane,
   ShieldCheck,
+  ShoppingBasket,
   Stethoscope,
   Truck,
   UserRoundCheck,
