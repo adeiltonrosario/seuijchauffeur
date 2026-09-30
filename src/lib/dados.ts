@@ -237,6 +237,43 @@ export const TARIFA_PADRAO_POR_KM = 3;
 export const TOLERANCIA_ESPERA_MIN = 3;
 export const VALOR_ESPERA_POR_MINUTO = 0.5;
 
+/** Turno de acompanhamento (usado pela modalidade de compras em supermercado). */
+export type Turno = {
+  id: "manha" | "tarde" | "noite";
+  rotulo: string;
+  inicio: string;
+  fim: string;
+  horas: number;
+  resumo: string;
+};
+
+export const TURNOS_COMPRAS: Turno[] = [
+  {
+    id: "manha",
+    rotulo: "Manhã",
+    inicio: "08:00",
+    fim: "12:00",
+    horas: 4,
+    resumo: "Feira matinal e hipermercados com movimento tranquilo.",
+  },
+  {
+    id: "tarde",
+    rotulo: "Tarde",
+    inicio: "14:00",
+    fim: "18:00",
+    horas: 4,
+    resumo: "Compras do mês, atacadistas e centros de compras.",
+  },
+  {
+    id: "noite",
+    rotulo: "Noite",
+    inicio: "19:00",
+    fim: "22:00",
+    horas: 3,
+    resumo: "Compras expressas após o expediente.",
+  },
+];
+
 export type Modalidade = {
   nome: string;
   caracteristicas: string;
@@ -249,6 +286,12 @@ export type Modalidade = {
   categoriasPermitidas?: CategoriaVeiculo[];
   /** Permite contratar ajudantes de carga junto com o motorista. */
   permiteAjudantes?: boolean;
+  /** Atendimento cobrado por turno fechado, e não por corrida isolada. */
+  porTurno?: boolean;
+  /** Valor fixo do turno fechado. */
+  valorTurno?: number;
+  /** Quilometragem inclusa no turno (ida e volta somadas). */
+  franquiaKm?: number;
 };
 
 export const precoAvulsoDaModalidade = (nome: string) =>
@@ -261,6 +304,18 @@ export const categoriasDaModalidade = (m: Modalidade): readonly CategoriaVeiculo
     : CATEGORIAS_PASSAGEIROS;
 
 export const ehModalidadeDeCarga = (m: Modalidade) => m.tipo === "carga";
+
+export const ehModalidadePorTurno = (m: Modalidade) => m.porTurno === true;
+
+/** Valor do km que passar da franquia inclusa no turno. */
+export const calcularExcedenteFranquia = (
+  kmTotal: number,
+  franquiaKm: number,
+  valorPorKm: number = TARIFA_PADRAO_POR_KM,
+) => {
+  const excedente = Math.max(0, (Number.isFinite(kmTotal) ? kmTotal : 0) - franquiaKm);
+  return Math.round(excedente * Math.max(valorPorKm, VALOR_MINIMO_POR_KM) * 100) / 100;
+};
 
 export const calcularValorCorrida = (distanciaKm: number, valorPorKm: number) => {
   const tarifa = Math.max(valorPorKm, VALOR_MINIMO_POR_KM);
