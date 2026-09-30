@@ -1313,6 +1313,24 @@ function NovoAgendamento() {
             </div>
 
             <div className="mt-5 space-y-1 border-t border-border/70 pt-4 text-sm">
+              {porTurno ? (
+                <>
+                  <p className="flex justify-between text-muted-foreground">
+                    <span>
+                      Turno {turno.rotulo} ({turno.inicio}–{turno.fim})
+                    </span>
+                    <span className="text-foreground">{formatarBRL(valorTurno)}</span>
+                  </p>
+                  <p className="flex justify-between text-muted-foreground">
+                    <span>Excedente de km ({kmExcedente.toLocaleString("pt-BR")} km)</span>
+                    <span className="text-foreground">{formatarBRL(valorExcedente)}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Franquia de {franquiaKm} km inclusa e espera dentro do turno sem custo extra.
+                  </p>
+                </>
+              ) : (
+                <>
               <p className="flex justify-between text-muted-foreground">
                 <span>
                   {modoPreco === "zona"
@@ -1351,6 +1369,8 @@ function NovoAgendamento() {
                 <span>Espera nas paradas ({minutosEspera} min)</span>
                 <span className="text-foreground">{formatarBRL(valorEspera)}</span>
               </p>
+                </>
+              )}
               {ajudantesEfetivos > 0 && (
                 <p className="flex justify-between text-muted-foreground">
                   <span>
