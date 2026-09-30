@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { CATEGORIAS_CARGA, CATEGORIAS_PASSAGEIROS, MAX_AJUDANTES, TARIFA_PADRAO_POR_KM, TAXA_AJUDANTE_PADRAO, TOLERANCIA_ESPERA_MIN, VALOR_ESPERA_POR_MINUTO, VALOR_MINIMO_POR_KM, ajudaCapacidade, calcularValorEspera, capacidadeDaCategoria, capacidadeValida, cargaDaCategoria, ehCategoriaCarga, faixaCapacidade, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais, type CategoriaVeiculo } from "@/lib/dados";
+import { CATEGORIAS_CARGA, CATEGORIAS_PASSAGEIROS, MAX_AJUDANTES, TARIFA_PADRAO_POR_KM, TURNOS_COMPRAS, TAXA_AJUDANTE_PADRAO, TOLERANCIA_ESPERA_MIN, VALOR_ESPERA_POR_MINUTO, VALOR_MINIMO_POR_KM, ajudaCapacidade, calcularValorEspera, capacidadeDaCategoria, capacidadeValida, cargaDaCategoria, ehCategoriaCarga, faixaCapacidade, formatarBRL, modalidades as modalidadesIniciais, motoristas as motoristasIniciais, veiculos as veiculosIniciais, type CategoriaVeiculo } from "@/lib/dados";
 import {
   DESCONTOS,
   PRECO_UNITARIO_AVULSO,
@@ -127,6 +127,9 @@ function Admin() {
       caracteristicas: m.caracteristicas,
       valorBase: [320, 180, 540, 140, 220][i] ?? 200,
       porKm: m.valorPorKm,
+      porTurno: m.porTurno ?? false,
+      valorTurno: m.valorTurno ?? 0,
+      franquiaKm: m.franquiaKm ?? 0,
     })),
   );
 
@@ -256,6 +259,9 @@ function Admin() {
         caracteristicas: novasCaracteristicas.trim(),
         valorBase: Number(novoValorBase),
         porKm,
+        porTurno: false,
+        valorTurno: 0,
+        franquiaKm: 0,
       },
     ]);
     toast.success("Modalidade criada.");
@@ -265,7 +271,11 @@ function Admin() {
     setNovasCaracteristicas("");
   };
 
-  const atualizarModalidade = (indice: number, campo: "valorBase" | "porKm", valor: string) => {
+  const atualizarModalidade = (
+    indice: number,
+    campo: "valorBase" | "porKm" | "valorTurno" | "franquiaKm",
+    valor: string,
+  ) => {
     const numero = Number(valor) || 0;
     if (campo === "porKm" && numero > 0 && numero < VALOR_MINIMO_POR_KM) {
       toast.error(`Piso mínimo do sistema: ${formatarBRL(VALOR_MINIMO_POR_KM)} por km.`);
@@ -782,6 +792,30 @@ function Admin() {
                       </div>
 
                     </div>
+                    {m.porTurno && (
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Valor do turno</Label>
+                          <Input
+                            inputMode="decimal"
+                            value={String(m.valorTurno)}
+                            onChange={(e) => atualizarModalidade(i, "valorTurno", e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Franquia de km inclusa</Label>
+                          <Input
+                            inputMode="decimal"
+                            value={String(m.franquiaKm)}
+                            onChange={(e) => atualizarModalidade(i, "franquiaKm", e.target.value)}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground sm:col-span-2">
+                          Turnos atendidos:{" "}
+                          {TURNOS_COMPRAS.map((t) => `${t.rotulo} ${t.inicio}–${t.fim}`).join(" · ")}
+                        </p>
+                      </div>
+                    )}
                     <div className="mt-3 space-y-1">
                       <Label className="text-xs text-muted-foreground">Características e procedimentos</Label>
                       <Textarea

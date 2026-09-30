@@ -27,14 +27,17 @@ import { cn } from "@/lib/utils";
 import {
   MAX_AJUDANTES,
   TOLERANCIA_ESPERA_MIN,
+  TURNOS_COMPRAS,
   VALOR_ESPERA_POR_MINUTO,
   VALOR_MINIMO_POR_KM,
+  calcularExcedenteFranquia,
   calcularValorCorrida,
   calcularValorEspera,
   capacidadeDaCategoria,
   cargaDaCategoria,
   categoriasDaModalidade,
   ehModalidadeDeCarga,
+  ehModalidadePorTurno,
   formatarBRL,
   minutosCobradosEspera,
   modalidades,
@@ -241,6 +244,7 @@ function NovoAgendamento() {
   const [horaRetorno, setHoraRetorno] = useState("21:00");
   const [modalidade, setModalidade] = useState(modalidades[0]!);
   const [motorista, setMotorista] = useState(motoristas[0]!.nome);
+  const [turnoId, setTurnoId] = useState<(typeof TURNOS_COMPRAS)[number]["id"]>("manha");
 
   // Etapa 2 — ida
   const [embarque, setEmbarque] = useState("Av. Paulista, 1400 — Bela Vista, São Paulo");
@@ -289,7 +293,12 @@ function NovoAgendamento() {
   };
 
 
-  const idaEVolta = tipo === "Ida e retorno";
+  const porTurno = ehModalidadePorTurno(modalidade);
+  const turno = TURNOS_COMPRAS.find((t) => t.id === turnoId) ?? TURNOS_COMPRAS[0]!;
+  const valorTurno = modalidade.valorTurno ?? modalidade.precoAvulso;
+  const franquiaKm = modalidade.franquiaKm ?? 0;
+
+  const idaEVolta = porTurno ? false : tipo === "Ida e retorno";
   const embarqueVoltaEfetivo = embarqueVolta.trim() || desembarque;
   const desembarqueVoltaEfetivo = desembarqueVolta.trim() || embarque;
 
@@ -322,6 +331,9 @@ function NovoAgendamento() {
     ? Math.round((valorIda + valorVolta) * PERCENTUAL_DESCONTO_PACOTE * 100) / 100
     : 0;
   const valorTrajeto = Math.round((valorIda + valorVolta - descontoKm) * 100) / 100;
+  const kmExcedente = porTurno ? Math.max(0, Math.round((kmIda - franquiaKm) * 100) / 100) : 0;
+  const valorExcedente = porTurno ? calcularExcedenteFranquia(kmIda, franquiaKm, modalidade.valorPorKm) : 0;
+  const valorDoTurno = porTurno ? Math.round((valorTurno + valorExcedente) * 100) / 100 : 0;
 
   const paradasTodas = useMemo(
     () => [...paradas, ...(idaEVolta ? paradasVolta : [])],
@@ -374,9 +386,10 @@ function NovoAgendamento() {
       zonaManualVolta,
     ],
   );
-  const precoFinal = modoPreco === "zona" ? transfer.final_trip_price : valorTrajeto;
-  const desconto = modoPreco === "zona" ? transfer.package_discount : descontoKm;
-  const total = Math.round((precoFinal + valorEspera + valorAjudantes + TAXA_SERVICO) * 100) / 100;
+  const precoFinal = porTurno ? valorDoTurno : modoPreco === "zona" ? transfer.final_trip_price : valorTrajeto;
+  const desconto = porTurno ? 0 : modoPreco === "zona" ? transfer.package_discount : descontoKm;
+  const esperaCobrada = porTurno ? 0 : valorEspera;
+  const total = Math.round((precoFinal + esperaCobrada + valorAjudantes + TAXA_SERVICO) * 100) / 100;
   const custoEstacionamento = dias * DIARIA_ESTACIONAMENTO;
   const economia = Math.round((custoEstacionamento - total) * 100) / 100;
 
@@ -386,7 +399,7 @@ function NovoAgendamento() {
       toast.error("Escolha a data da ida no calendário.");
       return;
     }
-    if (tipo === "Ida e retorno" && !dataRetorno) {
+    if (!porTurno && tipo === "Ida e retorno" && !dataRetorno) {
       toast.error("Escolha também a data de retorno.");
       return;
     }
@@ -453,26 +466,33 @@ function NovoAgendamento() {
                   Selecione o dia e o horário
                 </h2>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {(["Somente ida", "Ida e retorno"] as const).map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => {
-                        setTipo(t);
-                        if (t === "Somente ida") setDataRetorno(undefined);
-                      }}
-                      className={cn(
-                        "rounded-full border px-4 py-2 text-sm transition-colors",
-                        tipo === t
-                          ? "border-primary/50 bg-primary/15 text-primary"
-                          : "border-border text-muted-foreground hover:text-foreground",
-                      )}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
+                {porTurno ? (
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    Este serviço é fechado por turno: o motorista leva você de casa ao supermercado, acompanha as
+                    compras e volta com você — tudo dentro do turno escolhido.
+                  </p>
+                ) : (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {(["Somente ida", "Ida e retorno"] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => {
+                          setTipo(t);
+                          if (t === "Somente ida") setDataRetorno(undefined);
+                        }}
+                        className={cn(
+                          "rounded-full border px-4 py-2 text-sm transition-colors",
+                          tipo === t
+                            ? "border-primary/50 bg-primary/15 text-primary"
+                            : "border-border text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 <div className="mt-5 grid gap-6 md:grid-cols-2">
                   <div>
@@ -486,38 +506,68 @@ function NovoAgendamento() {
                       disabled={{ before: new Date() }}
                       className={cn("pointer-events-auto rounded-lg border border-border/60 p-3")}
                     />
-                    <div className="mt-3 space-y-2">
-                      <Label htmlFor="hora-ida" className="flex items-center gap-2">
-                        <Clock className="size-4 text-primary" /> Horário de embarque
-                      </Label>
-                      <Input
-                        id="hora-ida"
-                        type="time"
-                        value={horaIda}
-                        onChange={(e) => setHoraIda(e.target.value)}
-                        className="w-32"
-                      />
-                      <div className="flex flex-wrap gap-2">
-                        {HORARIOS_RAPIDOS.map((h) => (
-                          <button
-                            key={h}
-                            type="button"
-                            onClick={() => setHoraIda(h)}
-                            className={cn(
-                              "rounded-full border px-3 py-1 text-xs transition-colors",
-                              horaIda === h
-                                ? "border-primary/50 bg-primary/15 text-primary"
-                                : "border-border text-muted-foreground hover:text-foreground",
-                            )}
-                          >
-                            {h}
-                          </button>
-                        ))}
+                    {porTurno ? (
+                      <div className="mt-3 space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Clock className="size-4 text-primary" /> Turno do atendimento
+                        </Label>
+                        <div className="flex flex-wrap gap-2">
+                          {TURNOS_COMPRAS.map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => {
+                                setTurnoId(t.id);
+                                setHoraIda(t.inicio);
+                              }}
+                              className={cn(
+                                "rounded-lg border px-3 py-2 text-left text-xs transition-colors",
+                                turnoId === t.id
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              <span className="block text-sm font-medium">{t.rotulo}</span>
+                              {t.inicio} às {t.fim} · {t.horas}h
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{turno.resumo}</p>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="mt-3 space-y-2">
+                        <Label htmlFor="hora-ida" className="flex items-center gap-2">
+                          <Clock className="size-4 text-primary" /> Horário de embarque
+                        </Label>
+                        <Input
+                          id="hora-ida"
+                          type="time"
+                          value={horaIda}
+                          onChange={(e) => setHoraIda(e.target.value)}
+                          className="w-32"
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          {HORARIOS_RAPIDOS.map((h) => (
+                            <button
+                              key={h}
+                              type="button"
+                              onClick={() => setHoraIda(h)}
+                              className={cn(
+                                "rounded-full border px-3 py-1 text-xs transition-colors",
+                                horaIda === h
+                                  ? "border-primary/50 bg-primary/15 text-primary"
+                                  : "border-border text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              {h}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {tipo === "Ida e retorno" && (
+                  {!porTurno && tipo === "Ida e retorno" && (
                     <div>
                       <p className="mb-2 flex items-center gap-2 text-sm font-medium">
                         <CalendarDays className="size-4 text-primary" /> Data do retorno
@@ -558,6 +608,12 @@ function NovoAgendamento() {
                       onClick={() => {
                         setModalidade(m);
                         setAjudantes(0);
+                        if (ehModalidadePorTurno(m)) {
+                          setTipo("Somente ida");
+                          setDataRetorno(undefined);
+                          setModoPreco("km");
+                          setHoraIda(TURNOS_COMPRAS.find((t) => t.id === turnoId)?.inicio ?? "08:00");
+                        }
                       }}
                       className={cn(
                         "rounded-full border px-4 py-2 text-sm transition-colors",
@@ -567,7 +623,11 @@ function NovoAgendamento() {
                       )}
                     >
                       {ehModalidadeDeCarga(m) ? "🚚 " : ""}
-                      {m.nome} · {formatarBRL(Math.max(m.valorPorKm, VALOR_MINIMO_POR_KM))}/km
+                      {ehModalidadePorTurno(m) ? "🛒 " : ""}
+                      {m.nome} ·{" "}
+                      {ehModalidadePorTurno(m)
+                        ? `${formatarBRL(m.valorTurno ?? m.precoAvulso)}/turno`
+                        : `${formatarBRL(Math.max(m.valorPorKm, VALOR_MINIMO_POR_KM))}/km`}
                     </button>
                   ))}
                 </div>
@@ -577,6 +637,18 @@ function NovoAgendamento() {
                   </p>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{modalidade.caracteristicas}</p>
                 </div>
+
+                {porTurno ? (
+                  <div className="glow-gold mt-4 rounded-lg border border-primary/40 p-4">
+                    <p className="text-sm font-medium">
+                      Turno {turno.rotulo} · {turno.inicio} às {turno.fim} — {formatarBRL(valorTurno)}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Inclui {franquiaKm} km somando a ida até o supermercado e a volta para casa. O km que passar da
+                      franquia é cobrado a {formatarBRL(Math.max(modalidade.valorPorKm, VALOR_MINIMO_POR_KM))} por km.
+                    </p>
+                  </div>
+                ) : null}
 
                 {modalidade.nome === "Rota de plantonista" ? (
                   <div className="glow-gold mt-4 rounded-lg border border-primary/40 p-4">
@@ -855,7 +927,7 @@ function NovoAgendamento() {
                 </Card>
               )}
 
-              <Card className="border-border/60 p-6">
+              <Card className={cn("border-border/60 p-6", porTurno && "hidden")}>
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
                   Forma de cobrança
                 </h2>
@@ -1076,7 +1148,9 @@ function NovoAgendamento() {
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="distancia">Distância estimada da ida (km)</Label>
+                      <Label htmlFor="distancia">
+                        {porTurno ? "Distância total do turno (ida + volta, em km)" : "Distância estimada da ida (km)"}
+                      </Label>
                       <Input
                         id="distancia"
                         inputMode="decimal"
@@ -1105,6 +1179,22 @@ function NovoAgendamento() {
                   </div>
                   <div className="rounded-lg bg-secondary/50 p-4 text-sm">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Memória de cálculo</p>
+                    {porTurno ? (
+                      <>
+                        <p className="mt-2 text-muted-foreground">
+                          Turno {turno.rotulo} ({turno.horas}h): {formatarBRL(valorTurno)}
+                        </p>
+                        <p className="text-muted-foreground">
+                          Franquia inclusa: {franquiaKm} km · rodados: {kmIda.toLocaleString("pt-BR")} km
+                        </p>
+                        <p className="text-muted-foreground">
+                          Excedente: {kmExcedente.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
+                          {formatarBRL(valorExcedente)}
+                        </p>
+                        <p className="font-display text-lg text-primary">{formatarBRL(valorDoTurno)}</p>
+                      </>
+                    ) : (
+                      <>
                     <p className="mt-2 text-muted-foreground">
                       Ida: {kmIda.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
                       {formatarBRL(valorIda)}
@@ -1127,6 +1217,8 @@ function NovoAgendamento() {
                     <p className="font-display text-lg text-primary">
                       {formatarBRL(valorTrajeto + valorEspera)}
                     </p>
+                      </>
+                    )}
                     <p className="mt-1 text-xs text-muted-foreground">
                       Piso mínimo do sistema: {formatarBRL(VALOR_MINIMO_POR_KM)} por km. Cada parada tem{" "}
                       {TOLERANCIA_ESPERA_MIN} minutos de cortesia.
@@ -1221,6 +1313,24 @@ function NovoAgendamento() {
             </div>
 
             <div className="mt-5 space-y-1 border-t border-border/70 pt-4 text-sm">
+              {porTurno ? (
+                <>
+                  <p className="flex justify-between text-muted-foreground">
+                    <span>
+                      Turno {turno.rotulo} ({turno.inicio}–{turno.fim})
+                    </span>
+                    <span className="text-foreground">{formatarBRL(valorTurno)}</span>
+                  </p>
+                  <p className="flex justify-between text-muted-foreground">
+                    <span>Excedente de km ({kmExcedente.toLocaleString("pt-BR")} km)</span>
+                    <span className="text-foreground">{formatarBRL(valorExcedente)}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Franquia de {franquiaKm} km inclusa e espera dentro do turno sem custo extra.
+                  </p>
+                </>
+              ) : (
+                <>
               <p className="flex justify-between text-muted-foreground">
                 <span>
                   {modoPreco === "zona"
@@ -1259,6 +1369,8 @@ function NovoAgendamento() {
                 <span>Espera nas paradas ({minutosEspera} min)</span>
                 <span className="text-foreground">{formatarBRL(valorEspera)}</span>
               </p>
+                </>
+              )}
               {ajudantesEfetivos > 0 && (
                 <p className="flex justify-between text-muted-foreground">
                   <span>

@@ -237,6 +237,43 @@ export const TARIFA_PADRAO_POR_KM = 3;
 export const TOLERANCIA_ESPERA_MIN = 3;
 export const VALOR_ESPERA_POR_MINUTO = 0.5;
 
+/** Turno de acompanhamento (usado pela modalidade de compras em supermercado). */
+export type Turno = {
+  id: "manha" | "tarde" | "noite";
+  rotulo: string;
+  inicio: string;
+  fim: string;
+  horas: number;
+  resumo: string;
+};
+
+export const TURNOS_COMPRAS: Turno[] = [
+  {
+    id: "manha",
+    rotulo: "Manhã",
+    inicio: "08:00",
+    fim: "12:00",
+    horas: 4,
+    resumo: "Feira matinal e hipermercados com movimento tranquilo.",
+  },
+  {
+    id: "tarde",
+    rotulo: "Tarde",
+    inicio: "14:00",
+    fim: "18:00",
+    horas: 4,
+    resumo: "Compras do mês, atacadistas e centros de compras.",
+  },
+  {
+    id: "noite",
+    rotulo: "Noite",
+    inicio: "19:00",
+    fim: "22:00",
+    horas: 3,
+    resumo: "Compras expressas após o expediente.",
+  },
+];
+
 export type Modalidade = {
   nome: string;
   caracteristicas: string;
@@ -249,6 +286,12 @@ export type Modalidade = {
   categoriasPermitidas?: CategoriaVeiculo[];
   /** Permite contratar ajudantes de carga junto com o motorista. */
   permiteAjudantes?: boolean;
+  /** Atendimento cobrado por turno fechado, e não por corrida isolada. */
+  porTurno?: boolean;
+  /** Valor fixo do turno fechado. */
+  valorTurno?: number;
+  /** Quilometragem inclusa no turno (ida e volta somadas). */
+  franquiaKm?: number;
 };
 
 export const precoAvulsoDaModalidade = (nome: string) =>
@@ -261,6 +304,18 @@ export const categoriasDaModalidade = (m: Modalidade): readonly CategoriaVeiculo
     : CATEGORIAS_PASSAGEIROS;
 
 export const ehModalidadeDeCarga = (m: Modalidade) => m.tipo === "carga";
+
+export const ehModalidadePorTurno = (m: Modalidade) => m.porTurno === true;
+
+/** Valor do km que passar da franquia inclusa no turno. */
+export const calcularExcedenteFranquia = (
+  kmTotal: number,
+  franquiaKm: number,
+  valorPorKm: number = TARIFA_PADRAO_POR_KM,
+) => {
+  const excedente = Math.max(0, (Number.isFinite(kmTotal) ? kmTotal : 0) - franquiaKm);
+  return Math.round(excedente * Math.max(valorPorKm, VALOR_MINIMO_POR_KM) * 100) / 100;
+};
 
 export const calcularValorCorrida = (distanciaKm: number, valorPorKm: number) => {
   const tarifa = Math.max(valorPorKm, VALOR_MINIMO_POR_KM);
@@ -340,6 +395,17 @@ export const modalidades: Modalidade[] = [
     permiteAjudantes: true,
     caracteristicas:
       "Coleta: o motorista confere a lista de itens informada pelo cliente, avalia a integridade de móveis e eletrodomésticos, protege com cobertores e amarra a carga com cintas antes de sair. O cliente deve indicar se há escadas ou elevador de serviço. Entrega: descarregamento no local combinado, conferência item por item na presença do cliente e montagem básica somente se contratados ajudantes. Itens frágeis (TV, vidros, mármore) viajam em pé e protegidos; o motorista não transporta produtos inflamáveis, animais ou cargas sem nota quando exigida.",
+  },
+
+  {
+    nome: "Compras & Supermercado (por turno)",
+    valorPorKm: 3,
+    precoAvulso: 160,
+    porTurno: true,
+    valorTurno: 160,
+    franquiaKm: 20,
+    caracteristicas:
+      "Atendimento fechado por turno (manhã 08h-12h, tarde 14h-18h ou noite 19h-22h) com R$ 160 por turno e 20 km inclusos na ida e na volta somadas; o km que passar da franquia é cobrado à tarifa padrão. Embarque: o motorista chega 10 minutos antes na residência com o porta-malas limpo e desimpedido, auxilia o cliente no embarque e na acomodação. No supermercado: estaciona no ponto mais conveniente, acompanha o cliente dentro da loja, conduz o carrinho, alcança produtos em prateleiras altas e acomoda fardos e volumes pesados. Retorno e desembarque: apoio completo no descarregamento, levando todas as sacolas, caixas e volumes até o hall, portaria ou entrada da residência.",
   },
 ];
 
