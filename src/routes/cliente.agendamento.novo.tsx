@@ -1148,7 +1148,9 @@ function NovoAgendamento() {
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="distancia">Distância estimada da ida (km)</Label>
+                      <Label htmlFor="distancia">
+                        {porTurno ? "Distância total do turno (ida + volta, em km)" : "Distância estimada da ida (km)"}
+                      </Label>
                       <Input
                         id="distancia"
                         inputMode="decimal"
