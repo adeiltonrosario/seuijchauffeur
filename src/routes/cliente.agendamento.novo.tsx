@@ -608,6 +608,12 @@ function NovoAgendamento() {
                       onClick={() => {
                         setModalidade(m);
                         setAjudantes(0);
+                        if (ehModalidadePorTurno(m)) {
+                          setTipo("Somente ida");
+                          setDataRetorno(undefined);
+                          setModoPreco("km");
+                          setHoraIda(TURNOS_COMPRAS.find((t) => t.id === turnoId)?.inicio ?? "08:00");
+                        }
                       }}
                       className={cn(
                         "rounded-full border px-4 py-2 text-sm transition-colors",
@@ -617,7 +623,11 @@ function NovoAgendamento() {
                       )}
                     >
                       {ehModalidadeDeCarga(m) ? "🚚 " : ""}
-                      {m.nome} · {formatarBRL(Math.max(m.valorPorKm, VALOR_MINIMO_POR_KM))}/km
+                      {ehModalidadePorTurno(m) ? "🛒 " : ""}
+                      {m.nome} ·{" "}
+                      {ehModalidadePorTurno(m)
+                        ? `${formatarBRL(m.valorTurno ?? m.precoAvulso)}/turno`
+                        : `${formatarBRL(Math.max(m.valorPorKm, VALOR_MINIMO_POR_KM))}/km`}
                     </button>
                   ))}
                 </div>
@@ -627,6 +637,18 @@ function NovoAgendamento() {
                   </p>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{modalidade.caracteristicas}</p>
                 </div>
+
+                {porTurno ? (
+                  <div className="glow-gold mt-4 rounded-lg border border-primary/40 p-4">
+                    <p className="text-sm font-medium">
+                      Turno {turno.rotulo} · {turno.inicio} às {turno.fim} — {formatarBRL(valorTurno)}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Inclui {franquiaKm} km somando a ida até o supermercado e a volta para casa. O km que passar da
+                      franquia é cobrado a {formatarBRL(Math.max(modalidade.valorPorKm, VALOR_MINIMO_POR_KM))} por km.
+                    </p>
+                  </div>
+                ) : null}
 
                 {modalidade.nome === "Rota de plantonista" ? (
                   <div className="glow-gold mt-4 rounded-lg border border-primary/40 p-4">
