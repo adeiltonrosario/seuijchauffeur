@@ -127,6 +127,9 @@ function Admin() {
       caracteristicas: m.caracteristicas,
       valorBase: [320, 180, 540, 140, 220][i] ?? 200,
       porKm: m.valorPorKm,
+      porTurno: m.porTurno ?? false,
+      valorTurno: m.valorTurno ?? 0,
+      franquiaKm: m.franquiaKm ?? 0,
     })),
   );
 
