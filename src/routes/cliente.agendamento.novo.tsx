@@ -293,7 +293,12 @@ function NovoAgendamento() {
   };
 
 
-  const idaEVolta = tipo === "Ida e retorno";
+  const porTurno = ehModalidadePorTurno(modalidade);
+  const turno = TURNOS_COMPRAS.find((t) => t.id === turnoId) ?? TURNOS_COMPRAS[0]!;
+  const valorTurno = modalidade.valorTurno ?? modalidade.precoAvulso;
+  const franquiaKm = modalidade.franquiaKm ?? 0;
+
+  const idaEVolta = porTurno ? false : tipo === "Ida e retorno";
   const embarqueVoltaEfetivo = embarqueVolta.trim() || desembarque;
   const desembarqueVoltaEfetivo = desembarqueVolta.trim() || embarque;
 
