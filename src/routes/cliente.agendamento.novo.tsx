@@ -1179,6 +1179,22 @@ function NovoAgendamento() {
                   </div>
                   <div className="rounded-lg bg-secondary/50 p-4 text-sm">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Memória de cálculo</p>
+                    {porTurno ? (
+                      <>
+                        <p className="mt-2 text-muted-foreground">
+                          Turno {turno.rotulo} ({turno.horas}h): {formatarBRL(valorTurno)}
+                        </p>
+                        <p className="text-muted-foreground">
+                          Franquia inclusa: {franquiaKm} km · rodados: {kmIda.toLocaleString("pt-BR")} km
+                        </p>
+                        <p className="text-muted-foreground">
+                          Excedente: {kmExcedente.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
+                          {formatarBRL(valorExcedente)}
+                        </p>
+                        <p className="font-display text-lg text-primary">{formatarBRL(valorDoTurno)}</p>
+                      </>
+                    ) : (
+                      <>
                     <p className="mt-2 text-muted-foreground">
                       Ida: {kmIda.toLocaleString("pt-BR")} km × {formatarBRL(tarifa)} / km ={" "}
                       {formatarBRL(valorIda)}
@@ -1201,6 +1217,8 @@ function NovoAgendamento() {
                     <p className="font-display text-lg text-primary">
                       {formatarBRL(valorTrajeto + valorEspera)}
                     </p>
+                      </>
+                    )}
                     <p className="mt-1 text-xs text-muted-foreground">
                       Piso mínimo do sistema: {formatarBRL(VALOR_MINIMO_POR_KM)} por km. Cada parada tem{" "}
                       {TOLERANCIA_ESPERA_MIN} minutos de cortesia.
