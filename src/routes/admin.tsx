@@ -58,6 +58,17 @@ function Admin() {
   const [valorAjudante, setValorAjudante] = useState(String(TAXA_AJUDANTE_PADRAO));
   const [taxaAjudantePlataforma, setTaxaAjudantePlataforma] = useState(String(TAXA_AJUDANTE_PADRAO));
 
+  // Contas de recebimento
+  const [contasRecebimento, setContasRecebimento] = useState<ContaRecebimento[]>([]);
+  const [contaMotorista, setContaMotorista] = useState(motoristasIniciais[0]?.nome ?? "");
+  const [contaTipoChave, setContaTipoChave] = useState<TipoChavePix>("cpf");
+  const [contaChave, setContaChave] = useState("");
+  const [contaTitular, setContaTitular] = useState("");
+  const [contaDocumento, setContaDocumento] = useState("");
+  const [contaBanco, setContaBanco] = useState("");
+  const [contaAgencia, setContaAgencia] = useState("");
+  const [contaNumero, setContaNumero] = useState("");
+
   // Publicidades
   const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
   const [adTitulo, setAdTitulo] = useState("");
@@ -69,12 +80,62 @@ function Admin() {
 
   useEffect(() => {
     setAnuncios(carregarAnuncios());
+    setContasRecebimento(carregarContas());
   }, []);
+
+  const preencherConta = (lista: ContaRecebimento[], nome: string) => {
+    const cadastro = contaDoMotorista(lista, nome);
+    setContaTipoChave(cadastro?.tipoChave ?? "cpf");
+    setContaChave(cadastro?.chavePix ?? "");
+    setContaTitular(cadastro?.titular ?? nome);
+    setContaDocumento(cadastro?.documento ?? "");
+    setContaBanco(cadastro?.banco ?? "");
+    setContaAgencia(cadastro?.agencia ?? "");
+    setContaNumero(cadastro?.conta ?? "");
+  };
+
+  const selecionarMotoristaConta = (nome: string) => {
+    setContaMotorista(nome);
+    preencherConta(contasRecebimento, nome);
+  };
+
+  const salvarContaRecebimento = () => {
+    const nova: ContaRecebimento = {
+      motorista: contaMotorista,
+      tipoChave: contaTipoChave,
+      chavePix: contaChave.trim(),
+      titular: contaTitular.trim(),
+      documento: contaDocumento.trim(),
+      banco: contaBanco.trim(),
+      agencia: contaAgencia.trim(),
+      conta: contaNumero.trim(),
+      tipoConta: "corrente",
+      atualizadoEm: new Date().toISOString(),
+    };
+    const erro = validarConta(nova);
+    if (erro) {
+      toast.error(erro);
+      return;
+    }
+    const lista = gravarConta(contasRecebimento, nova);
+    setContasRecebimento(lista);
+    salvarContas(lista);
+    toast.success(`Conta de ${contaMotorista} salva. Repasses liberados para esta chave Pix.`);
+  };
+
+  const excluirContaRecebimento = (nome: string) => {
+    const lista = removerConta(contasRecebimento, nome);
+    setContasRecebimento(lista);
+    salvarContas(lista);
+    if (nome === contaMotorista) preencherConta(lista, nome);
+    toast.success(`Conta de recebimento de ${nome} removida.`);
+  };
 
   const gravarAnuncios = (lista: Anuncio[]) => {
     setAnuncios(lista);
     salvarAnuncios(lista);
   };
+
 
   const salvarAnuncio = () => {
     if (!adTitulo.trim() || !adChamada.trim() || !adLink.trim()) {
