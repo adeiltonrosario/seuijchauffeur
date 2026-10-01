@@ -1,3 +1,4 @@
+import { carregarStatus, motoristaAtivo } from "@/lib/status-motorista";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import {
@@ -308,6 +309,7 @@ function NovoAgendamento() {
   const motoristasDisponiveis = useMemo(
     () =>
       motoristas
+        .filter((m) => motoristaAtivo(carregarStatus(), m.nome))
         .filter((m) => categoriasAceitas.includes(m.categoria))
         .filter((m) => (dataIda ? motoristaDisponivel(agenda, m.nome, dataIda, horaIda) : true)),
     [agenda, dataIda, horaIda, categoriasAceitas],

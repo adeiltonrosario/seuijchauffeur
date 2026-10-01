@@ -32,6 +32,7 @@ import {
   type CategoriaVeiculo,
 } from "@/lib/dados";
 import { formatarTelefone, validarContato } from "@/lib/contatos";
+import { registrarPendente } from "@/lib/status-motorista";
 
 import {
   PRECO_UNITARIO_AVULSO,
@@ -192,6 +193,12 @@ function Autenticacao() {
         toast.error(`Informe a lotação entre ${faixa.min} e ${faixa.max} ocupantes conforme o CRLV.`);
         return;
       }
+    }
+    if (criandoConta && perfil === "motorista") {
+      registrarPendente(nomeConta.trim());
+      toast.success("Cadastro enviado! Seu acesso fica pendente até a aprovação do Administrador ou Gerente corporativo.");
+      setCriandoConta(false);
+      return;
     }
     navigate({ to: perfil === "cliente" ? "/cliente" : "/motorista/agendamentos" });
   };

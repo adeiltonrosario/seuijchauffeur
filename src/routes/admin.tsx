@@ -41,6 +41,7 @@ import {
   type TipoChavePix,
 } from "@/lib/recebimento";
 import { formatarTelefone, validarContato } from "@/lib/contatos";
+import { APROVADORES, CLASSE_STATUS, DESCRICAO_STATUS, ROTULO_STATUS, STATUS_MOTORISTA, alterarStatus, carregarStatus, statusDe, type Aprovador, type RegistroStatus, type StatusMotorista } from "@/lib/status-motorista";
 
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
@@ -65,6 +66,18 @@ type Categoria = CategoriaVeiculo;
 function Admin() {
   // Motoristas
   const [motoristas, setMotoristas] = useState(motoristasIniciais);
+  const [statusMap, setStatusMap] = useState<Record<string, RegistroStatus>>({});
+  const [aprovador, setAprovador] = useState<Aprovador>("Administrador");
+  useEffect(() => setStatusMap(carregarStatus()), []);
+  const mudarStatus = (nomeM: string, status: StatusMotorista) => {
+    let motivo: string | undefined;
+    if (status === "suspenso" || status === "bloqueado") {
+      motivo = window.prompt(`Motivo para ${ROTULO_STATUS[status].toLowerCase()} ${nomeM}:`) ?? undefined;
+    }
+    setStatusMap(alterarStatus(nomeM, status, aprovador, motivo));
+    toast.success(`${nomeM}: status ${ROTULO_STATUS[status]} (por ${aprovador}).`);
+  };
+  const solicitacoesApp = Object.keys(statusMap).filter((n) => !motoristas.some((m) => m.nome === n));
   const [nome, setNome] = useState("");
   const [emailMotorista, setEmailMotorista] = useState("");
   const [whatsappMotorista, setWhatsappMotorista] = useState("");
@@ -605,30 +618,62 @@ function Admin() {
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
                 Motoristas cadastrados
               </h2>
-              <ul className="mt-4 space-y-2">
-                {motoristas.map((m) => (
-                  <li
-                    key={m.nome}
-                    className="flex items-center justify-between gap-3 rounded-lg bg-secondary/50 px-4 py-3"
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span>Autorizando como:</span>
+                {APROVADORES.map((a) => (
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() => setAprovador(a)}
+                    className={`rounded-full px-3 py-1 ${aprovador === a ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
                   >
-                    <div>
-                      <p className="text-sm font-medium">{m.nome}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {m.veiculo} · nota {m.nota.toFixed(1)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {m.email} · WhatsApp {m.whatsapp}
-                      </p>
-
-                      {m.ajudantes > 0 ? (
-                        <p className="text-xs text-primary">
-                          Até {Math.min(m.ajudantes, MAX_AJUDANTES)} ajudante(s) · {formatarBRL(m.valorAjudante)} cada
-                        </p>
-                      ) : null}
-                    </div>
-                    <span className="text-sm text-gold">{formatarBRL(m.valor)}</span>
-                  </li>
+                    {a}
+                  </button>
                 ))}
+              </div>
+              <ul className="mt-4 space-y-2">
+                {[...motoristas.map((m) => ({ m, nomeM: m.nome })), ...solicitacoesApp.map((n) => ({ m: null, nomeM: n }))].map(({ m, nomeM }) => {
+                  const st = statusDe(statusMap, nomeM);
+                  const reg = statusMap[nomeM];
+                  return (
+                  <li key={nomeM} className="space-y-2 rounded-lg bg-secondary/50 px-4 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="flex items-center gap-2 text-sm font-medium">
+                          {nomeM}
+                          <span className={`rounded-full px-2 py-0.5 text-[11px] ${CLASSE_STATUS[st]}`}>{ROTULO_STATUS[st]}</span>
+                        </p>
+                        {m ? (
+                          <>
+                            <p className="text-xs text-muted-foreground">{m.veiculo} · nota {m.nota.toFixed(1)}</p>
+                            <p className="text-xs text-muted-foreground">{m.email} · WhatsApp {m.whatsapp}</p>
+                            {m.ajudantes > 0 ? (
+                              <p className="text-xs text-primary">
+                                Até {Math.min(m.ajudantes, MAX_AJUDANTES)} ajudante(s) · {formatarBRL(m.valorAjudante)} cada
+                              </p>
+                            ) : null}
+                          </>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">Cadastro feito pelo aplicativo</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          {DESCRICAO_STATUS[st]}
+                          {reg?.por ? ` · por ${reg.por}` : ""}
+                          {reg?.motivo ? ` · motivo: ${reg.motivo}` : ""}
+                        </p>
+                      </div>
+                      {m ? <span className="text-sm text-gold">{formatarBRL(m.valor)}</span> : null}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {STATUS_MOTORISTA.filter((s) => s !== st).map((s) => (
+                        <Button key={s} size="sm" variant="outline" className="h-7 text-xs" onClick={() => mudarStatus(nomeM, s)}>
+                          {s === "ativo" ? (st === "pendente" ? "Aprovar" : "Reativar") : ROTULO_STATUS[s]}
+                        </Button>
+                      ))}
+                    </div>
+                  </li>
+                  );
+                })}
               </ul>
             </Card>
           </div>
