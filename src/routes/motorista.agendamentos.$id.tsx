@@ -4,6 +4,7 @@ import { BellRing, CheckCircle2, Clock, PlayCircle, XCircle } from "lucide-react
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { ChatCorrida } from "@/components/chat-corrida";
+import { MapaLocal } from "@/components/mapa-local";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
