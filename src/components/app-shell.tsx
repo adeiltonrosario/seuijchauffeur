@@ -48,7 +48,7 @@ export function AppShell({
                 activeProps={{ className: "bg-secondary text-foreground" }}
                 activeOptions={{ exact: item.para === "/cliente" }}
               >
-                {item.texto}
+                <span>{item.texto}</span>
               </Link>
             ))}
           </nav>
