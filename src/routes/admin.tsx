@@ -88,6 +88,27 @@ function Admin() {
     toast.success(`${nomeM}: status ${ROTULO_STATUS[status]} (por ${aprovador}).`);
   };
   const solicitacoesApp = Object.keys(statusMap).filter((n) => !motoristas.some((m) => m.nome === n));
+
+  // Autorização de veículos solicitados pelos motoristas
+  const [veiculosSolicitados, setVeiculosSolicitados] = useState<VeiculoMotorista[]>([]);
+  useEffect(() => setVeiculosSolicitados(carregarVeiculosMotorista()), []);
+  const decidir = (v: VeiculoMotorista, status: StatusVeiculo) => {
+    let motivo: string | undefined;
+    if (status === "rejeitado" || status === "suspenso") {
+      motivo =
+        window.prompt(`Motivo para ${ROTULO_STATUS_VEICULO[status].toLowerCase()} o veículo ${v.placa}:`) ?? undefined;
+      if (!motivo?.trim()) {
+        toast.error("Informe o motivo da decisão.");
+        return;
+      }
+    }
+    setVeiculosSolicitados(decidirVeiculo(veiculosSolicitados, v.id, status, aprovador, motivo));
+    toast.success(`${v.placa}: ${ROTULO_STATUS_VEICULO[status]} por ${aprovador}.`);
+  };
+  const removerSolicitacao = (v: VeiculoMotorista) => {
+    setVeiculosSolicitados(excluirVeiculoMotorista(veiculosSolicitados, v.id));
+    toast.success(`Solicitação do veículo ${v.placa} removida.`);
+  };
   const [nome, setNome] = useState("");
   const [emailMotorista, setEmailMotorista] = useState("");
   const [whatsappMotorista, setWhatsappMotorista] = useState("");
