@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Car, Clock, Megaphone, Plus, Route as RouteIcon, Ticket, Trash2, UserPlus, Users } from "lucide-react";
+import { Car, Clock, Landmark, Megaphone, Plus, Route as RouteIcon, Ticket, Trash2, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,22 @@ import {
   type Anuncio,
   type PublicoAnuncio,
 } from "@/lib/publicidades";
+import {
+  PLACEHOLDER_CHAVE,
+  ROTULOS_CHAVE,
+  carregarContas,
+  contaDoMotorista,
+  gravarConta,
+  mascararChave,
+  removerConta,
+  salvarContas,
+  validarConta,
+  type ContaRecebimento,
+  type TipoChavePix,
+} from "@/lib/recebimento";
+
+const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -58,6 +74,17 @@ function Admin() {
   const [valorAjudante, setValorAjudante] = useState(String(TAXA_AJUDANTE_PADRAO));
   const [taxaAjudantePlataforma, setTaxaAjudantePlataforma] = useState(String(TAXA_AJUDANTE_PADRAO));
 
+  // Contas de recebimento
+  const [contasRecebimento, setContasRecebimento] = useState<ContaRecebimento[]>([]);
+  const [contaMotorista, setContaMotorista] = useState(motoristasIniciais[0]?.nome ?? "");
+  const [contaTipoChave, setContaTipoChave] = useState<TipoChavePix>("cpf");
+  const [contaChave, setContaChave] = useState("");
+  const [contaTitular, setContaTitular] = useState("");
+  const [contaDocumento, setContaDocumento] = useState("");
+  const [contaBanco, setContaBanco] = useState("");
+  const [contaAgencia, setContaAgencia] = useState("");
+  const [contaNumero, setContaNumero] = useState("");
+
   // Publicidades
   const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
   const [adTitulo, setAdTitulo] = useState("");
@@ -69,12 +96,73 @@ function Admin() {
 
   useEffect(() => {
     setAnuncios(carregarAnuncios());
+    const contas = carregarContas();
+    setContasRecebimento(contas);
+    const nome = motoristasIniciais[0]?.nome ?? "";
+    const cadastro = contaDoMotorista(contas, nome);
+    setContaTipoChave(cadastro?.tipoChave ?? "cpf");
+    setContaChave(cadastro?.chavePix ?? "");
+    setContaTitular(cadastro?.titular ?? nome);
+    setContaDocumento(cadastro?.documento ?? "");
+    setContaBanco(cadastro?.banco ?? "");
+    setContaAgencia(cadastro?.agencia ?? "");
+    setContaNumero(cadastro?.conta ?? "");
   }, []);
+
+
+  const preencherConta = (lista: ContaRecebimento[], nome: string) => {
+    const cadastro = contaDoMotorista(lista, nome);
+    setContaTipoChave(cadastro?.tipoChave ?? "cpf");
+    setContaChave(cadastro?.chavePix ?? "");
+    setContaTitular(cadastro?.titular ?? nome);
+    setContaDocumento(cadastro?.documento ?? "");
+    setContaBanco(cadastro?.banco ?? "");
+    setContaAgencia(cadastro?.agencia ?? "");
+    setContaNumero(cadastro?.conta ?? "");
+  };
+
+  const selecionarMotoristaConta = (nome: string) => {
+    setContaMotorista(nome);
+    preencherConta(contasRecebimento, nome);
+  };
+
+  const salvarContaRecebimento = () => {
+    const nova: ContaRecebimento = {
+      motorista: contaMotorista,
+      tipoChave: contaTipoChave,
+      chavePix: contaChave.trim(),
+      titular: contaTitular.trim(),
+      documento: contaDocumento.trim(),
+      banco: contaBanco.trim(),
+      agencia: contaAgencia.trim(),
+      conta: contaNumero.trim(),
+      tipoConta: "corrente",
+      atualizadoEm: new Date().toISOString(),
+    };
+    const erro = validarConta(nova);
+    if (erro) {
+      toast.error(erro);
+      return;
+    }
+    const lista = gravarConta(contasRecebimento, nova);
+    setContasRecebimento(lista);
+    salvarContas(lista);
+    toast.success(`Conta de ${contaMotorista} salva. Repasses liberados para esta chave Pix.`);
+  };
+
+  const excluirContaRecebimento = (nome: string) => {
+    const lista = removerConta(contasRecebimento, nome);
+    setContasRecebimento(lista);
+    salvarContas(lista);
+    if (nome === contaMotorista) preencherConta(lista, nome);
+    toast.success(`Conta de recebimento de ${nome} removida.`);
+  };
 
   const gravarAnuncios = (lista: Anuncio[]) => {
     setAnuncios(lista);
     salvarAnuncios(lista);
   };
+
 
   const salvarAnuncio = () => {
     if (!adTitulo.trim() || !adChamada.trim() || !adLink.trim()) {
@@ -301,8 +389,10 @@ function Admin() {
           <TabsTrigger value="veiculos">Veículos</TabsTrigger>
           <TabsTrigger value="modalidades">Modalidades e valores</TabsTrigger>
           <TabsTrigger value="assinaturas">Assinaturas</TabsTrigger>
+          <TabsTrigger value="recebimento">Recebimento</TabsTrigger>
           <TabsTrigger value="publicidades">Publicidades</TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="motoristas" className="mt-6">
           <div className="grid gap-6 lg:grid-cols-2">
@@ -1011,7 +1101,165 @@ function Admin() {
             </Card>
           </div>
         </TabsContent>
+
+        <TabsContent value="recebimento" className="mt-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className="surface-luxe border-border/60 p-6">
+              <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                <Landmark className="size-4" /> Conta de recebimento do motorista
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Cadastre a chave Pix que receberá os repasses das corridas concluídas de cada motorista.
+              </p>
+
+              <div className="mt-5 space-y-5">
+                <div className="space-y-2">
+                  <Label>Motorista</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {motoristas.map((m) => (
+                      <button
+                        key={m.placa}
+                        type="button"
+                        onClick={() => selecionarMotoristaConta(m.nome)}
+                        className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+                          contaMotorista === m.nome
+                            ? "border-primary/50 bg-primary/15 text-primary"
+                            : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {m.nome}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Tipo de chave Pix</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {TIPOS_CHAVE_PIX.map((tipo) => (
+                      <button
+                        key={tipo}
+                        type="button"
+                        onClick={() => setContaTipoChave(tipo)}
+                        className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+                          contaTipoChave === tipo
+                            ? "border-primary/50 bg-primary/15 text-primary"
+                            : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {ROTULOS_CHAVE[tipo]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="admin-chave">Chave Pix</Label>
+                    <Input
+                      id="admin-chave"
+                      value={contaChave}
+                      onChange={(e) => setContaChave(e.target.value)}
+                      placeholder={PLACEHOLDER_CHAVE[contaTipoChave]}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-titular">Titular da conta</Label>
+                    <Input
+                      id="admin-titular"
+                      value={contaTitular}
+                      onChange={(e) => setContaTitular(e.target.value)}
+                      placeholder="Nome completo"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-documento">CPF ou CNPJ</Label>
+                    <Input
+                      id="admin-documento"
+                      value={contaDocumento}
+                      onChange={(e) => setContaDocumento(e.target.value)}
+                      placeholder="000.000.000-00"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-banco">Banco (opcional)</Label>
+                    <Input
+                      id="admin-banco"
+                      value={contaBanco}
+                      onChange={(e) => setContaBanco(e.target.value)}
+                      placeholder="Ex.: 260 Nubank"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-agencia">Agência (opcional)</Label>
+                    <Input
+                      id="admin-agencia"
+                      value={contaAgencia}
+                      onChange={(e) => setContaAgencia(e.target.value)}
+                      placeholder="0001"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-conta">Conta (opcional)</Label>
+                    <Input
+                      id="admin-conta"
+                      value={contaNumero}
+                      onChange={(e) => setContaNumero(e.target.value)}
+                      placeholder="12345678-9"
+                    />
+                  </div>
+                </div>
+
+                <Button className="w-full" onClick={salvarContaRecebimento}>
+                  <Plus /> Salvar conta de recebimento
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="border-border/60 p-6">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                Contas cadastradas
+              </h2>
+              <ul className="mt-4 divide-y divide-border/70">
+                {motoristas.map((m) => {
+                  const cadastro = contaDoMotorista(contasRecebimento, m.nome);
+                  return (
+                    <li key={m.placa} className="flex items-center justify-between gap-3 py-4">
+                      <div>
+                        <p className="text-sm font-medium">{m.nome}</p>
+                        {cadastro ? (
+                          <p className="text-xs text-muted-foreground">
+                            Pix {ROTULOS_CHAVE[cadastro.tipoChave]} · {mascararChave(cadastro.chavePix)} ·{" "}
+                            {cadastro.titular}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">Sem conta cadastrada — repasse bloqueado.</p>
+                        )}
+                      </div>
+                      {cadastro ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-success">Apto a receber</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => excluirContaRecebimento(m.nome)}
+                            aria-label={`Remover conta de ${m.nome}`}
+                          >
+                            <Trash2 />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Pendente</span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
+          </div>
+        </TabsContent>
       </Tabs>
+
     </AppShell>
   );
 }
