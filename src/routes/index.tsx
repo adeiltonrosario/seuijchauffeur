@@ -379,14 +379,45 @@ function Autenticacao() {
             >
               {criandoConta ? (
                 <div className="space-y-2">
-                  <Label htmlFor="nome">Nome completo</Label>
-                  <Input id="nome" placeholder="Seu nome" />
+                  <Label htmlFor="nome">Nome completo *</Label>
+                  <Input
+                    id="nome"
+                    required
+                    value={nomeConta}
+                    onChange={(e) => setNomeConta(e.target.value)}
+                    placeholder="Seu nome"
+                  />
                 </div>
               ) : null}
               <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input id="email" type="email" placeholder="voce@email.com" />
+                <Label htmlFor="email">E-mail {criandoConta ? "*" : null}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={emailConta}
+                  onChange={(e) => setEmailConta(e.target.value)}
+                  placeholder="voce@email.com"
+                />
               </div>
+              {criandoConta ? (
+                <div className="space-y-2">
+                  <Label htmlFor="whatsapp">Telefone (WhatsApp) *</Label>
+                  <Input
+                    id="whatsapp"
+                    type="tel"
+                    inputMode="tel"
+                    required
+                    value={whatsappConta}
+                    onChange={(e) => setWhatsappConta(formatarTelefone(e.target.value))}
+                    placeholder="(71) 99680-5321"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Usamos este número para confirmar a corrida e falar com você no WhatsApp.
+                  </p>
+                </div>
+              ) : null}
+
               <div className="space-y-2">
                 <Label htmlFor="senha">Senha</Label>
                 <Input id="senha" type="password" placeholder="••••••••" />
