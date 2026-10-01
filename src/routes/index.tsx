@@ -167,10 +167,22 @@ function Autenticacao() {
   };
 
   const entrar = () => {
+    if (criandoConta) {
+      if (!nomeConta.trim()) {
+        toast.error("Informe seu nome completo.");
+        return;
+      }
+      const erroContato = validarContato(emailConta, whatsappConta);
+      if (erroContato) {
+        toast.error(erroContato);
+        return;
+      }
+    }
     if (criandoConta && perfil === "motorista" && (!modelo || !placa || !cor)) {
       toast.error("Para se cadastrar como motorista, informe modelo, placa e cor do seu veículo.");
       return;
     }
+
     if (criandoConta && perfil === "motorista") {
       const faixa = faixaCapacidade(categoria);
       const informada = Number(capacidade);
