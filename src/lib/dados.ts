@@ -191,6 +191,10 @@ export const agendamentos: Agendamento[] = [
 
 export type Motorista = {
   nome: string;
+  /** Contato obrigatório do motorista. */
+  email: string;
+  /** Telefone com WhatsApp, obrigatório. */
+  whatsapp: string;
   nota: number;
   veiculo: string;
   placa: string;
@@ -204,12 +208,14 @@ export type Motorista = {
 };
 
 export const motoristas: Motorista[] = [
-  { nome: "Marcos Vinícius", nota: 4.9, veiculo: "Toyota Corolla — Sedan", placa: "FQR-4E21", valor: 320, favorito: true, categoria: "Sedan", ajudantes: 0, valorAjudante: 0 },
-  { nome: "Juliana Alves", nota: 4.8, veiculo: "Jeep Compass — SUV", placa: "GHT-9J04", valor: 365, favorito: true, categoria: "SUV", ajudantes: 0, valorAjudante: 0 },
-  { nome: "Rafael Costa", nota: 4.7, veiculo: "Honda Fit — Hatch", placa: "KLM-2B77", valor: 280, favorito: false, categoria: "Hatch", ajudantes: 0, valorAjudante: 0 },
-  { nome: "Camila Duarte", nota: 5.0, veiculo: "Volvo XC60 — SUV", placa: "RPA-7C55", valor: 420, favorito: false, categoria: "SUV", ajudantes: 0, valorAjudante: 0 },
+  { nome: "Marcos Vinícius", email: "marcos.vinicius@seuchauffeur.com.br", whatsapp: "(71) 99680-5321", nota: 4.9, veiculo: "Toyota Corolla — Sedan", placa: "FQR-4E21", valor: 320, favorito: true, categoria: "Sedan", ajudantes: 0, valorAjudante: 0 },
+  { nome: "Juliana Alves", email: "juliana.alves@seuchauffeur.com.br", whatsapp: "(71) 99712-4408", nota: 4.8, veiculo: "Jeep Compass — SUV", placa: "GHT-9J04", valor: 365, favorito: true, categoria: "SUV", ajudantes: 0, valorAjudante: 0 },
+  { nome: "Rafael Costa", email: "rafael.costa@seuchauffeur.com.br", whatsapp: "(71) 99345-7712", nota: 4.7, veiculo: "Honda Fit — Hatch", placa: "KLM-2B77", valor: 280, favorito: false, categoria: "Hatch", ajudantes: 0, valorAjudante: 0 },
+  { nome: "Camila Duarte", email: "camila.duarte@seuchauffeur.com.br", whatsapp: "(71) 99488-2290", nota: 5.0, veiculo: "Volvo XC60 — SUV", placa: "RPA-7C55", valor: 420, favorito: false, categoria: "SUV", ajudantes: 0, valorAjudante: 0 },
   {
     nome: "Wagner Teixeira",
+    email: "wagner.teixeira@seuchauffeur.com.br",
+    whatsapp: "(71) 99551-6034",
     nota: 4.8,
     veiculo: "Fiat Fiorino Furgão — Fiorino / Furgão leve",
     placa: "TRK-5H19",
@@ -221,6 +227,8 @@ export const motoristas: Motorista[] = [
   },
   {
     nome: "Cleber Nunes",
+    email: "cleber.nunes@seuchauffeur.com.br",
+    whatsapp: "(71) 99620-8817",
     nota: 4.9,
     veiculo: "Hyundai HR Baú — Caminhão VUC / Baú 3/4",
     placa: "VUC-8D30",
@@ -231,6 +239,7 @@ export const motoristas: Motorista[] = [
     valorAjudante: 70,
   },
 ];
+
 
 export const VALOR_MINIMO_POR_KM = 1.85;
 export const TARIFA_PADRAO_POR_KM = 3;
