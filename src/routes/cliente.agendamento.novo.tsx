@@ -46,6 +46,11 @@ import {
 } from "@/lib/dados";
 import { carregarAgenda, motoristaDisponivel } from "@/lib/disponibilidade";
 import {
+  carregarVeiculosMotorista,
+  motoristaComConflito,
+  veiculosAprovados,
+} from "@/lib/veiculos-motorista";
+import {
   VALIDADE_CREDITOS_DIAS,
   calcularTodosOsPlanos,
   carregarCreditos,
