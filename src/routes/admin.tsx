@@ -284,6 +284,9 @@ function Admin() {
       ...atual,
       {
         nome,
+        email: emailMotorista.trim(),
+        whatsapp: whatsappMotorista.trim(),
+
         nota: 5,
         veiculo: `${modeloMotorista} — ${categoriaMotorista}`,
         placa: placaMotorista,
