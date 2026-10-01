@@ -199,7 +199,7 @@ function Autenticacao() {
             Premium Private Transport &amp; Chauffeur Services
           </p>
 
-          <h1 className="mt-10 font-display text-3xl font-semibold sm:text-4xl">Adeilton Oliveira</h1>
+          <h1 className="mt-10 font-display text-3xl font-semibold sm:text-4xl">{"\n"}</h1>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">
             Serviço exclusivo de agendamento e trajetos executivos climatizados.
           </p>
