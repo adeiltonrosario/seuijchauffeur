@@ -711,6 +711,73 @@ function Admin() {
         </TabsContent>
 
         <TabsContent value="veiculos" className="mt-6">
+          <Card className="mb-6 border-border/60 p-6">
+            <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              <Car className="size-4 text-primary" /> Veículos aguardando autorização
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Decidindo como <span className="text-primary">{aprovador}</span>. Confira o CRLV, a categoria da CNH e os
+              documentos antes de liberar. Veículo não aprovado não recebe corridas.
+            </p>
+            {veiculosSolicitados.length === 0 ? (
+              <p className="mt-4 text-sm text-muted-foreground">Nenhuma solicitação de veículo no momento.</p>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {veiculosSolicitados.map((v) => (
+                  <li key={v.id} className="rounded-lg border border-border/60 bg-secondary/40 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium">
+                          {v.motorista} · {v.modelo} — {v.cor}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {v.placa} · {v.categoria} · {v.capacidade} ocupantes
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          CRLV {v.numeroCrlv} (exercício {v.exercicioCrlv}) · Renavam {v.renavam}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          CNH {v.cnhNumero} · categoria {v.cnhCategoria} (exigida: {cnhExigida(v.categoria).join(" ou ")})
+                          {v.cnhEar ? " · com EAR" : " · sem EAR"} · validade {v.cnhValidade}
+                        </p>
+                        {v.motivo ? <p className="mt-1 text-xs text-destructive">Motivo: {v.motivo}</p> : null}
+                        {v.aprovador ? (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Decidido por {v.aprovador}
+                            {v.decididoEm ? ` em ${new Date(v.decididoEm).toLocaleString("pt-BR")}` : ""}
+                          </p>
+                        ) : null}
+                      </div>
+                      <span className={`rounded-full border px-3 py-1 text-xs ${CLASSE_STATUS_VEICULO[v.status]}`}>
+                        {ROTULO_STATUS_VEICULO[v.status]}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {v.status !== "aprovado" ? (
+                        <Button size="sm" onClick={() => decidir(v, "aprovado")}>
+                          Aprovar
+                        </Button>
+                      ) : null}
+                      {v.status !== "suspenso" ? (
+                        <Button size="sm" variant="outline" onClick={() => decidir(v, "suspenso")}>
+                          Suspender
+                        </Button>
+                      ) : null}
+                      {v.status !== "rejeitado" ? (
+                        <Button size="sm" variant="outline" onClick={() => decidir(v, "rejeitado")}>
+                          Rejeitar
+                        </Button>
+                      ) : null}
+                      <Button size="sm" variant="ghost" onClick={() => removerSolicitacao(v)}>
+                        <Trash2 className="size-4" /> Remover
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="surface-luxe border-border/60 p-6">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Novo veículo</h2>
