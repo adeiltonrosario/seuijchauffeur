@@ -48,7 +48,7 @@ export function AppShell({
                 activeProps={{ className: "bg-secondary text-foreground" }}
                 activeOptions={{ exact: item.para === "/cliente" }}
               >
-                {item.texto}
+                <span>{item.texto}</span>
               </Link>
             ))}
           </nav>
@@ -58,8 +58,11 @@ export function AppShell({
               to={areaMotorista ? "/cliente" : "/motorista/agendamentos"}
               className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
             >
-              {areaMotorista ? <UserRound className="size-4" /> : <Car className="size-4" />}
-              {areaMotorista ? "Ir para Cliente" : "Área do  Motorista"}
+              {areaMotorista ? (
+                <span key="cli" className="flex items-center gap-2"><UserRound className="size-4" /><span>Ir para Cliente</span></span>
+              ) : (
+                <span key="mot" className="flex items-center gap-2"><Car className="size-4" /><span>Área do Motorista</span></span>
+              )}
             </Link>
             <Link
               to="/admin"
