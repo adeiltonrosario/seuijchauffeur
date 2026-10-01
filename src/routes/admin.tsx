@@ -417,9 +417,41 @@ function Admin() {
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Novo motorista</h2>
               <div className="mt-4 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="nome">Nome completo</Label>
+                  <Label htmlFor="nome">Nome completo *</Label>
                   <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Marcos Vinícius" />
                 </div>
+                <div className="rounded-lg border border-border/60 bg-secondary/30 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Contato (obrigatório)
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    E-mail e telefone com WhatsApp são exigidos para confirmar corridas e avisos.
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="email-motorista">E-mail *</Label>
+                      <Input
+                        id="email-motorista"
+                        type="email"
+                        value={emailMotorista}
+                        onChange={(e) => setEmailMotorista(e.target.value)}
+                        placeholder="motorista@email.com"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="whatsapp-motorista">Telefone (WhatsApp) *</Label>
+                      <Input
+                        id="whatsapp-motorista"
+                        type="tel"
+                        inputMode="tel"
+                        value={whatsappMotorista}
+                        onChange={(e) => setWhatsappMotorista(formatarTelefone(e.target.value))}
+                        placeholder="(71) 99680-5321"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="rounded-lg border border-border/60 bg-secondary/30 p-4">
                   <p className="text-xs font-medium uppercase tracking-wide text-primary">
                     Veículo vinculado (obrigatório)
