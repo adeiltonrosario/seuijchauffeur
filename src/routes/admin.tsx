@@ -64,7 +64,10 @@ function Admin() {
   // Motoristas
   const [motoristas, setMotoristas] = useState(motoristasIniciais);
   const [nome, setNome] = useState("");
+  const [emailMotorista, setEmailMotorista] = useState("");
+  const [whatsappMotorista, setWhatsappMotorista] = useState("");
   const [valorMotorista, setValorMotorista] = useState("");
+
   const [modeloMotorista, setModeloMotorista] = useState("");
   const [placaMotorista, setPlacaMotorista] = useState("");
   const [corMotorista, setCorMotorista] = useState("");
