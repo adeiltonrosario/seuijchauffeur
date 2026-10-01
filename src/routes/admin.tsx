@@ -259,6 +259,12 @@ function Admin() {
       toast.error("Preencha nome e valor acordado.");
       return;
     }
+    const erroContato = validarContato(emailMotorista, whatsappMotorista);
+    if (erroContato) {
+      toast.error(erroContato);
+      return;
+    }
+
     if (!modeloMotorista || !placaMotorista || !corMotorista) {
       toast.error("Todo motorista precisa de um veículo: informe modelo, placa e cor.");
       return;
