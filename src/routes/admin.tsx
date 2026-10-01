@@ -27,6 +27,22 @@ import {
   type Anuncio,
   type PublicoAnuncio,
 } from "@/lib/publicidades";
+import {
+  PLACEHOLDER_CHAVE,
+  ROTULOS_CHAVE,
+  carregarContas,
+  contaDoMotorista,
+  gravarConta,
+  mascararChave,
+  removerConta,
+  salvarContas,
+  validarConta,
+  type ContaRecebimento,
+  type TipoChavePix,
+} from "@/lib/recebimento";
+
+const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
