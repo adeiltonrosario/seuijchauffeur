@@ -37,6 +37,8 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   console.error(error);
   const router = useRouter();
   useEffect(() => {
