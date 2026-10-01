@@ -42,6 +42,16 @@ import {
 } from "@/lib/recebimento";
 import { formatarTelefone, validarContato } from "@/lib/contatos";
 import { APROVADORES, CLASSE_STATUS, DESCRICAO_STATUS, ROTULO_STATUS, STATUS_MOTORISTA, alterarStatus, carregarStatus, statusDe, type Aprovador, type RegistroStatus, type StatusMotorista } from "@/lib/status-motorista";
+import {
+  CLASSE_STATUS_VEICULO,
+  ROTULO_STATUS_VEICULO,
+  carregarVeiculosMotorista,
+  cnhExigida,
+  decidirVeiculo,
+  excluirVeiculoMotorista,
+  type StatusVeiculo,
+  type VeiculoMotorista,
+} from "@/lib/veiculos-motorista";
 
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
