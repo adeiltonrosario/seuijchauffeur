@@ -301,8 +301,10 @@ function Admin() {
           <TabsTrigger value="veiculos">Veículos</TabsTrigger>
           <TabsTrigger value="modalidades">Modalidades e valores</TabsTrigger>
           <TabsTrigger value="assinaturas">Assinaturas</TabsTrigger>
+          <TabsTrigger value="recebimento">Recebimento</TabsTrigger>
           <TabsTrigger value="publicidades">Publicidades</TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="motoristas" className="mt-6">
           <div className="grid gap-6 lg:grid-cols-2">
