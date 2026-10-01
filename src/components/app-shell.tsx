@@ -59,7 +59,7 @@ export function AppShell({
               className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
             >
               {areaMotorista ? <UserRound className="size-4" /> : <Car className="size-4" />}
-              {areaMotorista ? "Ir para Cliente" : "Ir para Motorista"}
+              {areaMotorista ? "Ir para Cliente" : "Área do  Motorista"}
             </Link>
             <Link
               to="/admin"
