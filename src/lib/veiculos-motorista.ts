@@ -121,18 +121,19 @@ export function decidirVeiculo(
   aprovador: Aprovador,
   motivo?: string,
 ): VeiculoMotorista[] {
-  const atualizada = lista.map((v) =>
-    v.id === id
-      ? {
-          ...v,
-          status,
-          aprovador,
-          motivo: motivo?.trim() ? motivo.trim() : undefined,
-          decididoEm: new Date().toISOString(),
-          emUso: status === "aprovado" ? v.emUso : false,
-        }
-      : v,
-  );
+  const atualizada: VeiculoMotorista[] = lista.map((v) => {
+    if (v.id !== id) return v;
+    const atualizado: VeiculoMotorista = {
+      ...v,
+      status,
+      aprovador,
+      decididoEm: new Date().toISOString(),
+      emUso: status === "aprovado" ? v.emUso : false,
+    };
+    if (motivo?.trim()) atualizado.motivo = motivo.trim();
+    else delete atualizado.motivo;
+    return atualizado;
+  });
   salvarVeiculosMotorista(atualizada);
   return atualizada;
 }
