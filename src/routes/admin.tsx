@@ -313,7 +313,10 @@ function Admin() {
     );
     toast.success(`Motorista cadastrado com o veículo vinculado (${capacidadeMot} ocupantes).`);
     setNome("");
+    setEmailMotorista("");
+    setWhatsappMotorista("");
     setValorMotorista("");
+
     setModeloMotorista("");
     setPlacaMotorista("");
     setCorMotorista("");
