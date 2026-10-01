@@ -82,6 +82,37 @@ function DetalhesMotorista() {
             </p>
           </Card>
 
+          <Card className="surface-luxe border-border/60 p-6">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              Pontos do trajeto
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Toque na imagem para abrir a navegação no GPS.
+            </p>
+            <div className="mt-4 space-y-3">
+              <MapaLocal
+                rotulo="Embarque"
+                endereco={agendamento.embarque}
+                destaque="embarque"
+                observacao={`Chegue 10 minutos antes de ${agendamento.ida}.`}
+              />
+              {agendamento.parada ? (
+                <MapaLocal
+                  rotulo="Parada"
+                  endereco={agendamento.parada}
+                  destaque="parada"
+                  observacao="3 minutos de espera inclusos; o excedente é cobrado por minuto."
+                />
+              ) : null}
+              <MapaLocal
+                rotulo="Desembarque"
+                endereco={agendamento.desembarque}
+                destaque="desembarque"
+                observacao="Apoio ao desembarque conforme a modalidade."
+              />
+            </div>
+          </Card>
+
           <Card className="border-border/60 p-6">
             <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
               Como proceder · {agendamento.modalidade}
