@@ -31,6 +31,8 @@ import {
   cargaDaCategoria,
   type CategoriaVeiculo,
 } from "@/lib/dados";
+import { formatarTelefone, validarContato } from "@/lib/contatos";
+
 import {
   PRECO_UNITARIO_AVULSO,
   VALIDADE_CREDITOS_DIAS,
