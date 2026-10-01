@@ -31,6 +31,8 @@ import {
   cargaDaCategoria,
   type CategoriaVeiculo,
 } from "@/lib/dados";
+import { formatarTelefone, validarContato } from "@/lib/contatos";
+
 import {
   PRECO_UNITARIO_AVULSO,
   VALIDADE_CREDITOS_DIAS,
@@ -138,11 +140,15 @@ export const Route = createFileRoute("/")({
 function Autenticacao() {
   const [perfil, setPerfil] = useState<"cliente" | "motorista">("cliente");
   const [criandoConta, setCriandoConta] = useState(false);
+  const [nomeConta, setNomeConta] = useState("");
+  const [emailConta, setEmailConta] = useState("");
+  const [whatsappConta, setWhatsappConta] = useState("");
   const [modelo, setModelo] = useState("");
   const [placa, setPlaca] = useState("");
   const [cor, setCor] = useState("");
   const [categoria, setCategoriaState] = useState<CategoriaVeiculo>("Sedan");
   const [capacidade, setCapacidade] = useState(String(capacidadeDaCategoria("Sedan")));
+
 
   const setCategoria = (c: CategoriaVeiculo) => {
     setCategoriaState(c);
@@ -163,10 +169,22 @@ function Autenticacao() {
   };
 
   const entrar = () => {
+    if (criandoConta) {
+      if (!nomeConta.trim()) {
+        toast.error("Informe seu nome completo.");
+        return;
+      }
+      const erroContato = validarContato(emailConta, whatsappConta);
+      if (erroContato) {
+        toast.error(erroContato);
+        return;
+      }
+    }
     if (criandoConta && perfil === "motorista" && (!modelo || !placa || !cor)) {
       toast.error("Para se cadastrar como motorista, informe modelo, placa e cor do seu veículo.");
       return;
     }
+
     if (criandoConta && perfil === "motorista") {
       const faixa = faixaCapacidade(categoria);
       const informada = Number(capacidade);
@@ -361,14 +379,45 @@ function Autenticacao() {
             >
               {criandoConta ? (
                 <div className="space-y-2">
-                  <Label htmlFor="nome">Nome completo</Label>
-                  <Input id="nome" placeholder="Seu nome" />
+                  <Label htmlFor="nome">Nome completo *</Label>
+                  <Input
+                    id="nome"
+                    required
+                    value={nomeConta}
+                    onChange={(e) => setNomeConta(e.target.value)}
+                    placeholder="Seu nome"
+                  />
                 </div>
               ) : null}
               <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input id="email" type="email" placeholder="voce@email.com" />
+                <Label htmlFor="email">E-mail {criandoConta ? "*" : null}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={emailConta}
+                  onChange={(e) => setEmailConta(e.target.value)}
+                  placeholder="voce@email.com"
+                />
               </div>
+              {criandoConta ? (
+                <div className="space-y-2">
+                  <Label htmlFor="whatsapp">Telefone (WhatsApp) *</Label>
+                  <Input
+                    id="whatsapp"
+                    type="tel"
+                    inputMode="tel"
+                    required
+                    value={whatsappConta}
+                    onChange={(e) => setWhatsappConta(formatarTelefone(e.target.value))}
+                    placeholder="(71) 99680-5321"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Usamos este número para confirmar a corrida e falar com você no WhatsApp.
+                  </p>
+                </div>
+              ) : null}
+
               <div className="space-y-2">
                 <Label htmlFor="senha">Senha</Label>
                 <Input id="senha" type="password" placeholder="••••••••" />

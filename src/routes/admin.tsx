@@ -40,6 +40,8 @@ import {
   type ContaRecebimento,
   type TipoChavePix,
 } from "@/lib/recebimento";
+import { formatarTelefone, validarContato } from "@/lib/contatos";
+
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
 
@@ -64,7 +66,10 @@ function Admin() {
   // Motoristas
   const [motoristas, setMotoristas] = useState(motoristasIniciais);
   const [nome, setNome] = useState("");
+  const [emailMotorista, setEmailMotorista] = useState("");
+  const [whatsappMotorista, setWhatsappMotorista] = useState("");
   const [valorMotorista, setValorMotorista] = useState("");
+
   const [modeloMotorista, setModeloMotorista] = useState("");
   const [placaMotorista, setPlacaMotorista] = useState("");
   const [corMotorista, setCorMotorista] = useState("");
@@ -254,6 +259,12 @@ function Admin() {
       toast.error("Preencha nome e valor acordado.");
       return;
     }
+    const erroContato = validarContato(emailMotorista, whatsappMotorista);
+    if (erroContato) {
+      toast.error(erroContato);
+      return;
+    }
+
     if (!modeloMotorista || !placaMotorista || !corMotorista) {
       toast.error("Todo motorista precisa de um veículo: informe modelo, placa e cor.");
       return;
@@ -273,6 +284,9 @@ function Admin() {
       ...atual,
       {
         nome,
+        email: emailMotorista.trim(),
+        whatsapp: whatsappMotorista.trim(),
+
         nota: 5,
         veiculo: `${modeloMotorista} — ${categoriaMotorista}`,
         placa: placaMotorista,
@@ -299,7 +313,10 @@ function Admin() {
     );
     toast.success(`Motorista cadastrado com o veículo vinculado (${capacidadeMot} ocupantes).`);
     setNome("");
+    setEmailMotorista("");
+    setWhatsappMotorista("");
     setValorMotorista("");
+
     setModeloMotorista("");
     setPlacaMotorista("");
     setCorMotorista("");
@@ -400,9 +417,41 @@ function Admin() {
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Novo motorista</h2>
               <div className="mt-4 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="nome">Nome completo</Label>
+                  <Label htmlFor="nome">Nome completo *</Label>
                   <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Marcos Vinícius" />
                 </div>
+                <div className="rounded-lg border border-border/60 bg-secondary/30 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Contato (obrigatório)
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    E-mail e telefone com WhatsApp são exigidos para confirmar corridas e avisos.
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="email-motorista">E-mail *</Label>
+                      <Input
+                        id="email-motorista"
+                        type="email"
+                        value={emailMotorista}
+                        onChange={(e) => setEmailMotorista(e.target.value)}
+                        placeholder="motorista@email.com"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="whatsapp-motorista">Telefone (WhatsApp) *</Label>
+                      <Input
+                        id="whatsapp-motorista"
+                        type="tel"
+                        inputMode="tel"
+                        value={whatsappMotorista}
+                        onChange={(e) => setWhatsappMotorista(formatarTelefone(e.target.value))}
+                        placeholder="(71) 99680-5321"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="rounded-lg border border-border/60 bg-secondary/30 p-4">
                   <p className="text-xs font-medium uppercase tracking-wide text-primary">
                     Veículo vinculado (obrigatório)
@@ -567,6 +616,10 @@ function Admin() {
                       <p className="text-xs text-muted-foreground">
                         {m.veiculo} · nota {m.nota.toFixed(1)}
                       </p>
+                      <p className="text-xs text-muted-foreground">
+                        {m.email} · WhatsApp {m.whatsapp}
+                      </p>
+
                       {m.ajudantes > 0 ? (
                         <p className="text-xs text-primary">
                           Até {Math.min(m.ajudantes, MAX_AJUDANTES)} ajudante(s) · {formatarBRL(m.valorAjudante)} cada
