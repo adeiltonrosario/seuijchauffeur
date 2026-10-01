@@ -42,6 +42,16 @@ import {
 } from "@/lib/recebimento";
 import { formatarTelefone, validarContato } from "@/lib/contatos";
 import { APROVADORES, CLASSE_STATUS, DESCRICAO_STATUS, ROTULO_STATUS, STATUS_MOTORISTA, alterarStatus, carregarStatus, statusDe, type Aprovador, type RegistroStatus, type StatusMotorista } from "@/lib/status-motorista";
+import {
+  CLASSE_STATUS_VEICULO,
+  ROTULO_STATUS_VEICULO,
+  carregarVeiculosMotorista,
+  cnhExigida,
+  decidirVeiculo,
+  excluirVeiculoMotorista,
+  type StatusVeiculo,
+  type VeiculoMotorista,
+} from "@/lib/veiculos-motorista";
 
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
@@ -78,6 +88,27 @@ function Admin() {
     toast.success(`${nomeM}: status ${ROTULO_STATUS[status]} (por ${aprovador}).`);
   };
   const solicitacoesApp = Object.keys(statusMap).filter((n) => !motoristas.some((m) => m.nome === n));
+
+  // Autorização de veículos solicitados pelos motoristas
+  const [veiculosSolicitados, setVeiculosSolicitados] = useState<VeiculoMotorista[]>([]);
+  useEffect(() => setVeiculosSolicitados(carregarVeiculosMotorista()), []);
+  const decidir = (v: VeiculoMotorista, status: StatusVeiculo) => {
+    let motivo: string | undefined;
+    if (status === "rejeitado" || status === "suspenso") {
+      motivo =
+        window.prompt(`Motivo para ${ROTULO_STATUS_VEICULO[status].toLowerCase()} o veículo ${v.placa}:`) ?? undefined;
+      if (!motivo?.trim()) {
+        toast.error("Informe o motivo da decisão.");
+        return;
+      }
+    }
+    setVeiculosSolicitados(decidirVeiculo(veiculosSolicitados, v.id, status, aprovador, motivo));
+    toast.success(`${v.placa}: ${ROTULO_STATUS_VEICULO[status]} por ${aprovador}.`);
+  };
+  const removerSolicitacao = (v: VeiculoMotorista) => {
+    setVeiculosSolicitados(excluirVeiculoMotorista(veiculosSolicitados, v.id));
+    toast.success(`Solicitação do veículo ${v.placa} removida.`);
+  };
   const [nome, setNome] = useState("");
   const [emailMotorista, setEmailMotorista] = useState("");
   const [whatsappMotorista, setWhatsappMotorista] = useState("");
@@ -680,6 +711,73 @@ function Admin() {
         </TabsContent>
 
         <TabsContent value="veiculos" className="mt-6">
+          <Card className="mb-6 border-border/60 p-6">
+            <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              <Car className="size-4 text-primary" /> Veículos aguardando autorização
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Decidindo como <span className="text-primary">{aprovador}</span>. Confira o CRLV, a categoria da CNH e os
+              documentos antes de liberar. Veículo não aprovado não recebe corridas.
+            </p>
+            {veiculosSolicitados.length === 0 ? (
+              <p className="mt-4 text-sm text-muted-foreground">Nenhuma solicitação de veículo no momento.</p>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {veiculosSolicitados.map((v) => (
+                  <li key={v.id} className="rounded-lg border border-border/60 bg-secondary/40 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium">
+                          {v.motorista} · {v.modelo} — {v.cor}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {v.placa} · {v.categoria} · {v.capacidade} ocupantes
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          CRLV {v.numeroCrlv} (exercício {v.exercicioCrlv}) · Renavam {v.renavam}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          CNH {v.cnhNumero} · categoria {v.cnhCategoria} (exigida: {cnhExigida(v.categoria).join(" ou ")})
+                          {v.cnhEar ? " · com EAR" : " · sem EAR"} · validade {v.cnhValidade}
+                        </p>
+                        {v.motivo ? <p className="mt-1 text-xs text-destructive">Motivo: {v.motivo}</p> : null}
+                        {v.aprovador ? (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Decidido por {v.aprovador}
+                            {v.decididoEm ? ` em ${new Date(v.decididoEm).toLocaleString("pt-BR")}` : ""}
+                          </p>
+                        ) : null}
+                      </div>
+                      <span className={`rounded-full border px-3 py-1 text-xs ${CLASSE_STATUS_VEICULO[v.status]}`}>
+                        {ROTULO_STATUS_VEICULO[v.status]}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {v.status !== "aprovado" ? (
+                        <Button size="sm" onClick={() => decidir(v, "aprovado")}>
+                          Aprovar
+                        </Button>
+                      ) : null}
+                      {v.status !== "suspenso" ? (
+                        <Button size="sm" variant="outline" onClick={() => decidir(v, "suspenso")}>
+                          Suspender
+                        </Button>
+                      ) : null}
+                      {v.status !== "rejeitado" ? (
+                        <Button size="sm" variant="outline" onClick={() => decidir(v, "rejeitado")}>
+                          Rejeitar
+                        </Button>
+                      ) : null}
+                      <Button size="sm" variant="ghost" onClick={() => removerSolicitacao(v)}>
+                        <Trash2 className="size-4" /> Remover
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="surface-luxe border-border/60 p-6">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Novo veículo</h2>

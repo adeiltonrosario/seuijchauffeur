@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Car, ImagePlus, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BadgeCheck, Car, FileText, IdCard, ImagePlus, ShieldAlert, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -19,17 +19,31 @@ import {
   cargaDaCategoria,
   ehCategoriaCarga,
   formatarBRL,
-  veiculos as veiculosIniciais,
+  veiculos as veiculosFrota,
   type CategoriaVeiculo,
 } from "@/lib/dados";
+import { MOTORISTA_ATUAL } from "@/lib/disponibilidade";
+import {
+  CATEGORIAS_CNH,
+  CLASSE_STATUS_VEICULO,
+  ROTULO_STATUS_VEICULO,
+  carregarVeiculosMotorista,
+  cnhExigida,
+  definirEmUso,
+  solicitarVeiculo,
+  validarSolicitacao,
+  veiculosDoMotorista,
+  type CategoriaCnh,
+  type VeiculoMotorista,
+} from "@/lib/veiculos-motorista";
 
 export const Route = createFileRoute("/motorista/veiculos")({
   head: () => ({
     meta: [
       { title: "Meus veículos — seuchauffeur" },
-      { name: "description", content: "Cadastre placa, cor, modelo, foto e categoria dos seus veículos." },
+      { name: "description", content: "Cadastre placa, cor, modelo, CRLV e CNH para autorização dos seus veículos." },
       { property: "og:title", content: "Meus veículos — seuchauffeur" },
-      { property: "og:description", content: "Gerencie a frota usada nos seus agendamentos." },
+      { property: "og:description", content: "Gerencie a frota usada nos seus agendamentos, com autorização da central." },
     ],
   }),
   component: Veiculos,
@@ -38,7 +52,7 @@ export const Route = createFileRoute("/motorista/veiculos")({
 type Categoria = CategoriaVeiculo;
 
 function Veiculos() {
-  const [veiculos, setVeiculos] = useState(veiculosIniciais);
+  const [solicitacoes, setSolicitacoes] = useState<VeiculoMotorista[]>([]);
   const [placa, setPlaca] = useState("");
   const [modelo, setModelo] = useState("");
   const [cor, setCor] = useState("");
@@ -48,40 +62,91 @@ function Veiculos() {
   const [ajudantes, setAjudantes] = useState("0");
   const [valorAjudante, setValorAjudante] = useState(String(TAXA_AJUDANTE_PADRAO));
 
+  // CRLV
+  const [renavam, setRenavam] = useState("");
+  const [numeroCrlv, setNumeroCrlv] = useState("");
+  const [exercicioCrlv, setExercicioCrlv] = useState(String(new Date().getFullYear()));
+  const [docCrlv, setDocCrlv] = useState<string | null>(null);
+  // CNH
+  const [cnhNumero, setCnhNumero] = useState("");
+  const [cnhCategoria, setCnhCategoria] = useState<CategoriaCnh>("B");
+  const [cnhValidade, setCnhValidade] = useState("");
+  const [cnhEar, setCnhEar] = useState(false);
+  const [docCnh, setDocCnh] = useState<string | null>(null);
+
+  useEffect(() => setSolicitacoes(carregarVeiculosMotorista()), []);
+
+  const meus = veiculosDoMotorista(solicitacoes, MOTORISTA_ATUAL);
+  const aceitas = cnhExigida(categoria);
+
   const setCategoria = (c: Categoria) => {
     setCategoriaState(c);
     setCapacidade(String(capacidadeDaCategoria(c)));
   };
 
-  const salvar = () => {
-    if (!placa || !modelo || !cor) {
-      toast.error("Preencha placa, modelo e cor.");
+  const enviar = () => {
+    if (!docCrlv || !docCnh) {
+      toast.error("Anexe a foto do CRLV e da CNH para a análise da central.");
       return;
     }
-    const faixa = faixaCapacidade(categoria);
-    const informada = Number(capacidade);
-    if (faixa.ajustavel && (!Number.isFinite(informada) || informada < faixa.min || informada > faixa.max)) {
-      toast.error(`Informe a lotação entre ${faixa.min} e ${faixa.max} ocupantes conforme o CRLV.`);
+    const dados = {
+      motorista: MOTORISTA_ATUAL,
+      placa,
+      modelo,
+      cor,
+      categoria,
+      capacidade: Number(capacidade),
+      renavam,
+      numeroCrlv,
+      exercicioCrlv,
+      cnhNumero,
+      cnhCategoria,
+      cnhValidade,
+      cnhEar,
+    };
+    const erro = validarSolicitacao(dados);
+    if (erro) {
+      toast.error(erro);
       return;
     }
-    const capacidadeFinal = faixa.ajustavel ? capacidadeValida(categoria, informada) : capacidadeDaCategoria(categoria);
-    setVeiculos((atual) => [...atual, { placa, modelo, cor, categoria, capacidade: capacidadeFinal }]);
+    setSolicitacoes(solicitarVeiculo(solicitacoes, dados));
     toast.success(
-      ehCategoriaCarga(categoria) && Number(ajudantes) > 0
-        ? `Veículo de carga salvo com até ${Math.min(Number(ajudantes), MAX_AJUDANTES)} ajudante(s) a ${formatarBRL(Number(valorAjudante) || TAXA_AJUDANTE_PADRAO)} cada.`
-        : `Veículo salvo com ${capacidadeFinal} ocupantes.`,
+      `Solicitação enviada. O veículo ${placa.toUpperCase()} fica pendente até a autorização do Administrador ou Gerente corporativo.`,
     );
     setPlaca("");
     setModelo("");
     setCor("");
     setFoto(null);
+    setRenavam("");
+    setNumeroCrlv("");
+    setCnhNumero("");
+    setCnhValidade("");
+    setCnhEar(false);
+    setDocCrlv(null);
+    setDocCnh(null);
+  };
+
+  const escalar = (id: string) => {
+    setSolicitacoes(definirEmUso(solicitacoes, id));
+    toast.success("Veículo escalado para operar. Sua agenda continua única, sem duas corridas no mesmo horário.");
   };
 
   return (
-    <AppShell titulo="Meus veículos" descricao="Cadastre os carros que atenderão suas corridas agendadas.">
+    <AppShell
+      titulo="Meus veículos"
+      descricao="Cada veículo adicional precisa de autorização da central, com os dados do CRLV e da CNH."
+    >
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="surface-luxe border-border/60 p-6">
-          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Novo veículo</h2>
+          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            Solicitar autorização de veículo
+          </h2>
+          <p className="mt-2 flex items-start gap-2 text-xs text-muted-foreground">
+            <ShieldAlert className="mt-0.5 size-3.5 shrink-0 text-warning" />
+            O veículo só recebe corridas depois de aprovado. Sua agenda é única: corridas no mesmo horário ficam
+            bloqueadas mesmo em carros diferentes.
+          </p>
+
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="placa">Placa</Label>
@@ -167,6 +232,85 @@ function Veiculos() {
             </p>
           </div>
 
+          <div className="mt-5 rounded-lg border border-border/60 bg-secondary/30 p-4">
+            <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-primary">
+              <FileText className="size-3.5" /> Dados do CRLV (documento do veículo)
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="renavam">Renavam</Label>
+                <Input id="renavam" inputMode="numeric" value={renavam} onChange={(e) => setRenavam(e.target.value)} placeholder="00123456789" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="num-crlv">Número do CRLV</Label>
+                <Input id="num-crlv" value={numeroCrlv} onChange={(e) => setNumeroCrlv(e.target.value)} placeholder="1234567890" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="exercicio">Exercício do licenciamento</Label>
+                <Input id="exercicio" inputMode="numeric" value={exercicioCrlv} onChange={(e) => setExercicioCrlv(e.target.value)} placeholder="2026" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="doc-crlv">Foto do CRLV</Label>
+                <Input
+                  id="doc-crlv"
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => setDocCrlv(e.target.files?.[0]?.name ?? null)}
+                />
+                {docCrlv ? <p className="text-xs text-primary">Anexado: {docCrlv}</p> : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-4">
+            <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-primary">
+              <IdCard className="size-3.5" /> Dados da CNH
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="cnh-numero">Número de registro</Label>
+                <Input id="cnh-numero" inputMode="numeric" value={cnhNumero} onChange={(e) => setCnhNumero(e.target.value)} placeholder="01234567890" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cnh-validade">Validade</Label>
+                <Input id="cnh-validade" type="date" value={cnhValidade} onChange={(e) => setCnhValidade(e.target.value)} />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Categoria (exigida para {categoria}: {aceitas.join(" ou ")})</Label>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIAS_CNH.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setCnhCategoria(c)}
+                      className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                        cnhCategoria === c
+                          ? "border-primary/50 bg-primary/15 text-primary"
+                          : "border-border text-muted-foreground"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                <input type="checkbox" checked={cnhEar} onChange={(e) => setCnhEar(e.target.checked)} />
+                Minha CNH tem a observação EAR (exerce atividade remunerada)
+              </label>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="doc-cnh">Foto da CNH</Label>
+                <Input
+                  id="doc-cnh"
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => setDocCnh(e.target.files?.[0]?.name ?? null)}
+                />
+                {docCnh ? <p className="text-xs text-primary">Anexado: {docCnh}</p> : null}
+              </div>
+            </div>
+          </div>
+
           {ehCategoriaCarga(categoria) ? (
             <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-4">
               <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-primary">
@@ -226,26 +370,70 @@ function Veiculos() {
             />
           </div>
 
-          <Button className="mt-5 w-full" onClick={salvar}>
-            Salvar veículo
+          <Button className="mt-5 w-full" onClick={enviar}>
+            Enviar para autorização
           </Button>
         </Card>
 
-        <Card className="border-border/60 p-6">
-          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Veículos cadastrados</h2>
-          <ul className="mt-4 space-y-2">
-            {veiculos.map((v) => (
-              <li key={v.placa}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPlaca(v.placa);
-                    setModelo(v.modelo);
-                    setCor(v.cor);
-                    setCategoria(v.categoria as Categoria);
-                  }}
-                  className="flex w-full items-center gap-3 rounded-lg bg-secondary/50 px-4 py-3 text-left hover:bg-secondary"
-                >
+        <div className="space-y-6">
+          <Card className="border-border/60 p-6">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              Minhas solicitações de veículo
+            </h2>
+            {meus.length === 0 ? (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Você ainda não solicitou outro veículo. Preencha o formulário ao lado com os dados do CRLV e da CNH.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {meus.map((v) => (
+                  <li key={v.id} className="rounded-lg border border-border/60 bg-secondary/40 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium">
+                          {v.modelo} — {v.cor}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {v.placa} · {v.categoria} · {v.capacidade} ocupantes
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          CRLV {v.numeroCrlv} ({v.exercicioCrlv}) · Renavam {v.renavam} · CNH {v.cnhCategoria}
+                          {v.cnhEar ? " com EAR" : ""}
+                        </p>
+                        {v.motivo ? <p className="mt-1 text-xs text-destructive">Motivo: {v.motivo}</p> : null}
+                        {v.aprovador ? (
+                          <p className="mt-1 text-xs text-muted-foreground">Decidido por {v.aprovador}</p>
+                        ) : null}
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-full border px-3 py-1 text-xs ${CLASSE_STATUS_VEICULO[v.status]}`}
+                      >
+                        {ROTULO_STATUS_VEICULO[v.status]}
+                      </span>
+                    </div>
+                    {v.status === "aprovado" ? (
+                      <Button
+                        size="sm"
+                        variant={v.emUso ? "default" : "outline"}
+                        className="mt-3"
+                        onClick={() => escalar(v.id)}
+                      >
+                        <BadgeCheck className="size-4" /> {v.emUso ? "Em operação hoje" : "Escalar para operar"}
+                      </Button>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          <Card className="border-border/60 p-6">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              Frota já autorizada pela central
+            </h2>
+            <ul className="mt-4 space-y-2">
+              {veiculosFrota.map((v) => (
+                <li key={v.placa} className="flex items-center gap-3 rounded-lg bg-secondary/50 px-4 py-3">
                   <Car className="size-4 text-primary" />
                   <div>
                     <p className="text-sm font-medium">
@@ -255,11 +443,11 @@ function Veiculos() {
                       {v.placa} · {v.categoria} · {v.capacidade} ocupantes
                     </p>
                   </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Card>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </div>
       </div>
     </AppShell>
   );

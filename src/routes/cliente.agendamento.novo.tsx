@@ -46,6 +46,11 @@ import {
 } from "@/lib/dados";
 import { carregarAgenda, motoristaDisponivel } from "@/lib/disponibilidade";
 import {
+  carregarVeiculosMotorista,
+  motoristaComConflito,
+  veiculosAprovados,
+} from "@/lib/veiculos-motorista";
+import {
   VALIDADE_CREDITOS_DIAS,
   calcularTodosOsPlanos,
   carregarCreditos,
@@ -306,13 +311,19 @@ function NovoAgendamento() {
   const cargaSelecionada = ehModalidadeDeCarga(modalidade);
   const categoriasAceitas = useMemo(() => categoriasDaModalidade(modalidade), [modalidade]);
   const agenda = useMemo(() => carregarAgenda(), []);
+  const veiculosExtras = useMemo(() => carregarVeiculosMotorista(), []);
   const motoristasDisponiveis = useMemo(
     () =>
       motoristas
         .filter((m) => motoristaAtivo(carregarStatus(), m.nome))
-        .filter((m) => categoriasAceitas.includes(m.categoria))
-        .filter((m) => (dataIda ? motoristaDisponivel(agenda, m.nome, dataIda, horaIda) : true)),
-    [agenda, dataIda, horaIda, categoriasAceitas],
+        .filter(
+          (m) =>
+            categoriasAceitas.includes(m.categoria) ||
+            veiculosAprovados(veiculosExtras, m.nome).some((v) => categoriasAceitas.includes(v.categoria)),
+        )
+        .filter((m) => (dataIda ? motoristaDisponivel(agenda, m.nome, dataIda, horaIda) : true))
+        .filter((m) => (dataIda ? !motoristaComConflito(m.nome, dataIda, horaIda) : true)),
+    [agenda, dataIda, horaIda, categoriasAceitas, veiculosExtras],
   );
   const escolhido =
     motoristasDisponiveis.find((m) => m.nome === motorista) ?? motoristasDisponiveis[0] ?? motoristas[0]!;
