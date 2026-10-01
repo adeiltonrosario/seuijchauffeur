@@ -96,8 +96,19 @@ function Admin() {
 
   useEffect(() => {
     setAnuncios(carregarAnuncios());
-    setContasRecebimento(carregarContas());
+    const contas = carregarContas();
+    setContasRecebimento(contas);
+    const nome = motoristasIniciais[0]?.nome ?? "";
+    const cadastro = contaDoMotorista(contas, nome);
+    setContaTipoChave(cadastro?.tipoChave ?? "cpf");
+    setContaChave(cadastro?.chavePix ?? "");
+    setContaTitular(cadastro?.titular ?? nome);
+    setContaDocumento(cadastro?.documento ?? "");
+    setContaBanco(cadastro?.banco ?? "");
+    setContaAgencia(cadastro?.agencia ?? "");
+    setContaNumero(cadastro?.conta ?? "");
   }, []);
+
 
   const preencherConta = (lista: ContaRecebimento[], nome: string) => {
     const cadastro = contaDoMotorista(lista, nome);
