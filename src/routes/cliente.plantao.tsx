@@ -1,3 +1,4 @@
+import { carregarStatus, motoristaAtivo } from "@/lib/status-motorista";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { CalendarDays, Clock, MapPin, Plus, ShieldCheck, Trash2, UserCheck } from "lucide-react";

@@ -1,3 +1,4 @@
+import { carregarStatus, motoristaAtivo } from "@/lib/status-motorista";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import {

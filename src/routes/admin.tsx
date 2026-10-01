@@ -41,6 +41,7 @@ import {
   type TipoChavePix,
 } from "@/lib/recebimento";
 import { formatarTelefone, validarContato } from "@/lib/contatos";
+import { APROVADORES, CLASSE_STATUS, DESCRICAO_STATUS, ROTULO_STATUS, STATUS_MOTORISTA, alterarStatus, carregarStatus, statusDe, type Aprovador, type RegistroStatus, type StatusMotorista } from "@/lib/status-motorista";
 
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];

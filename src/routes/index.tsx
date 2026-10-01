@@ -32,6 +32,7 @@ import {
   type CategoriaVeiculo,
 } from "@/lib/dados";
 import { formatarTelefone, validarContato } from "@/lib/contatos";
+import { registrarPendente } from "@/lib/status-motorista";
 
 import {
   PRECO_UNITARIO_AVULSO,
