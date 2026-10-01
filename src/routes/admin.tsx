@@ -40,6 +40,8 @@ import {
   type ContaRecebimento,
   type TipoChavePix,
 } from "@/lib/recebimento";
+import { formatarTelefone, validarContato } from "@/lib/contatos";
+
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
 
