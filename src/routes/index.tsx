@@ -138,11 +138,15 @@ export const Route = createFileRoute("/")({
 function Autenticacao() {
   const [perfil, setPerfil] = useState<"cliente" | "motorista">("cliente");
   const [criandoConta, setCriandoConta] = useState(false);
+  const [nomeConta, setNomeConta] = useState("");
+  const [emailConta, setEmailConta] = useState("");
+  const [whatsappConta, setWhatsappConta] = useState("");
   const [modelo, setModelo] = useState("");
   const [placa, setPlaca] = useState("");
   const [cor, setCor] = useState("");
   const [categoria, setCategoriaState] = useState<CategoriaVeiculo>("Sedan");
   const [capacidade, setCapacidade] = useState(String(capacidadeDaCategoria("Sedan")));
+
 
   const setCategoria = (c: CategoriaVeiculo) => {
     setCategoriaState(c);
