@@ -616,6 +616,10 @@ function Admin() {
                       <p className="text-xs text-muted-foreground">
                         {m.veiculo} · nota {m.nota.toFixed(1)}
                       </p>
+                      <p className="text-xs text-muted-foreground">
+                        {m.email} · WhatsApp {m.whatsapp}
+                      </p>
+
                       {m.ajudantes > 0 ? (
                         <p className="text-xs text-primary">
                           Até {Math.min(m.ajudantes, MAX_AJUDANTES)} ajudante(s) · {formatarBRL(m.valorAjudante)} cada
