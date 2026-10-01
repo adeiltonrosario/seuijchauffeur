@@ -29,7 +29,7 @@ export const CLASSE_STATUS: Record<StatusMotorista, string> = {
 export type RegistroStatus = {
   status: StatusMotorista;
   por?: Aprovador;
-  motivo?: string;
+  motivo?: string | undefined;
   atualizadoEm: string;
 };
 
