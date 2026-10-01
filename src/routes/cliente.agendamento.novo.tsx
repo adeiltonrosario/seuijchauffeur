@@ -308,6 +308,7 @@ function NovoAgendamento() {
   const motoristasDisponiveis = useMemo(
     () =>
       motoristas
+        .filter((m) => motoristaAtivo(carregarStatus(), m.nome))
         .filter((m) => categoriasAceitas.includes(m.categoria))
         .filter((m) => (dataIda ? motoristaDisponivel(agenda, m.nome, dataIda, horaIda) : true)),
     [agenda, dataIda, horaIda, categoriasAceitas],

@@ -193,6 +193,12 @@ function Autenticacao() {
         return;
       }
     }
+    if (criandoConta && perfil === "motorista") {
+      registrarPendente(nomeConta.trim());
+      toast.success("Cadastro enviado! Seu acesso fica pendente até a aprovação do Administrador ou Gerente corporativo.");
+      setCriandoConta(false);
+      return;
+    }
     navigate({ to: perfil === "cliente" ? "/cliente" : "/motorista/agendamentos" });
   };
 

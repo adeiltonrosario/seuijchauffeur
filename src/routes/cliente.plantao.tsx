@@ -109,6 +109,7 @@ function RotaPlantonista() {
     () =>
       motoristas
         .filter((m) => (CATEGORIAS_PASSAGEIROS as readonly string[]).includes(m.categoria))
+        .filter((m) => motoristaAtivo(carregarStatus(), m.nome))
         .map((m) => m.nome),
     [],
   );
