@@ -61,6 +61,7 @@ export function registrarPendente(nome: string) {
   const mapa = carregarStatus();
   mapa[nome] = { status: "pendente", atualizadoEm: new Date().toISOString() };
   salvar(mapa);
+  void gravarStatusMotorista(nome, mapa[nome]);
   return mapa;
 }
 
@@ -69,5 +70,6 @@ export function alterarStatus(nome: string, status: StatusMotorista, por: Aprova
   const mapa = carregarStatus();
   mapa[nome] = { status, por, motivo: motivo?.trim() || undefined, atualizadoEm: new Date().toISOString() };
   salvar(mapa);
+  void gravarStatusMotorista(nome, mapa[nome]);
   return mapa;
 }
