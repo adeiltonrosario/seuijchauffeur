@@ -74,7 +74,12 @@ function Veiculos() {
   const [cnhEar, setCnhEar] = useState(false);
   const [docCnh, setDocCnh] = useState<string | null>(null);
 
-  useEffect(() => setSolicitacoes(carregarVeiculosMotorista()), []);
+  useEffect(() => {
+    setSolicitacoes(carregarVeiculosMotorista());
+    const atualizar = () => setSolicitacoes(carregarVeiculosMotorista());
+    window.addEventListener("seuchauffeur-sync", atualizar);
+    return () => window.removeEventListener("seuchauffeur-sync", atualizar);
+  }, []);
 
   const meus = veiculosDoMotorista(solicitacoes, MOTORISTA_ATUAL);
   const aceitas = cnhExigida(categoria);

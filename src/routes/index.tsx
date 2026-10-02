@@ -169,7 +169,9 @@ function Autenticacao() {
     navigate({ to: "/cliente" });
   };
 
-  const entrar = () => {
+  const [salvando, setSalvando] = useState(false);
+  const entrar = async () => {
+    if (salvando) return;
     if (criandoConta) {
       if (!nomeConta.trim()) {
         toast.error("Informe seu nome completo.");
@@ -193,12 +195,42 @@ function Autenticacao() {
         toast.error(`Informe a lotação entre ${faixa.min} e ${faixa.max} ocupantes conforme o CRLV.`);
         return;
       }
-    }
-    if (criandoConta && perfil === "motorista") {
-      registrarPendente(nomeConta.trim());
+      setSalvando(true);
+      const nomeM = nomeConta.trim();
+      await gravarMotorista({
+        nome: nomeM,
+        email: emailConta.trim().toLowerCase(),
+        whatsapp: whatsappConta.trim(),
+        status: "pendente",
+        veiculo: `${modelo} — ${categoria}`,
+        placa: placa.toUpperCase(),
+        categoria,
+      });
+      await gravarVeiculoFrota(
+        {
+          placa,
+          modelo,
+          cor,
+          categoria,
+          capacidade: faixa.ajustavel ? capacidadeValida(categoria, informada) : capacidadeDaCategoria(categoria),
+        },
+        nomeM,
+      );
+      registrarPendente(nomeM);
+      setSalvando(false);
       toast.success("Cadastro enviado! Seu acesso fica pendente até a aprovação do Administrador ou Gerente corporativo.");
       setCriandoConta(false);
       return;
+    }
+    if (criandoConta && perfil === "cliente") {
+      setSalvando(true);
+      const erro = await cadastrarCliente(nomeConta, emailConta, whatsappConta);
+      setSalvando(false);
+      if (erro) {
+        toast.error(erro);
+        return;
+      }
+      toast.success("Conta criada e salva com sucesso!");
     }
     navigate({ to: perfil === "cliente" ? "/cliente" : "/motorista/agendamentos" });
   };
