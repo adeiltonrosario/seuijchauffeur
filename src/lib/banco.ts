@@ -49,15 +49,15 @@ export async function cadastrarCliente(nome: string, email: string, whatsapp: st
 /* ---------- Motoristas ---------- */
 export async function gravarMotorista(m: Partial<MotoristaBanco> & { nome: string }) {
   const linha: Record<string, unknown> = { nome: m.nome, atualizado_em: new Date().toISOString() };
-  if (m.email !== undefined) linha.email = m.email;
-  if (m.whatsapp !== undefined) linha.telefone_whatsapp = m.whatsapp;
-  if (m.status !== undefined) linha.status = m.status;
-  if (m.veiculo !== undefined) linha.veiculo = m.veiculo;
-  if (m.placa !== undefined) linha.placa = m.placa;
-  if (m.categoria !== undefined) linha.categoria = m.categoria;
-  if (m.valor !== undefined) linha.valor = m.valor;
-  if (m.ajudantes !== undefined) linha.ajudantes = m.ajudantes;
-  if (m.valorAjudante !== undefined) linha.valor_ajudante = m.valorAjudante;
+  if (m.email !== undefined) linha["email"] = m.email;
+  if (m.whatsapp !== undefined) linha["telefone_whatsapp"] = m.whatsapp;
+  if (m.status !== undefined) linha["status"] = m.status;
+  if (m.veiculo !== undefined) linha["veiculo"] = m.veiculo;
+  if (m.placa !== undefined) linha["placa"] = m.placa;
+  if (m.categoria !== undefined) linha["categoria"] = m.categoria;
+  if (m.valor !== undefined) linha["valor"] = m.valor;
+  if (m.ajudantes !== undefined) linha["ajudantes"] = m.ajudantes;
+  if (m.valorAjudante !== undefined) linha["valor_ajudante"] = m.valorAjudante;
   const { error } = await supabase.from("motoristas").upsert(linha as never, { onConflict: "nome" });
   avisar("gravar motorista", error);
 }
