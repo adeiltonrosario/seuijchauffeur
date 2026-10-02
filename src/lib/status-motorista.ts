@@ -1,3 +1,4 @@
+import { gravarStatusMotorista } from "@/lib/banco";
 /** Status de habilitação do motorista — só Administrador ou Gerente corporativo alteram. */
 export type StatusMotorista = "pendente" | "ativo" | "suspenso" | "bloqueado";
 export type Aprovador = "Administrador" | "Gerente corporativo";
