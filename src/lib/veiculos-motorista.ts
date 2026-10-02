@@ -1,5 +1,6 @@
 import { agendamentos, capacidadeValida, ehCategoriaCarga, faixaCapacidade, type CategoriaVeiculo } from "@/lib/dados";
 import type { Aprovador } from "@/lib/status-motorista";
+import { excluirVeiculo, gravarVeiculosSolicitados } from "@/lib/banco";
 
 export type StatusVeiculo = "pendente" | "aprovado" | "suspenso" | "rejeitado";
 
@@ -61,6 +62,7 @@ export function carregarVeiculosMotorista(): VeiculoMotorista[] {
 export function salvarVeiculosMotorista(lista: VeiculoMotorista[]) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(CHAVE_STORAGE, JSON.stringify(lista));
+  void gravarVeiculosSolicitados(lista);
 }
 
 /** Categorias de CNH aceitas para a categoria do veículo. */
@@ -141,6 +143,7 @@ export function decidirVeiculo(
 export function excluirVeiculoMotorista(lista: VeiculoMotorista[], id: string): VeiculoMotorista[] {
   const atualizada = lista.filter((v) => v.id !== id);
   salvarVeiculosMotorista(atualizada);
+  void excluirVeiculo(id);
   return atualizada;
 }
 

@@ -135,6 +135,9 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    void import("@/lib/banco").then((m) => m.sincronizarDoBanco());
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
