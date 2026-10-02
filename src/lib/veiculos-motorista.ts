@@ -1,5 +1,6 @@
 import { agendamentos, capacidadeValida, ehCategoriaCarga, faixaCapacidade, type CategoriaVeiculo } from "@/lib/dados";
 import type { Aprovador } from "@/lib/status-motorista";
+import { excluirVeiculo, gravarVeiculosSolicitados } from "@/lib/banco";
 
 export type StatusVeiculo = "pendente" | "aprovado" | "suspenso" | "rejeitado";
 
