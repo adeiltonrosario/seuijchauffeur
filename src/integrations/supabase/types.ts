@@ -14,7 +14,156 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clientes: {
+        Row: {
+          criado_em: string
+          email: string
+          id: string
+          nome: string
+          telefone_whatsapp: string
+        }
+        Insert: {
+          criado_em?: string
+          email: string
+          id?: string
+          nome: string
+          telefone_whatsapp: string
+        }
+        Update: {
+          criado_em?: string
+          email?: string
+          id?: string
+          nome?: string
+          telefone_whatsapp?: string
+        }
+        Relationships: []
+      }
+      motoristas: {
+        Row: {
+          ajudantes: number
+          alterado_por: string | null
+          atualizado_em: string
+          categoria: string
+          criado_em: string
+          email: string
+          id: string
+          motivo_status: string | null
+          nome: string
+          placa: string
+          status: string
+          telefone_whatsapp: string
+          valor: number
+          valor_ajudante: number
+          veiculo: string
+        }
+        Insert: {
+          ajudantes?: number
+          alterado_por?: string | null
+          atualizado_em?: string
+          categoria?: string
+          criado_em?: string
+          email?: string
+          id?: string
+          motivo_status?: string | null
+          nome: string
+          placa?: string
+          status?: string
+          telefone_whatsapp?: string
+          valor?: number
+          valor_ajudante?: number
+          veiculo?: string
+        }
+        Update: {
+          ajudantes?: number
+          alterado_por?: string | null
+          atualizado_em?: string
+          categoria?: string
+          criado_em?: string
+          email?: string
+          id?: string
+          motivo_status?: string | null
+          nome?: string
+          placa?: string
+          status?: string
+          telefone_whatsapp?: string
+          valor?: number
+          valor_ajudante?: number
+          veiculo?: string
+        }
+        Relationships: []
+      }
+      veiculos: {
+        Row: {
+          aprovador: string | null
+          capacidade: number
+          categoria: string
+          cnh_categoria: string
+          cnh_ear: boolean
+          cnh_numero: string
+          cnh_validade: string
+          cor: string
+          criado_em: string
+          decidido_em: string | null
+          em_uso: boolean
+          exercicio_crlv: string
+          id: string
+          modelo: string
+          motivo: string | null
+          motorista: string | null
+          numero_crlv: string
+          origem: string
+          placa: string
+          renavam: string
+          status: string
+        }
+        Insert: {
+          aprovador?: string | null
+          capacidade?: number
+          categoria: string
+          cnh_categoria?: string
+          cnh_ear?: boolean
+          cnh_numero?: string
+          cnh_validade?: string
+          cor: string
+          criado_em?: string
+          decidido_em?: string | null
+          em_uso?: boolean
+          exercicio_crlv?: string
+          id: string
+          modelo: string
+          motivo?: string | null
+          motorista?: string | null
+          numero_crlv?: string
+          origem?: string
+          placa: string
+          renavam?: string
+          status?: string
+        }
+        Update: {
+          aprovador?: string | null
+          capacidade?: number
+          categoria?: string
+          cnh_categoria?: string
+          cnh_ear?: boolean
+          cnh_numero?: string
+          cnh_validade?: string
+          cor?: string
+          criado_em?: string
+          decidido_em?: string | null
+          em_uso?: boolean
+          exercicio_crlv?: string
+          id?: string
+          modelo?: string
+          motivo?: string | null
+          motorista?: string | null
+          numero_crlv?: string
+          origem?: string
+          placa?: string
+          renavam?: string
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
