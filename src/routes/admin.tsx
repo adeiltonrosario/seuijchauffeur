@@ -52,6 +52,7 @@ import {
   type StatusVeiculo,
   type VeiculoMotorista,
 } from "@/lib/veiculos-motorista";
+import { gravarMotorista, gravarVeiculoFrota, listarFrota, listarMotoristas } from "@/lib/banco";
 
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
@@ -78,7 +79,38 @@ function Admin() {
   const [motoristas, setMotoristas] = useState(motoristasIniciais);
   const [statusMap, setStatusMap] = useState<Record<string, RegistroStatus>>({});
   const [aprovador, setAprovador] = useState<Aprovador>("Administrador");
-  useEffect(() => setStatusMap(carregarStatus()), []);
+  useEffect(() => {
+    const atualizar = () => {
+      setStatusMap(carregarStatus());
+      setVeiculosSolicitados(carregarVeiculosMotorista());
+    };
+    atualizar();
+    window.addEventListener("seuchauffeur-sync", atualizar);
+    void listarMotoristas().then((lista) =>
+      setMotoristas((atual) => [
+        ...atual,
+        ...lista
+          .filter((m) => m.status !== "pendente" && m.placa && !atual.some((a) => a.nome === m.nome))
+          .map((m) => ({
+            nome: m.nome,
+            email: m.email,
+            whatsapp: m.whatsapp,
+            nota: 5,
+            veiculo: m.veiculo,
+            placa: m.placa,
+            valor: m.valor,
+            favorito: false,
+            categoria: m.categoria,
+            ajudantes: m.ajudantes,
+            valorAjudante: m.valorAjudante,
+          })),
+      ]),
+    );
+    void listarFrota().then((lista) =>
+      setVeiculos((atual) => [...atual, ...lista.filter((v) => !atual.some((a) => a.placa === v.placa))]),
+    );
+    return () => window.removeEventListener("seuchauffeur-sync", atualizar);
+  }, []);
   const mudarStatus = (nomeM: string, status: StatusMotorista) => {
     let motivo: string | undefined;
     if (status === "suspenso" || status === "bloqueado") {
@@ -91,7 +123,6 @@ function Admin() {
 
   // Autorização de veículos solicitados pelos motoristas
   const [veiculosSolicitados, setVeiculosSolicitados] = useState<VeiculoMotorista[]>([]);
-  useEffect(() => setVeiculosSolicitados(carregarVeiculosMotorista()), []);
   const decidir = (v: VeiculoMotorista, status: StatusVeiculo) => {
     let motivo: string | undefined;
     if (status === "rejeitado" || status === "suspenso") {
@@ -355,6 +386,22 @@ function Admin() {
             },
           ],
     );
+    void gravarMotorista({
+      nome,
+      email: emailMotorista.trim(),
+      whatsapp: whatsappMotorista.trim(),
+      status: "ativo",
+      veiculo: `${modeloMotorista} — ${categoriaMotorista}`,
+      placa: placaMotorista,
+      categoria: categoriaMotorista,
+      valor: Number(valorMotorista),
+      ajudantes: ajudantesNum,
+      valorAjudante: valorAjudanteNum,
+    });
+    void gravarVeiculoFrota(
+      { placa: placaMotorista, modelo: modeloMotorista, cor: corMotorista, categoria: categoriaMotorista, capacidade: capacidadeMot },
+      nome,
+    );
     toast.success(`Motorista cadastrado com o veículo vinculado (${capacidadeMot} ocupantes).`);
     setNome("");
     setEmailMotorista("");
@@ -381,6 +428,7 @@ function Admin() {
     }
     const capacidadeFinal = faixa.ajustavel ? capacidadeValida(categoria, informada) : capacidadeDaCategoria(categoria);
     setVeiculos((atual) => [...atual, { placa, modelo, cor, categoria, capacidade: capacidadeFinal }]);
+    void gravarVeiculoFrota({ placa, modelo, cor, categoria, capacidade: capacidadeFinal });
     toast.success(`Veículo cadastrado com ${capacidadeFinal} ocupantes.`);
     setPlaca("");
     setModelo("");

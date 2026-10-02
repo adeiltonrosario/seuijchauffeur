@@ -33,6 +33,7 @@ import {
 } from "@/lib/dados";
 import { formatarTelefone, validarContato } from "@/lib/contatos";
 import { registrarPendente } from "@/lib/status-motorista";
+import { cadastrarCliente, gravarMotorista, gravarVeiculoFrota } from "@/lib/banco";
 
 import {
   PRECO_UNITARIO_AVULSO,
