@@ -30,7 +30,8 @@ export function AppShell({
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const areaMotorista = pathname.startsWith("/motorista");
-  const navegacao = areaMotorista ? menuMotorista : menuCliente;
+  const areaAdmin = pathname.startsWith("/admin");
+  const navegacao = areaAdmin ? [] : areaMotorista ? menuMotorista : menuCliente;
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,24 +54,24 @@ export function AppShell({
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2 text-sm">
-            <Link
-              to={areaMotorista ? "/cliente" : "/motorista/agendamentos"}
-              className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
-            >
-              {areaMotorista ? (
-                <span key="cli" className="flex items-center gap-2"><UserRound className="size-4" /><span>Ir para Cliente</span></span>
-              ) : (
-                <span key="mot" className="flex items-center gap-2"><Car className="size-4" /><span>Área do Motorista</span></span>
-              )}
-            </Link>
-            <Link
-              to="/admin"
-              className="rounded-full px-2 py-1.5 text-xs text-muted-foreground/70 transition-colors hover:text-foreground"
-            >
-              Admin
-            </Link>
-          </div>
+          {areaAdmin ? (
+            <div className="ml-auto flex items-center gap-2 text-sm">
+              <Link
+                to="/cliente"
+                className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+              >
+                <UserRound className="size-4" />
+                <span>Área do Cliente</span>
+              </Link>
+              <Link
+                to="/motorista/agendamentos"
+                className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+              >
+                <Car className="size-4" />
+                <span>Área do Motorista</span>
+              </Link>
+            </div>
+          ) : null}
         </div>
       </header>
 
