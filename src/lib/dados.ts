@@ -116,6 +116,8 @@ export type Agendamento = {
   categoria: CategoriaVeiculo;
   ocupantes: string[];
   capacidade: number;
+  /** Telefone com WhatsApp do cliente, para avisos com mensagem pronta. */
+  whatsappCliente?: string;
 };
 
 export const agendamentos: Agendamento[] = [
@@ -136,6 +138,7 @@ export const agendamentos: Agendamento[] = [
     categoria: "Sedan",
     ocupantes: ["Adeilton Oliveira", "Carla Menezes"],
     capacidade: CAPACIDADE_PADRAO,
+    whatsappCliente: "(71) 99680-5321",
   },
   {
     id: "AG-1043",

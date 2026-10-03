@@ -3,6 +3,7 @@ import { useState } from "react";
 import { BellRing, CheckCircle2, Clock, PlayCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { AvisoWhatsapp } from "@/components/aviso-whatsapp";
 import { ChatCorrida } from "@/components/chat-corrida";
 import { MapaLocal } from "@/components/mapa-local";
 import { StatusBadge } from "@/components/status-badge";
@@ -47,6 +48,7 @@ function DetalhesMotorista() {
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
+          <AvisoWhatsapp agendamento={agendamento} />
           <Card className="border-warning/30 bg-warning/10 p-4">
             <p className="flex items-center gap-2 text-sm text-warning">
               <BellRing className="size-4" /> Lembrete enviado ao motorista e ao cliente: embarque em {agendamento.ida}.
