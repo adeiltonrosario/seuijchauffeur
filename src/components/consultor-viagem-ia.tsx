@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { consultarRecomendacao } from "@/lib/consultor.functions";
 import { formatarBRL } from "@/lib/dados";
 import {
+  calcularTodosOsPlanos,
   carregarCreditos,
   gerarLotes,
   salvarCreditos,
@@ -145,6 +146,47 @@ export function ConsultorViagemIA() {
             <p className="font-display text-xl text-gold">{resultado.recomendacao.modalidade}</p>
             <p className="mt-2 text-sm text-muted-foreground">{resultado.recomendacao.motivoModalidade}</p>
           </div>
+
+          {(() => {
+            const p = resultado.plano;
+            const gastoMes = p.precoMensalSemDesconto;
+            const planos = calcularTodosOsPlanos(p.viagensPorMes, p.precoUnitarioAvulso);
+            const anual = planos[2]!;
+            const economiaAno = (gastoMes - anual.valorMensalEquivalente) * 12;
+            return (
+              <div className="border-t border-border/60 pt-4">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Quanto você gasta hoje</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {p.viagensPorMes} viagens/mês × {formatarBRL(p.precoUnitarioAvulso)} ={" "}
+                  <span className="font-semibold text-foreground">{formatarBRL(gastoMes)} por mês</span> pagando avulso
+                  ({formatarBRL(gastoMes * 12)} por ano).
+                </p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                  {planos.map((pl) => (
+                    <div
+                      key={pl.periodicidade}
+                      className={`rounded-md border p-3 text-sm ${pl.periodicidade === p.periodicidade ? "border-primary bg-primary/10" : "border-border/60"}`}
+                    >
+                      <p className="font-medium">
+                        {pl.rotulo} · {Math.round(pl.percentualDesconto * 100)}% off
+                      </p>
+                      <p className="text-gold font-display text-lg">{formatarBRL(pl.valorMensalEquivalente)}/mês</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatarBRL(pl.valorMensalEquivalente / pl.viagensPorMes)} por viagem
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Economia de {formatarBRL(gastoMes - pl.valorMensalEquivalente)}/mês
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-3 rounded-md bg-primary/10 p-2 text-sm text-gold">
+                  No plano anual você economiza {formatarBRL(economiaAno)} por ano — mais de{" "}
+                  {Math.floor(economiaAno / gastoMes)} meses de viagens grátis.
+                </p>
+              </div>
+            );
+          })()}
 
           <div className="border-t border-border/60 pt-4">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Plano sugerido</p>
