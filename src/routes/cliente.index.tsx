@@ -34,9 +34,12 @@ export const Route = createFileRoute("/cliente/")({
 function InicioCliente() {
   const proximos = agendamentos.filter((a) => a.status !== "concluido" && a.status !== "cancelado");
   const [lotes, setLotes] = useState<LoteCredito[]>([]);
+  const [primeiroNome, setPrimeiroNome] = useState("");
 
   useEffect(() => {
     setLotes(carregarCreditos());
+    const nome = localStorage.getItem("seuchauffeur:cliente-nome") ?? "";
+    setPrimeiroNome(nome.trim().split(/\s+/)[0] ?? "");
   }, []);
 
   const saldo = saldoDisponivel(lotes);
@@ -47,7 +50,7 @@ function InicioCliente() {
 
   return (
     <AppShell
-      titulo="Olá, Adeilton"
+      titulo={primeiroNome ? `Olá, ${primeiroNome}` : "Olá!"}
       descricao="Seus próximos trajetos e acesso rápido a um novo agendamento."
       acao={
         <div className="flex gap-2">
