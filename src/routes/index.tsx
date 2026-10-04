@@ -223,6 +223,9 @@ function Autenticacao() {
       setCriandoConta(false);
       return;
     }
+    if (perfil === "cliente" && nomeConta.trim()) {
+      localStorage.setItem("seuchauffeur:cliente-nome", nomeConta.trim());
+    }
     if (criandoConta && perfil === "cliente") {
       setSalvando(true);
       const erro = await cadastrarCliente(nomeConta, emailConta, whatsappConta);
