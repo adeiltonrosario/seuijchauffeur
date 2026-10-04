@@ -76,6 +76,7 @@ export const Route = createFileRoute("/admin")({
 type Categoria = CategoriaVeiculo;
 
 function Admin() {
+  const [papelEquipe, setPapelEquipe] = useState<string | null>(null);
   // Motoristas
   const [motoristas, setMotoristas] = useState(motoristasIniciais);
   const [statusMap, setStatusMap] = useState<Record<string, RegistroStatus>>({});
@@ -493,7 +494,8 @@ function Admin() {
       titulo="Administração"
       descricao="Cadastre motoristas e veículos da frota e defina as modalidades de corrida com seus valores."
     >
-      <AcessoEquipe />
+      <AcessoEquipe onPapel={setPapelEquipe} />
+      {papelEquipe === "admin" || papelEquipe === "gerente" ? (
       <Tabs defaultValue="motoristas">
         <TabsList>
           <TabsTrigger value="motoristas">Motoristas</TabsTrigger>
@@ -1505,6 +1507,11 @@ function Admin() {
           </div>
         </TabsContent>
       </Tabs>
+      ) : (
+        <Card className="border-border/60 p-8 text-center text-sm text-muted-foreground">
+          Acesso restrito. Entre com uma conta de Administrador ou Gerente corporativo para ver e editar viagens, planos e configurações.
+        </Card>
+      )}
 
     </AppShell>
   );
