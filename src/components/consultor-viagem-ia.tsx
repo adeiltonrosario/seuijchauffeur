@@ -19,6 +19,7 @@ import {
 } from "@/lib/assinaturas";
 
 const FREQUENCIAS = ["2 viagens por mês", "1 vez por semana", "2 a 3 vezes por semana", "Todos os dias úteis"];
+const VALOR_KM = 2.5;
 
 type Recomendacao = {
   modalidade: string;
@@ -38,6 +39,8 @@ export function ConsultorViagemIA() {
   const [destino, setDestino] = useState("");
   const [frequencia, setFrequencia] = useState(FREQUENCIAS[1]!);
   const [necessidades, setNecessidades] = useState("");
+  const [km, setKm] = useState("18");
+  const kmNum = Math.max(0, Number(km.replace(",", ".")) || 0);
   const [carregando, setCarregando] = useState(false);
   const [resultado, setResultado] = useState<{ recomendacao: Recomendacao; plano: PlanoCalculado } | null>(null);
 
@@ -107,6 +110,12 @@ export function ConsultorViagemIA() {
       </div>
 
       <div className="mt-4 space-y-2">
+        <Label htmlFor="consultor-km">Distância por viagem (km)</Label>
+        <Input id="consultor-km" inputMode="decimal" value={km} onChange={(e) => setKm(e.target.value)} />
+        <p className="text-xs text-muted-foreground">Calculamos pela média de R$ 2,50 por km.</p>
+      </div>
+
+      <div className="mt-4 space-y-2">
         <Label>Com que frequência você viaja?</Label>
         <div className="flex flex-wrap gap-2">
           {FREQUENCIAS.map((f) => (
@@ -149,18 +158,33 @@ export function ConsultorViagemIA() {
 
           {(() => {
             const p = resultado.plano;
-            const gastoMes = p.precoMensalSemDesconto;
-            const planos = calcularTodosOsPlanos(p.viagensPorMes, p.precoUnitarioAvulso);
+            const precoViagem = Math.round(kmNum * VALOR_KM * 100) / 100;
+            const gastoMes = precoViagem * p.viagensPorMes;
+            const planos = calcularTodosOsPlanos(p.viagensPorMes, precoViagem);
             const anual = planos[2]!;
+            const sugerido = planos.find((x) => x.periodicidade === p.periodicidade) ?? planos[0]!;
             const economiaAno = (gastoMes - anual.valorMensalEquivalente) * 12;
+            const dinamicaMes = gastoMes * 1.25;
             return (
+              <>
               <div className="border-t border-border/60 pt-4">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Quanto você gasta hoje</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {p.viagensPorMes} viagens/mês × {formatarBRL(p.precoUnitarioAvulso)} ={" "}
+                  {kmNum.toLocaleString("pt-BR")} km × {formatarBRL(VALOR_KM)}/km = {formatarBRL(precoViagem)} por viagem ·{" "}
+                  {p.viagensPorMes} viagens/mês ={" "}
                   <span className="font-semibold text-foreground">{formatarBRL(gastoMes)} por mês</span> pagando avulso
                   ({formatarBRL(gastoMes * 12)} por ano).
                 </p>
+                <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
+                  <p className="font-medium text-foreground">A ilusão da corrida barata</p>
+                  <p className="mt-1 text-muted-foreground">
+                    Nos apps comuns o valor muda ao longo do dia, da semana e do mês (chuva, pico, alta demanda). Uma
+                    corrida de {formatarBRL(precoViagem)} vira facilmente {formatarBRL(precoViagem * 1.3)} ou mais — e
+                    seu custo sobe de forma sutil para cerca de{" "}
+                    <span className="font-semibold text-foreground">{formatarBRL(dinamicaMes)}/mês</span> (
+                    {formatarBRL(dinamicaMes * 12)}/ano) sem você perceber.
+                  </p>
+                </div>
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
                   {planos.map((pl) => (
                     <div
@@ -172,7 +196,7 @@ export function ConsultorViagemIA() {
                       </p>
                       <p className="text-gold font-display text-lg">{formatarBRL(pl.valorMensalEquivalente)}/mês</p>
                       <p className="text-xs text-muted-foreground">
-                        {formatarBRL(pl.valorMensalEquivalente / pl.viagensPorMes)} por viagem
+                        {formatarBRL(pl.valorMensalEquivalente / pl.viagensPorMes)} por viagem, valor travado
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Economia de {formatarBRL(gastoMes - pl.valorMensalEquivalente)}/mês
@@ -181,23 +205,46 @@ export function ConsultorViagemIA() {
                   ))}
                 </div>
                 <p className="mt-3 rounded-md bg-primary/10 p-2 text-sm text-gold">
-                  No plano anual você economiza {formatarBRL(economiaAno)} por ano — mais de{" "}
-                  {Math.floor(economiaAno / gastoMes)} meses de viagens grátis.
+                  No plano anual você economiza {formatarBRL(economiaAno)} por ano frente ao avulso — e muito mais frente
+                  à tarifa dinâmica.
                 </p>
               </div>
+
+              <div className="grid gap-3 border-t border-border/60 pt-4 sm:grid-cols-2">
+                <div className="rounded-md border border-border/60 p-3 text-sm">
+                  <p className="font-medium text-muted-foreground">App comum — incerteza</p>
+                  <ul className="mt-2 space-y-1 text-muted-foreground">
+                    <li>✕ Preço que muda durante o dia, semana e mês</li>
+                    <li>✕ Qualquer veículo e qualquer pessoa</li>
+                    <li>✕ Carros sem climatização</li>
+                    <li>✕ Sem prioridade nem compromisso</li>
+                    <li>✕ Cancelamento a qualquer momento</li>
+                    <li>✕ Atrasos que prejudicam sua rotina de trabalho</li>
+                  </ul>
+                </div>
+                <div className="rounded-md border border-primary/50 bg-primary/10 p-3 text-sm">
+                  <p className="font-medium text-gold">SeuChauffeur — certeza</p>
+                  <ul className="mt-2 space-y-1 text-foreground">
+                    <li>✓ Valor travado por viagem nos créditos</li>
+                    <li>✓ Motoristas executivos homologados</li>
+                    <li>✓ Frota 100% climatizada</li>
+                    <li>✓ Prioridade e motorista confirmado</li>
+                    <li>✓ Compromisso com seu horário</li>
+                    <li>✓ Rotina previsível e sem surpresas</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="border-t border-border/60 pt-4">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Plano sugerido</p>
+                <p className="font-display text-xl text-gold">
+                  {sugerido.rotulo} · {formatarBRL(sugerido.valorMensalEquivalente)}/mês
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">{resultado.recomendacao.motivoPlano}</p>
+              </div>
+              </>
             );
           })()}
-
-          <div className="border-t border-border/60 pt-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Plano sugerido</p>
-            <p className="font-display text-xl text-gold">
-              {resultado.plano.rotulo} · {resultado.plano.exibicaoPrincipal}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {resultado.plano.creditosTotais} viagens no ciclo · economia de {formatarBRL(resultado.plano.economiaCiclo)}
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">{resultado.recomendacao.motivoPlano}</p>
-          </div>
 
           {resultado.recomendacao.dicas.length ? (
             <ul className="space-y-1 border-t border-border/60 pt-4 text-sm text-muted-foreground">
