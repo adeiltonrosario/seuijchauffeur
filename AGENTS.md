@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Approval fields (motoristas.status, veiculos.status/aprovador) are protected by DB triggers that only accept changes from admin/gerente roles in user_roles; why: client-side approval cannot be trusted.
