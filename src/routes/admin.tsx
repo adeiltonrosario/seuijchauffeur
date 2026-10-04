@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Car, Clock, Landmark, Megaphone, Plus, Route as RouteIcon, Ticket, Trash2, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { AcessoEquipe } from "@/components/acesso-equipe";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -492,6 +493,7 @@ function Admin() {
       titulo="Administração"
       descricao="Cadastre motoristas e veículos da frota e defina as modalidades de corrida com seus valores."
     >
+      <AcessoEquipe />
       <Tabs defaultValue="motoristas">
         <TabsList>
           <TabsTrigger value="motoristas">Motoristas</TabsTrigger>
