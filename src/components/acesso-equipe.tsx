@@ -19,7 +19,10 @@ export function AcessoEquipe() {
     const { data } = await supabase.auth.getUser();
     const u = data.user;
     setUsuario(u?.email ?? null);
-    if (!u) return setPapel(null);
+    if (!u) {
+      setPapel(null);
+      return;
+    }
     const { data: papeis } = await supabase.from("user_roles").select("role").eq("user_id", u.id);
     setPapel(papeis?.[0]?.role ?? null);
   };
