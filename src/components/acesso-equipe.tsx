@@ -8,12 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 /** Login da equipe (Administrador / Gerente corporativo). As aprovações só são aceitas pelo banco para esses papéis. */
-export function AcessoEquipe() {
+export function AcessoEquipe({ onPapel }: { onPapel?: (papel: string | null) => void } = {}) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [usuario, setUsuario] = useState<string | null>(null);
-  const [papel, setPapel] = useState<string | null>(null);
+  const [papel, setPapelState] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
+  const setPapel = (p: string | null) => {
+    setPapelState(p);
+    onPapel?.(p);
+  };
 
   const atualizar = async () => {
     const { data } = await supabase.auth.getUser();
