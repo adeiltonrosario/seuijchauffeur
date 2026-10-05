@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import qrWhatsapp from "@/assets/qr-whatsapp.png.asset.json";
 import { Button } from "@/components/ui/button";
@@ -403,7 +403,10 @@ function Autenticacao() {
                 <button
                   key={tipo}
                   type="button"
-                  onClick={() => setPerfil(tipo)}
+                  onClick={() => {
+                    setPerfil(tipo);
+                    if (tipo === "motorista") setCriandoConta(false);
+                  }}
                   className={`rounded-full py-2 text-sm font-medium capitalize transition-colors ${
                     perfil === tipo ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                   }`}
@@ -573,14 +576,20 @@ function Autenticacao() {
               <Button type="submit" className="w-full">
                 {criandoConta ? "Criar conta" : "Entrar"}
               </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full"
-                onClick={() => setCriandoConta((v) => !v)}
-              >
-                {criandoConta ? "Já tenho conta" : "Criar conta"}
-              </Button>
+              {perfil === "cliente" ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => setCriandoConta((v) => !v)}
+                >
+                  {criandoConta ? "Já tenho conta" : "Criar conta"}
+                </Button>
+              ) : (
+                <Button asChild variant="outline" className="w-full">
+                  <Link to="/seja-motorista">Seja um motorista credenciado</Link>
+                </Button>
+              )}
             </form>
           </Card>
 

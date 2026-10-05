@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AgenteSuporteRouteImport } from './routes/agente-suporte'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MapaRouteImport } from './routes/mapa'
+import { Route as SejaMotoristaRouteImport } from './routes/seja-motorista'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
 import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento'
 import { Route as ClientePlantaoRouteImport } from './routes/cliente.plantao'
@@ -48,6 +49,11 @@ const FavoritosRoute = FavoritosRouteImport.update({
 const MapaRoute = MapaRouteImport.update({
   id: '/mapa',
   path: '/mapa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SejaMotoristaRoute = SejaMotoristaRouteImport.update({
+  id: '/seja-motorista',
+  path: '/seja-motorista',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteIndexRoute = ClienteIndexRouteImport.update({
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/agente-suporte': typeof AgenteSuporteRoute
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
+  '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/agente-suporte': typeof AgenteSuporteRoute
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
+  '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/agente-suporte': typeof AgenteSuporteRoute
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
+  '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/agente-suporte'
     | '/favoritos'
     | '/mapa'
+    | '/seja-motorista'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/motorista/disponibilidade'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/agente-suporte'
     | '/favoritos'
     | '/mapa'
+    | '/seja-motorista'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/motorista/disponibilidade'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/agente-suporte'
     | '/favoritos'
     | '/mapa'
+    | '/seja-motorista'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/motorista/disponibilidade'
@@ -215,6 +227,7 @@ export interface RootRouteChildren {
   AgenteSuporteRoute: typeof AgenteSuporteRoute
   FavoritosRoute: typeof FavoritosRoute
   MapaRoute: typeof MapaRoute
+  SejaMotoristaRoute: typeof SejaMotoristaRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
   ClientePlantaoRoute: typeof ClientePlantaoRoute
   MotoristaDisponibilidadeRoute: typeof MotoristaDisponibilidadeRoute
@@ -262,6 +275,13 @@ declare module '@tanstack/react-router' {
       path: '/mapa'
       fullPath: '/mapa'
       preLoaderRoute: typeof MapaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seja-motorista': {
+      id: '/seja-motorista'
+      path: '/seja-motorista'
+      fullPath: '/seja-motorista'
+      preLoaderRoute: typeof SejaMotoristaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cliente/': {
@@ -343,6 +363,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgenteSuporteRoute: AgenteSuporteRoute,
   FavoritosRoute: FavoritosRoute,
   MapaRoute: MapaRoute,
+  SejaMotoristaRoute: SejaMotoristaRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
   ClientePlantaoRoute: ClientePlantaoRoute,
   MotoristaDisponibilidadeRoute: MotoristaDisponibilidadeRoute,
