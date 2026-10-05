@@ -4,6 +4,7 @@ import { Car, Clock, Landmark, Megaphone, Plus, Route as RouteIcon, Ticket, Tras
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { AcessoEquipe } from "@/components/acesso-equipe";
+import { PlanosPorModalidade } from "@/components/planos-por-modalidade";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -1248,6 +1249,7 @@ function Admin() {
               </div>
             </Card>
           </div>
+          <PlanosPorModalidade modalidades={modalidades} />
         </TabsContent>
 
         <TabsContent value="publicidades" className="mt-6">
