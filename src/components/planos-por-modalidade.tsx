@@ -83,7 +83,7 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
       toast.error("Preencha nome, viagens (mín. 1), preço e desconto entre 0 e 100%.");
       return;
     }
-    setPlanos((a) => ({ ...a, [modalidade]: a[modalidade].map((p) => (p.id === rascunho.id ? rascunho : p)) }));
+    setPlanos((a) => ({ ...a, [modalidade]: (a[modalidade] ?? []).map((p) => (p.id === rascunho.id ? rascunho : p)) }));
     setEditando(null);
     setRascunho(null);
     toast.success("Plano salvo.");
@@ -91,7 +91,7 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
 
   const excluir = (modalidade: string, id: string) => {
     if (!window.confirm("Excluir este plano de assinatura?")) return;
-    setPlanos((a) => ({ ...a, [modalidade]: a[modalidade].filter((p) => p.id !== id) }));
+    setPlanos((a) => ({ ...a, [modalidade]: (a[modalidade] ?? []).filter((p) => p.id !== id) }));
     toast.success("Plano excluído.");
   };
 
