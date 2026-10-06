@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import { Loader2, Plus, Sparkles, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -39,13 +39,14 @@ export function ConsultorViagemIA() {
   const [destino, setDestino] = useState("");
   const [frequencia, setFrequencia] = useState(FREQUENCIAS[1]!);
   const [necessidades, setNecessidades] = useState("");
+  const [paradas, setParadas] = useState<{ local: string; km: string }[]>([]);
   const [km, setKm] = useState("18");
-  const kmNum = Math.max(0, Number(km.replace(",", ".")) || 0);
+  const num = (v: string) => Math.max(0, Number(v.replace(",", ".")) || 0);
+  const kmNum = num(km) + paradas.reduce((s, p) => s + num(p.km), 0);
   const [carregando, setCarregando] = useState(false);
   const [resultado, setResultado] = useState<{ recomendacao: Recomendacao; plano: PlanoCalculado } | null>(null);
 
   const pedirRecomendacao = async () => {
-    console.log("[consultor] clique", { origem, destino });
     if (!origem.trim() || !destino.trim()) {
       toast.error("Informe o local de embarque e o destino.");
       return;
@@ -53,8 +54,12 @@ export function ConsultorViagemIA() {
     setCarregando(true);
     setResultado(null);
     try {
+      const listaParadas = paradas.filter((p) => p.local.trim());
+      const rotina = listaParadas.length
+        ? `Rotina com paradas: ${[origem, ...listaParadas.map((p) => p.local), destino].join(" → ")}. Total de ${kmNum.toLocaleString("pt-BR")} km por rotina.`
+        : `Distância: ${kmNum.toLocaleString("pt-BR")} km por viagem.`;
       const resposta = await consultar({
-        data: { origem, destino, frequencia, necessidades },
+        data: { origem, destino, frequencia, necessidades: `${rotina} ${necessidades}`.slice(0, 800) },
       });
       if (!resposta.ok) {
         toast.error(resposta.erro);
@@ -109,10 +114,40 @@ export function ConsultorViagemIA() {
         </div>
       </div>
 
+      <div className="mt-4 space-y-3">
+        <Label>Paradas adicionais da sua rotina</Label>
+        {paradas.map((p, i) => (
+          <div key={i} className="flex gap-2">
+            <Input
+              aria-label={`Parada ${i + 1}`}
+              placeholder={`Parada ${i + 1} — ex.: escola, escritório, academia`}
+              value={p.local}
+              onChange={(e) => setParadas((l) => l.map((x, j) => (j === i ? { ...x, local: e.target.value } : x)))}
+            />
+            <Input
+              aria-label={`Km da parada ${i + 1}`}
+              className="w-28"
+              inputMode="decimal"
+              placeholder="km"
+              value={p.km}
+              onChange={(e) => setParadas((l) => l.map((x, j) => (j === i ? { ...x, km: e.target.value } : x)))}
+            />
+            <Button type="button" variant="ghost" size="icon" aria-label="Remover parada" onClick={() => setParadas((l) => l.filter((_, j) => j !== i))}>
+              <X />
+            </Button>
+          </div>
+        ))}
+        <Button type="button" variant="secondary" size="sm" onClick={() => setParadas((l) => [...l, { local: "", km: "" }])}>
+          <Plus /> Adicionar parada na rotina
+        </Button>
+      </div>
+
       <div className="mt-4 space-y-2">
-        <Label htmlFor="consultor-km">Distância por viagem (km)</Label>
+        <Label htmlFor="consultor-km">{paradas.length ? "Km do trecho principal (origem → destino)" : "Distância por viagem (km)"}</Label>
         <Input id="consultor-km" inputMode="decimal" value={km} onChange={(e) => setKm(e.target.value)} />
-        <p className="text-xs text-muted-foreground">Calculamos pela média de R$ 2,50 por km.</p>
+        <p className="rounded-md bg-primary/10 p-2 text-sm text-gold">
+          Sua rotina totaliza {kmNum.toLocaleString("pt-BR")} km por viagem · {formatarBRL(kmNum * VALOR_KM)} pela média de R$ 2,50/km.
+        </p>
       </div>
 
       <div className="mt-4 space-y-2">
@@ -168,6 +203,17 @@ export function ConsultorViagemIA() {
             return (
               <>
               <div className="border-t border-border/60 pt-4">
+                <div className="mb-3 rounded-md border border-primary/40 bg-primary/10 p-3 text-sm">
+                  <p className="font-medium text-gold">
+                    Você roda {(kmNum * p.viagensPorMes).toLocaleString("pt-BR")} km por mês (
+                    {(kmNum * p.viagensPorMes * 12).toLocaleString("pt-BR")} km por ano)
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    {paradas.length
+                      ? `Com ${paradas.length} parada(s), um único cancelamento ou atraso no app comum quebra toda a sua agenda — e a tarifa dinâmica pesa em cada trecho. Com essa quilometragem, o plano garante motorista confirmado e valor travado.`
+                      : "Com essa quilometragem, travar o valor em um plano protege seu orçamento das variações dos apps comuns."}
+                  </p>
+                </div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Quanto você gasta hoje</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {kmNum.toLocaleString("pt-BR")} km × {formatarBRL(VALOR_KM)}/km = {formatarBRL(precoViagem)} por viagem ·{" "}
