@@ -143,7 +143,7 @@ function AgenteSuporte() {
           <Card className="border-border/60 p-6">
             <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Chat mediado pela IA</h2>
             <ul className="mt-4 space-y-3">
-              {mensagens.map((m, i) => (
+              {mensagens.filter((m) => m.autor === "ia").map((m, i) => (
                 <li key={i} className={`rounded-lg border p-3 ${estiloAutor[m.autor]}`}>
                   <p className="flex items-center gap-2 text-xs text-muted-foreground">
                     {m.autor === "ia" ? <Bot className="size-3.5" /> : null}
@@ -194,26 +194,23 @@ function AgenteSuporte() {
 
           <Card className="border-border/60 p-6">
             <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              <ShieldCheck className="size-4" /> Auditoria da mediação · {agendamento.id}
+              <ShieldCheck className="size-4" /> Comunicados oficiais da corrida · {agendamento.id}
             </h2>
             <p className="mt-2 text-xs text-muted-foreground">
-              Somente a central de suporte vê o texto original digitado pelas partes.
+              Você vê apenas as mensagens publicadas pela mediação da IA. O texto original da outra parte é privado.
             </p>
             {auditoria.length === 0 ? (
               <p className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-3 text-sm text-muted-foreground">
-                Nenhuma mensagem mediada nesta corrida ainda.
+                Nenhum comunicado nesta corrida ainda.
               </p>
             ) : (
               <ul className="mt-4 space-y-3">
                 {auditoria.map((m) => (
                   <li key={m.id} className="rounded-lg border border-border/60 p-3">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      {m.origem === "cliente" ? "Cliente" : "Motorista"} · {m.hora}
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Bot className="size-3.5 text-primary" /> Mediação SeuChauffeur · {m.hora}
                     </p>
-                    <p className="mt-2 text-xs text-muted-foreground">Original digitado</p>
-                    <p className="text-sm italic">{m.original}</p>
-                    <p className="mt-2 text-xs text-muted-foreground">Publicado pela IA às duas partes</p>
-                    <p className="text-sm">{m.mediado}</p>
+                    <p className="mt-1 text-sm">{m.mediado}</p>
                   </li>
                 ))}
               </ul>
