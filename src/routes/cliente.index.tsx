@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
 import { ConsultorViagemIA } from "@/components/consultor-viagem-ia";
 import { BannerPublicidade } from "@/components/banner-publicidade";
+import { ClubeIndicacoes } from "@/components/clube-indicacoes";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { agendamentos, formatarBRL, motoristas } from "@/lib/dados";
@@ -71,6 +72,7 @@ function InicioCliente() {
         <section className="space-y-6">
           <ConsultorViagemIA />
           <BannerPublicidade publico="clientes" />
+          <ClubeIndicacoes />
           <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
             Próximos agendamentos
           </h2>

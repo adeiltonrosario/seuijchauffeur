@@ -38,6 +38,27 @@ export type Database = {
         }
         Relationships: []
       }
+      codigos_indicacao: {
+        Row: {
+          codigo: string
+          criado_em: string
+          titular_email: string
+          titular_nome: string
+        }
+        Insert: {
+          codigo: string
+          criado_em?: string
+          titular_email: string
+          titular_nome?: string
+        }
+        Update: {
+          codigo?: string
+          criado_em?: string
+          titular_email?: string
+          titular_nome?: string
+        }
+        Relationships: []
+      }
       motoristas: {
         Row: {
           ajudantes: number
@@ -143,6 +164,38 @@ export type Database = {
         }
         Relationships: []
       }
+      usos_indicacao: {
+        Row: {
+          codigo: string
+          criado_em: string
+          id: string
+          indicado_email: string
+          indicado_nome: string
+        }
+        Insert: {
+          codigo: string
+          criado_em?: string
+          id?: string
+          indicado_email: string
+          indicado_nome?: string
+        }
+        Update: {
+          codigo?: string
+          criado_em?: string
+          id?: string
+          indicado_email?: string
+          indicado_nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usos_indicacao_codigo_fkey"
+            columns: ["codigo"]
+            isOneToOne: false
+            referencedRelation: "codigos_indicacao"
+            referencedColumns: ["codigo"]
+          },
+        ]
+      }
       veiculos: {
         Row: {
           aprovador: string | null
@@ -228,7 +281,15 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: never; Returns: boolean }
+      meu_codigo_indicacao: {
+        Args: { _email: string; _nome: string }
+        Returns: Json
+      }
       reivindicar_primeiro_admin: { Args: never; Returns: boolean }
+      usar_codigo_indicacao: {
+        Args: { _codigo: string; _email: string; _nome: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "gerente"
