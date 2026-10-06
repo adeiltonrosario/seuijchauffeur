@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Pencil, Plus, RotateCcw, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -43,13 +44,35 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
   const [editando, setEditando] = useState<string | null>(null);
   const [rascunho, setRascunho] = useState<PlanoModalidade | null>(null);
 
+  const idsSalvos = useRef<Set<string>>(new Set());
+
   useEffect(() => {
-    try {
-      setPlanos(JSON.parse(localStorage.getItem(CHAVE) ?? "{}"));
-    } catch {
-      setPlanos({});
-    }
-    setCarregado(true);
+    void (async () => {
+      const { data, error } = await supabase.from("planos_modalidade").select("*").order("criado_em");
+      if (error) {
+        toast.error("Não foi possível carregar os planos do banco.");
+        try {
+          setPlanos(JSON.parse(localStorage.getItem(CHAVE) ?? "{}"));
+        } catch {
+          setPlanos({});
+        }
+      } else {
+        const agrupado: Record<string, PlanoModalidade[]> = {};
+        for (const r of data ?? []) {
+          (agrupado[r.modalidade] ??= []).push({
+            id: r.id,
+            nome: r.nome,
+            periodicidade: r.periodicidade as Periodicidade,
+            viagensMes: r.viagens_mes,
+            precoViagem: Number(r.preco_viagem),
+            desconto: Number(r.desconto),
+          });
+          idsSalvos.current.add(r.id);
+        }
+        setPlanos(agrupado);
+      }
+      setCarregado(true);
+    })();
   }, []);
 
   // Garante 3 planos para toda modalidade nova
@@ -68,8 +91,33 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
     });
   }, [modalidades, carregado]);
 
+  // Sincroniza com o banco (somente Administrador/Gerente consegue gravar)
   useEffect(() => {
-    if (carregado) localStorage.setItem(CHAVE, JSON.stringify(planos));
+    if (!carregado) return;
+    const linhas = Object.entries(planos).flatMap(([modalidade, lista]) =>
+      lista.map((p) => ({
+        id: p.id,
+        modalidade,
+        nome: p.nome,
+        periodicidade: p.periodicidade,
+        viagens_mes: p.viagensMes,
+        preco_viagem: p.precoViagem,
+        desconto: p.desconto,
+      })),
+    );
+    const atuais = new Set(linhas.map((l) => l.id));
+    const removidos = [...idsSalvos.current].filter((id) => !atuais.has(id));
+    void (async () => {
+      if (linhas.length) {
+        const { error } = await supabase.from("planos_modalidade").upsert(linhas);
+        if (error) {
+          toast.error("Planos não salvos no banco: entre como Administrador ou Gerente.");
+          return;
+        }
+      }
+      if (removidos.length) await supabase.from("planos_modalidade").delete().in("id", removidos);
+      idsSalvos.current = atuais;
+    })();
   }, [planos, carregado]);
 
   const editar = (p: PlanoModalidade) => {
