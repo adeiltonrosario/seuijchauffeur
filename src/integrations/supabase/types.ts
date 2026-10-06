@@ -92,6 +92,39 @@ export type Database = {
         }
         Relationships: []
       }
+      planos_modalidade: {
+        Row: {
+          criado_em: string
+          desconto: number
+          id: string
+          modalidade: string
+          nome: string
+          periodicidade: string
+          preco_viagem: number
+          viagens_mes: number
+        }
+        Insert: {
+          criado_em?: string
+          desconto?: number
+          id: string
+          modalidade: string
+          nome: string
+          periodicidade: string
+          preco_viagem?: number
+          viagens_mes?: number
+        }
+        Update: {
+          criado_em?: string
+          desconto?: number
+          id?: string
+          modalidade?: string
+          nome?: string
+          periodicidade?: string
+          preco_viagem?: number
+          viagens_mes?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
