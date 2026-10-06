@@ -15,6 +15,13 @@
       "when": 1791076321344,
       "tag": "0001_aprovacao_restrita_staff",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791249404240,
+      "tag": "0002_planos_modalidade",
+      "breakpoints": true
     }
   ]
 }
