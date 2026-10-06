@@ -203,6 +203,17 @@ export function ConsultorViagemIA() {
             return (
               <>
               <div className="border-t border-border/60 pt-4">
+                <div className="mb-3 rounded-md border border-primary/40 bg-primary/10 p-3 text-sm">
+                  <p className="font-medium text-gold">
+                    Você roda {(kmNum * p.viagensPorMes).toLocaleString("pt-BR")} km por mês (
+                    {(kmNum * p.viagensPorMes * 12).toLocaleString("pt-BR")} km por ano)
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    {paradas.length
+                      ? `Com ${paradas.length} parada(s), um único cancelamento ou atraso no app comum quebra toda a sua agenda — e a tarifa dinâmica pesa em cada trecho. Com essa quilometragem, o plano garante motorista confirmado e valor travado.`
+                      : "Com essa quilometragem, travar o valor em um plano protege seu orçamento das variações dos apps comuns."}
+                  </p>
+                </div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Quanto você gasta hoje</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {kmNum.toLocaleString("pt-BR")} km × {formatarBRL(VALOR_KM)}/km = {formatarBRL(precoViagem)} por viagem ·{" "}
