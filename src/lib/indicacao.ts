@@ -32,6 +32,31 @@ export async function usarCodigo(codigo: string, email: string, nome: string): P
   return null;
 }
 
+/** Só confere o código, sem registrar o uso. Retorna null se válido. */
+export async function validarCodigo(codigo: string, email: string): Promise<string | null> {
+  const { data, error } = await supabase.rpc("validar_codigo_indicacao", { _codigo: codigo, _email: email });
+  if (error) return "Não foi possível validar o código agora.";
+  return data === "ok" ? null : String(data);
+}
+
+export type LinhaIndicacao = { codigo: string; titular_nome: string; titular_email: string; indicados: { nome: string; email: string; em: string }[] };
+
+/** Lista para a equipe (só funciona logado como admin/gerente). */
+export async function listarIndicacoes(): Promise<LinhaIndicacao[]> {
+  const [{ data: cods }, { data: usos }] = await Promise.all([
+    supabase.from("codigos_indicacao").select("*").order("criado_em", { ascending: false }),
+    supabase.from("usos_indicacao").select("*").order("criado_em"),
+  ]);
+  return (cods ?? []).map((c) => ({
+    codigo: c.codigo,
+    titular_nome: c.titular_nome,
+    titular_email: c.titular_email,
+    indicados: (usos ?? [])
+      .filter((u) => u.codigo === c.codigo)
+      .map((u) => ({ nome: u.indicado_nome, email: u.indicado_email, em: u.criado_em })),
+  }));
+}
+
 export function codigoJaUsado() {
   if (typeof window === "undefined") return "";
   return localStorage.getItem(CHAVE_CODIGO_USADO) ?? "";
