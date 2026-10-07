@@ -59,6 +59,72 @@ export type Database = {
         }
         Relationships: []
       }
+      corridas: {
+        Row: {
+          atualizado_em: string
+          capacidade: number
+          categoria: string
+          cliente: string
+          cliente_email: string
+          cliente_whatsapp: string
+          criado_em: string
+          desembarque: string
+          embarque: string
+          id: string
+          ida: string
+          modalidade: string
+          motorista: string
+          pagamento: string
+          parada: string | null
+          retorno: string | null
+          status: string
+          valor: number
+          veiculo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          capacidade?: number
+          categoria?: string
+          cliente: string
+          cliente_email?: string
+          cliente_whatsapp?: string
+          criado_em?: string
+          desembarque: string
+          embarque: string
+          id: string
+          ida: string
+          modalidade: string
+          motorista: string
+          pagamento?: string
+          parada?: string | null
+          retorno?: string | null
+          status?: string
+          valor?: number
+          veiculo?: string
+        }
+        Update: {
+          atualizado_em?: string
+          capacidade?: number
+          categoria?: string
+          cliente?: string
+          cliente_email?: string
+          cliente_whatsapp?: string
+          criado_em?: string
+          desembarque?: string
+          embarque?: string
+          id?: string
+          ida?: string
+          modalidade?: string
+          motorista?: string
+          pagamento?: string
+          parada?: string | null
+          retorno?: string | null
+          status?: string
+          valor?: number
+          veiculo?: string
+        }
+        Relationships: []
+      }
       motoristas: {
         Row: {
           ajudantes: number
