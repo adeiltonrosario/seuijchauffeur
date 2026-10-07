@@ -19,14 +19,14 @@ import {
 import { clienteAtual, descontoTitular, meuCodigo, usarCodigo, validarCodigo } from "@/lib/indicacao";
 import { valorComIndicacao } from "@/lib/indicacao-preco";
 
-type Busca = { p: Periodicidade; v: number; preco: number; mod?: string };
+type Busca = { p: Periodicidade; v: number; preco: number; mod?: string | undefined };
 
 export const Route = createFileRoute("/cliente/assinatura")({
   validateSearch: (s: Record<string, unknown>): Busca => ({
-    p: (["mensal", "trimestral", "anual"].includes(String(s.p)) ? s.p : "mensal") as Periodicidade,
-    v: Math.max(1, Number(s.v) || 12),
-    preco: Math.max(0, Number(s.preco) || 150),
-    mod: s.mod ? String(s.mod) : undefined,
+    p: (["mensal", "trimestral", "anual"].includes(String(s["p"])) ? s["p"] : "mensal") as Periodicidade,
+    v: Math.max(1, Number(s["v"]) || 12),
+    preco: Math.max(0, Number(s["preco"]) || 150),
+    mod: s["mod"] ? String(s["mod"]) : undefined,
   }),
   head: () => ({
     meta: [
@@ -67,11 +67,11 @@ function Assinatura() {
   });
 
   const aplicar = async () => {
-    if (!email.includes("@")) return toast.error("Informe seu e-mail de cadastro.");
+    if (!email.includes("@")) { toast.error("Informe seu e-mail de cadastro."); return; }
     const erro = await validarCodigo(codigo, email);
     if (erro) {
       setCodigoOk(false);
-      return toast.error(erro);
+      toast.error(erro); return;
     }
     setCodigoOk(true);
     toast.success("Código aplicado: 10% de desconto na 1ª mensalidade.");
@@ -83,7 +83,7 @@ function Assinatura() {
       if (erro) {
         setCodigoOk(false);
         setEtapa("revisar");
-        return toast.error(erro);
+        toast.error(erro); return;
       }
     }
     salvarCreditos([...carregarCreditos(), ...gerarLotes(plano)]);
