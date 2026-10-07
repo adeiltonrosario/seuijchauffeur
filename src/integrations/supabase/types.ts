@@ -290,6 +290,10 @@ export type Database = {
         Args: { _codigo: string; _email: string; _nome: string }
         Returns: string
       }
+      validar_codigo_indicacao: {
+        Args: { _codigo: string; _email: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "gerente"

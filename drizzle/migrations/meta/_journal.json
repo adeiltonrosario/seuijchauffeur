@@ -29,6 +29,13 @@
       "when": 1791252744687,
       "tag": "0003_programa_indicacao",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791333269433,
+      "tag": "0004_validar_codigo_indicacao",
+      "breakpoints": true
     }
   ]
 }
