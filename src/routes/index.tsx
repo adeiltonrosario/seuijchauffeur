@@ -162,12 +162,10 @@ function Autenticacao() {
   const planosCalculados = calcularTodosOsPlanos(viagensPorMes, PRECO_UNITARIO_AVULSO);
 
   const assinar = (plano: PlanoCalculado) => {
-    const hoje = chaveData(new Date());
-    salvarCreditos([...carregarCreditos(), ...gerarLotes(plano, hoje)]);
-    toast.success(
-      `Plano ${plano.rotulo} contratado: ${plano.creditosTotais} créditos de viagem liberados.`,
-    );
-    navigate({ to: "/cliente" });
+    navigate({
+      to: "/cliente/assinatura",
+      search: { p: plano.periodicidade, v: plano.viagensPorMes, preco: plano.precoUnitarioAvulso },
+    });
   };
 
   const [salvando, setSalvando] = useState(false);

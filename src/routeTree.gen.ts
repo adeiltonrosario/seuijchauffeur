@@ -16,6 +16,7 @@ import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as SejaMotoristaRouteImport } from './routes/seja-motorista'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
+import { Route as ClienteAssinaturaRouteImport } from './routes/cliente.assinatura'
 import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento'
 import { Route as ClientePlantaoRouteImport } from './routes/cliente.plantao'
 import { Route as MotoristaDisponibilidadeRouteImport } from './routes/motorista.disponibilidade'
@@ -59,6 +60,11 @@ const SejaMotoristaRoute = SejaMotoristaRouteImport.update({
 const ClienteIndexRoute = ClienteIndexRouteImport.update({
   id: '/cliente/',
   path: '/cliente/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClienteAssinaturaRoute = ClienteAssinaturaRouteImport.update({
+  id: '/cliente/assinatura',
+  path: '/cliente/assinatura',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClientePagamentoRoute = ClientePagamentoRouteImport.update({
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/seja-motorista': typeof SejaMotoristaRoute
+  '/cliente/assinatura': typeof ClienteAssinaturaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/seja-motorista': typeof SejaMotoristaRoute
+  '/cliente/assinatura': typeof ClienteAssinaturaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
   '/seja-motorista': typeof SejaMotoristaRoute
+  '/cliente/assinatura': typeof ClienteAssinaturaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/mapa'
     | '/seja-motorista'
+    | '/cliente/assinatura'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/motorista/disponibilidade'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/mapa'
     | '/seja-motorista'
+    | '/cliente/assinatura'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/motorista/disponibilidade'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/mapa'
     | '/seja-motorista'
+    | '/cliente/assinatura'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/motorista/disponibilidade'
@@ -228,6 +240,7 @@ export interface RootRouteChildren {
   FavoritosRoute: typeof FavoritosRoute
   MapaRoute: typeof MapaRoute
   SejaMotoristaRoute: typeof SejaMotoristaRoute
+  ClienteAssinaturaRoute: typeof ClienteAssinaturaRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
   ClientePlantaoRoute: typeof ClientePlantaoRoute
   MotoristaDisponibilidadeRoute: typeof MotoristaDisponibilidadeRoute
@@ -289,6 +302,13 @@ declare module '@tanstack/react-router' {
       path: '/cliente'
       fullPath: '/cliente/'
       preLoaderRoute: typeof ClienteIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cliente/assinatura': {
+      id: '/cliente/assinatura'
+      path: '/cliente/assinatura'
+      fullPath: '/cliente/assinatura'
+      preLoaderRoute: typeof ClienteAssinaturaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cliente/pagamento': {
@@ -364,6 +384,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritosRoute: FavoritosRoute,
   MapaRoute: MapaRoute,
   SejaMotoristaRoute: SejaMotoristaRoute,
+  ClienteAssinaturaRoute: ClienteAssinaturaRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
   ClientePlantaoRoute: ClientePlantaoRoute,
   MotoristaDisponibilidadeRoute: MotoristaDisponibilidadeRoute,

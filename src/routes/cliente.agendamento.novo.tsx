@@ -289,12 +289,8 @@ function NovoAgendamento() {
   );
 
   const assinarPlano = (plano: PlanoCalculado) => {
-    const atualizados = [...lotes, ...gerarLotes(plano)];
-    setLotes(atualizados);
-    salvarCreditos(atualizados);
-    setPagamento("Plano mensal");
-    toast.success(
-      `Plano ${plano.rotulo.toLowerCase()} de ${modalidade.nome} ativado: ${plano.creditosTotais} créditos. Esta corrida usará 1 crédito.`,
+    window.location.assign(
+      `/cliente/assinatura?p=${plano.periodicidade}&v=${plano.viagensPorMes}&preco=${plano.precoUnitarioAvulso}&mod=${encodeURIComponent(modalidade.nome)}`,
     );
   };
 
