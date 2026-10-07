@@ -75,9 +75,10 @@ export function ConsultorViagemIA() {
 
   const assinarRecomendado = () => {
     if (!resultado) return;
-    const lotes = [...carregarCreditos(), ...gerarLotes(resultado.plano)];
-    salvarCreditos(lotes);
-    toast.success(`Plano ${resultado.plano.rotulo.toLowerCase()} contratado — ${resultado.plano.creditosTotais} créditos de viagem.`);
+    const pl = resultado.plano;
+    window.location.assign(
+      `/cliente/assinatura?p=${pl.periodicidade}&v=${pl.viagensPorMes}&preco=${pl.precoUnitarioAvulso}`,
+    );
   };
 
   return (

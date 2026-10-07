@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { AcessoEquipe } from "@/components/acesso-equipe";
 import { PlanosPorModalidade } from "@/components/planos-por-modalidade";
+import { TabelaIndicacoes } from "@/components/tabela-indicacoes";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -1250,6 +1251,7 @@ function Admin() {
             </Card>
           </div>
           <PlanosPorModalidade modalidades={modalidades} />
+          <div className="mt-6"><TabelaIndicacoes /></div>
         </TabsContent>
 
         <TabsContent value="publicidades" className="mt-6">
