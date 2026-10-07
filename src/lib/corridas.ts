@@ -16,15 +16,17 @@ type Linha = {
 };
 
 function paraAgendamento(r: Linha): Agendamento {
-  return {
+  const a: Agendamento = {
     id: r.id, cliente: r.cliente, motorista: r.motorista, embarque: r.embarque,
-    parada: r.parada ?? undefined, desembarque: r.desembarque, ida: r.ida,
-    retorno: r.retorno ?? undefined, modalidade: r.modalidade,
+    desembarque: r.desembarque, ida: r.ida, modalidade: r.modalidade,
     pagamento: r.pagamento as Agendamento["pagamento"], valor: Number(r.valor),
     status: r.status as StatusAgendamento, veiculo: r.veiculo,
     categoria: r.categoria as CategoriaVeiculo, ocupantes: [r.cliente], capacidade: r.capacidade,
-    whatsappCliente: r.cliente_whatsapp || undefined,
   };
+  if (r.parada) a.parada = r.parada;
+  if (r.retorno) a.retorno = r.retorno;
+  if (r.cliente_whatsapp) a.whatsappCliente = r.cliente_whatsapp;
+  return a;
 }
 
 export async function criarCorrida(c: NovaCorrida): Promise<string | null> {
