@@ -1,3 +1,4 @@
+import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -97,21 +98,27 @@ export function ConsultorViagemIA() {
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="consultor-origem">Origem</Label>
+          <div className="flex gap-2">
           <Input
             id="consultor-origem"
             value={origem}
             onChange={(e) => setOrigem(e.target.value)}
-            placeholder="Ex.: Alphaville, Barueri"
+            placeholder="Ex.: Pituba, Salvador"
           />
+          <BotaoSelecionarMapa valor={origem} onConfirmar={setOrigem} rotulo="origem" />
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="consultor-destino">Destino</Label>
+          <div className="flex gap-2">
           <Input
             id="consultor-destino"
             value={destino}
             onChange={(e) => setDestino(e.target.value)}
-            placeholder="Ex.: Aeroporto de Guarulhos"
+            placeholder="Ex.: Aeroporto de Salvador"
           />
+          <BotaoSelecionarMapa valor={destino} onConfirmar={setDestino} rotulo="destino" />
+          </div>
         </div>
       </div>
 
@@ -124,6 +131,11 @@ export function ConsultorViagemIA() {
               placeholder={`Parada ${i + 1} — ex.: escola, escritório, academia`}
               value={p.local}
               onChange={(e) => setParadas((l) => l.map((x, j) => (j === i ? { ...x, local: e.target.value } : x)))}
+            />
+            <BotaoSelecionarMapa
+              valor={p.local}
+              rotulo={`parada ${i + 1}`}
+              onConfirmar={(v) => setParadas((l) => l.map((x, j) => (j === i ? { ...x, local: v } : x)))}
             />
             <Input
               aria-label={`Km da parada ${i + 1}`}

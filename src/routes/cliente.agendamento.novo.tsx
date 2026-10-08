@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
@@ -125,7 +126,7 @@ function BlocoTrajeto({
     <div className="mt-4 space-y-4">
       <div className="space-y-2">
         <Label htmlFor={`embarque-${prefixo}`}>Embarque (origem)</Label>
-        <div className="relative">
+        <div className="flex gap-2"><div className="relative flex-1">
           <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-success" />
           <Input
             id={`embarque-${prefixo}`}
@@ -134,6 +135,8 @@ function BlocoTrajeto({
             onChange={(e) => setEmbarque(e.target.value)}
             className="pl-9"
           />
+        </div>
+        <BotaoSelecionarMapa valor={embarque} onConfirmar={setEmbarque} rotulo="embarque" />
         </div>
       </div>
 
@@ -154,6 +157,13 @@ function BlocoTrajeto({
                 className="pl-9"
               />
             </div>
+            <BotaoSelecionarMapa
+              valor={p.endereco}
+              rotulo={`parada ${i + 1}`}
+              onConfirmar={(v) =>
+                setParadas((atual) => atual.map((x) => (x.id === p.id ? { ...x, endereco: v } : x)))
+              }
+            />
             <Button
               size="icon"
               variant="ghost"
@@ -223,7 +233,7 @@ function BlocoTrajeto({
 
       <div className="space-y-2">
         <Label htmlFor={`desembarque-${prefixo}`}>Desembarque (destino)</Label>
-        <div className="relative">
+        <div className="flex gap-2"><div className="relative flex-1">
           <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-destructive" />
           <Input
             id={`desembarque-${prefixo}`}
@@ -232,6 +242,8 @@ function BlocoTrajeto({
             onChange={(e) => setDesembarque(e.target.value)}
             className="pl-9"
           />
+        </div>
+        <BotaoSelecionarMapa valor={desembarque} onConfirmar={setDesembarque} rotulo="desembarque" />
         </div>
       </div>
     </div>
