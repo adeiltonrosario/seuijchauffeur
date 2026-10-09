@@ -125,6 +125,39 @@ export type Database = {
         }
         Relationships: []
       }
+      modalidades: {
+        Row: {
+          caracteristicas: string
+          criado_em: string
+          franquia_km: number
+          nome: string
+          por_km: number
+          por_turno: boolean
+          valor_base: number
+          valor_turno: number
+        }
+        Insert: {
+          caracteristicas?: string
+          criado_em?: string
+          franquia_km?: number
+          nome: string
+          por_km?: number
+          por_turno?: boolean
+          valor_base?: number
+          valor_turno?: number
+        }
+        Update: {
+          caracteristicas?: string
+          criado_em?: string
+          franquia_km?: number
+          nome?: string
+          por_km?: number
+          por_turno?: boolean
+          valor_base?: number
+          valor_turno?: number
+        }
+        Relationships: []
+      }
       motoristas: {
         Row: {
           ajudantes: number
