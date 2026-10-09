@@ -56,6 +56,8 @@ import {
   type VeiculoMotorista,
 } from "@/lib/veiculos-motorista";
 import { gravarMotorista, gravarVeiculoFrota, listarFrota, listarMotoristas } from "@/lib/banco";
+import { supabase } from "@/integrations/supabase/client";
+import { Save } from "lucide-react";
 
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
@@ -304,6 +306,47 @@ function Admin() {
       franquiaKm: m.franquiaKm ?? 0,
     })),
   );
+
+  useEffect(() => {
+    void supabase.from("modalidades").select("*").order("criado_em").then(({ data }) => {
+      if (!data?.length) return;
+      setModalidades((atual) => {
+        const lista = [...atual];
+        for (const r of data) {
+          const m = {
+            nome: r.nome,
+            caracteristicas: r.caracteristicas,
+            valorBase: Number(r.valor_base),
+            porKm: Number(r.por_km),
+            porTurno: r.por_turno,
+            valorTurno: Number(r.valor_turno),
+            franquiaKm: Number(r.franquia_km),
+          };
+          const i = lista.findIndex((x) => x.nome === m.nome);
+          if (i >= 0) lista[i] = m;
+          else lista.push(m);
+        }
+        return lista;
+      });
+    });
+  }, []);
+
+  const gravarModalidadeBanco = async (m: (typeof modalidades)[number]) => {
+    const { error } = await supabase.from("modalidades").upsert({
+      nome: m.nome,
+      caracteristicas: m.caracteristicas,
+      valor_base: m.valorBase,
+      por_km: m.porKm,
+      por_turno: m.porTurno,
+      valor_turno: m.valorTurno,
+      franquia_km: m.franquiaKm,
+    });
+    if (error) {
+      toast.error("Não foi possível salvar: entre como Administrador ou Gerente.");
+      return false;
+    }
+    return true;
+  };
 
   const [novaModalidade, setNovaModalidade] = useState("");
   const [novoValorBase, setNovoValorBase] = useState("");
