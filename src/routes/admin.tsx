@@ -1141,8 +1141,12 @@ function Admin() {
                       <button
                         type="button"
                         onClick={() => {
-                          setModalidades((atual) => atual.filter((_, idx) => idx !== i));
-                          toast.success("Modalidade removida.");
+                          if (!window.confirm(`Excluir a modalidade ${m.nome}?`)) return;
+                          void supabase.from("modalidades").delete().eq("nome", m.nome).then(({ error }) => {
+                            if (error) return toast.error("Não foi possível excluir.");
+                            setModalidades((atual) => atual.filter((_, idx) => idx !== i));
+                            toast.success("Modalidade removida.");
+                          });
                         }}
                         className="text-muted-foreground transition-colors hover:text-destructive"
                         aria-label={`Remover ${m.nome}`}
@@ -1209,9 +1213,23 @@ function Admin() {
                         placeholder="Como proceder no embarque e no desembarque."
                       />
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Corrida de 12 km ≈ {formatarBRL(m.valorBase + m.porKm * 12)}
-                    </p>
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <p className="text-xs text-muted-foreground">
+                        Corrida de 12 km ≈ {formatarBRL(m.valorBase + m.porKm * 12)}
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (m.porKm > 0 && m.porKm < VALOR_MINIMO_POR_KM) {
+                            toast.error(`Piso mínimo: ${formatarBRL(VALOR_MINIMO_POR_KM)} por km.`);
+                            return;
+                          }
+                          void gravarModalidadeBanco(m).then((ok) => ok && toast.success(`${m.nome} salva.`));
+                        }}
+                      >
+                        <Save className="size-4" /> Salvar alterações
+                      </Button>
+                    </div>
                   </li>
                 ))}
               </ul>
