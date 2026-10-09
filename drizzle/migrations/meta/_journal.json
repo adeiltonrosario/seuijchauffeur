@@ -43,6 +43,13 @@
       "when": 1791334991731,
       "tag": "0005_criar_corridas",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791510151447,
+      "tag": "0006_modalidades",
+      "breakpoints": true
     }
   ]
 }

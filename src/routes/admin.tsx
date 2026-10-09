@@ -56,6 +56,8 @@ import {
   type VeiculoMotorista,
 } from "@/lib/veiculos-motorista";
 import { gravarMotorista, gravarVeiculoFrota, listarFrota, listarMotoristas } from "@/lib/banco";
+import { supabase } from "@/integrations/supabase/client";
+import { Save } from "lucide-react";
 
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
@@ -305,6 +307,47 @@ function Admin() {
     })),
   );
 
+  useEffect(() => {
+    void supabase.from("modalidades").select("*").order("criado_em").then(({ data }) => {
+      if (!data?.length) return;
+      setModalidades((atual) => {
+        const lista = [...atual];
+        for (const r of data) {
+          const m = {
+            nome: r.nome,
+            caracteristicas: r.caracteristicas,
+            valorBase: Number(r.valor_base),
+            porKm: Number(r.por_km),
+            porTurno: r.por_turno,
+            valorTurno: Number(r.valor_turno),
+            franquiaKm: Number(r.franquia_km),
+          };
+          const i = lista.findIndex((x) => x.nome === m.nome);
+          if (i >= 0) lista[i] = m;
+          else lista.push(m);
+        }
+        return lista;
+      });
+    });
+  }, []);
+
+  const gravarModalidadeBanco = async (m: (typeof modalidades)[number]) => {
+    const { error } = await supabase.from("modalidades").upsert({
+      nome: m.nome,
+      caracteristicas: m.caracteristicas,
+      valor_base: m.valorBase,
+      por_km: m.porKm,
+      por_turno: m.porTurno,
+      valor_turno: m.valorTurno,
+      franquia_km: m.franquiaKm,
+    });
+    if (error) {
+      toast.error("Não foi possível salvar: entre como Administrador ou Gerente.");
+      return false;
+    }
+    return true;
+  };
+
   const [novaModalidade, setNovaModalidade] = useState("");
   const [novoValorBase, setNovoValorBase] = useState("");
   const [novoPorKm, setNovoPorKm] = useState("");
@@ -453,19 +496,20 @@ function Admin() {
       toast.error(`O valor por km não pode ser inferior a ${formatarBRL(VALOR_MINIMO_POR_KM)}/km.`);
       return;
     }
-    setModalidades((atual) => [
-      ...atual,
-      {
-        nome: novaModalidade,
-        caracteristicas: novasCaracteristicas.trim(),
-        valorBase: Number(novoValorBase),
-        porKm,
-        porTurno: false,
-        valorTurno: 0,
-        franquiaKm: 0,
-      },
-    ]);
-    toast.success("Modalidade criada.");
+    const nova = {
+      nome: novaModalidade.trim(),
+      caracteristicas: novasCaracteristicas.trim(),
+      valorBase: Number(String(novoValorBase).replace(",", ".")) || 0,
+      porKm,
+      porTurno: false,
+      valorTurno: 0,
+      franquiaKm: 0,
+    };
+    void gravarModalidadeBanco(nova).then((ok) => {
+      if (!ok) return;
+      setModalidades((atual) => [...atual.filter((m) => m.nome !== nova.nome), nova]);
+      toast.success("Modalidade criada e salva.");
+    });
     setNovaModalidade("");
     setNovoValorBase("");
     setNovoPorKm("");
@@ -1097,8 +1141,15 @@ function Admin() {
                       <button
                         type="button"
                         onClick={() => {
-                          setModalidades((atual) => atual.filter((_, idx) => idx !== i));
-                          toast.success("Modalidade removida.");
+                          if (!window.confirm(`Excluir a modalidade ${m.nome}?`)) return;
+                          void supabase.from("modalidades").delete().eq("nome", m.nome).then(({ error }) => {
+                            if (error) {
+                              toast.error("Não foi possível excluir.");
+                              return;
+                            }
+                            setModalidades((atual) => atual.filter((_, idx) => idx !== i));
+                            toast.success("Modalidade removida.");
+                          });
                         }}
                         className="text-muted-foreground transition-colors hover:text-destructive"
                         aria-label={`Remover ${m.nome}`}
@@ -1165,9 +1216,23 @@ function Admin() {
                         placeholder="Como proceder no embarque e no desembarque."
                       />
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Corrida de 12 km ≈ {formatarBRL(m.valorBase + m.porKm * 12)}
-                    </p>
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <p className="text-xs text-muted-foreground">
+                        Corrida de 12 km ≈ {formatarBRL(m.valorBase + m.porKm * 12)}
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (m.porKm > 0 && m.porKm < VALOR_MINIMO_POR_KM) {
+                            toast.error(`Piso mínimo: ${formatarBRL(VALOR_MINIMO_POR_KM)} por km.`);
+                            return;
+                          }
+                          void gravarModalidadeBanco(m).then((ok) => ok && toast.success(`${m.nome} salva.`));
+                        }}
+                      >
+                        <Save className="size-4" /> Salvar alterações
+                      </Button>
+                    </div>
                   </li>
                 ))}
               </ul>
