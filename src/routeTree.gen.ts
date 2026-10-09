@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AgenteSuporteRouteImport } from './routes/agente-suporte'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MapaRouteImport } from './routes/mapa'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SejaMotoristaRouteImport } from './routes/seja-motorista'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
 import { Route as ClienteAssinaturaRouteImport } from './routes/cliente.assinatura'
@@ -50,6 +51,11 @@ const FavoritosRoute = FavoritosRouteImport.update({
 const MapaRoute = MapaRouteImport.update({
   id: '/mapa',
   path: '/mapa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SejaMotoristaRoute = SejaMotoristaRouteImport.update({
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/agente-suporte': typeof AgenteSuporteRoute
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/assinatura': typeof ClienteAssinaturaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/agente-suporte': typeof AgenteSuporteRoute
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/assinatura': typeof ClienteAssinaturaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/agente-suporte': typeof AgenteSuporteRoute
   '/favoritos': typeof FavoritosRoute
   '/mapa': typeof MapaRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/assinatura': typeof ClienteAssinaturaRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/agente-suporte'
     | '/favoritos'
     | '/mapa'
+    | '/reset-password'
     | '/seja-motorista'
     | '/cliente/assinatura'
     | '/cliente/pagamento'
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/agente-suporte'
     | '/favoritos'
     | '/mapa'
+    | '/reset-password'
     | '/seja-motorista'
     | '/cliente/assinatura'
     | '/cliente/pagamento'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/agente-suporte'
     | '/favoritos'
     | '/mapa'
+    | '/reset-password'
     | '/seja-motorista'
     | '/cliente/assinatura'
     | '/cliente/pagamento'
@@ -239,6 +251,7 @@ export interface RootRouteChildren {
   AgenteSuporteRoute: typeof AgenteSuporteRoute
   FavoritosRoute: typeof FavoritosRoute
   MapaRoute: typeof MapaRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SejaMotoristaRoute: typeof SejaMotoristaRoute
   ClienteAssinaturaRoute: typeof ClienteAssinaturaRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
@@ -288,6 +301,13 @@ declare module '@tanstack/react-router' {
       path: '/mapa'
       fullPath: '/mapa'
       preLoaderRoute: typeof MapaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/seja-motorista': {
@@ -383,6 +403,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgenteSuporteRoute: AgenteSuporteRoute,
   FavoritosRoute: FavoritosRoute,
   MapaRoute: MapaRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SejaMotoristaRoute: SejaMotoristaRoute,
   ClienteAssinaturaRoute: ClienteAssinaturaRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
