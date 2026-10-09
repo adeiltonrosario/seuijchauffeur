@@ -1143,7 +1143,10 @@ function Admin() {
                         onClick={() => {
                           if (!window.confirm(`Excluir a modalidade ${m.nome}?`)) return;
                           void supabase.from("modalidades").delete().eq("nome", m.nome).then(({ error }) => {
-                            if (error) return toast.error("Não foi possível excluir.");
+                            if (error) {
+                              toast.error("Não foi possível excluir.");
+                              return;
+                            }
                             setModalidades((atual) => atual.filter((_, idx) => idx !== i));
                             toast.success("Modalidade removida.");
                           });
