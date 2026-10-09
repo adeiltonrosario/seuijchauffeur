@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
+import { BotaoFinalizarRota } from "@/components/finalizar-rota";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
@@ -1168,6 +1169,21 @@ function NovoAgendamento() {
                 </h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className="space-y-4">
+                    <BotaoFinalizarRota
+                      pontos={[embarque, ...paradas.map((p) => p.endereco), desembarque]}
+                      onCalculado={(r) => setDistancia(String(r.km))}
+                    />
+                    {idaEVolta && (embarqueVolta || desembarqueVolta || paradasVolta.length > 0) && (
+                      <BotaoFinalizarRota
+                        rotulo="Calcular trajeto da volta"
+                        pontos={[
+                          embarqueVolta || desembarque,
+                          ...paradasVolta.map((p) => p.endereco),
+                          desembarqueVolta || embarque,
+                        ]}
+                        onCalculado={(r) => setDistanciaVolta(String(r.km))}
+                      />
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor="distancia">
                         {porTurno ? "Distância total do turno (ida + volta, em km)" : "Distância estimada da ida (km)"}
