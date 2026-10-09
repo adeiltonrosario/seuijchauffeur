@@ -496,19 +496,20 @@ function Admin() {
       toast.error(`O valor por km não pode ser inferior a ${formatarBRL(VALOR_MINIMO_POR_KM)}/km.`);
       return;
     }
-    setModalidades((atual) => [
-      ...atual,
-      {
-        nome: novaModalidade,
-        caracteristicas: novasCaracteristicas.trim(),
-        valorBase: Number(novoValorBase),
-        porKm,
-        porTurno: false,
-        valorTurno: 0,
-        franquiaKm: 0,
-      },
-    ]);
-    toast.success("Modalidade criada.");
+    const nova = {
+      nome: novaModalidade.trim(),
+      caracteristicas: novasCaracteristicas.trim(),
+      valorBase: Number(String(novoValorBase).replace(",", ".")) || 0,
+      porKm,
+      porTurno: false,
+      valorTurno: 0,
+      franquiaKm: 0,
+    };
+    void gravarModalidadeBanco(nova).then((ok) => {
+      if (!ok) return;
+      setModalidades((atual) => [...atual.filter((m) => m.nome !== nova.nome), nova]);
+      toast.success("Modalidade criada e salva.");
+    });
     setNovaModalidade("");
     setNovoValorBase("");
     setNovoPorKm("");
