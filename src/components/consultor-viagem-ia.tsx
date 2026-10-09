@@ -1,4 +1,5 @@
 import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
+import { BotaoFinalizarRota } from "@/components/finalizar-rota";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -156,6 +157,14 @@ export function ConsultorViagemIA() {
       </div>
 
       <div className="mt-4 space-y-2">
+        <BotaoFinalizarRota
+          rotulo="Finalizar rota da rotina e calcular km"
+          pontos={[origem, ...paradas.map((p) => p.local), destino]}
+          onCalculado={(r) => {
+            setKm(String(r.km));
+            setParadas((l) => l.map((p) => ({ ...p, km: "" })));
+          }}
+        />
         <Label htmlFor="consultor-km">{paradas.length ? "Km do trecho principal (origem → destino)" : "Distância por viagem (km)"}</Label>
         <Input id="consultor-km" inputMode="decimal" value={km} onChange={(e) => setKm(e.target.value)} />
         <p className="rounded-md bg-primary/10 p-2 text-sm text-gold">
