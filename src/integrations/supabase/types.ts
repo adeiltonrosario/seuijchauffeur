@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      casas_de_apoio: {
+        Row: {
+          ativa: boolean
+          criado_em: string
+          endereco: string
+          id: string
+          municipio: string
+          nome: string
+          telefone: string
+        }
+        Insert: {
+          ativa?: boolean
+          criado_em?: string
+          endereco: string
+          id?: string
+          municipio?: string
+          nome: string
+          telefone?: string
+        }
+        Update: {
+          ativa?: boolean
+          criado_em?: string
+          endereco?: string
+          id?: string
+          municipio?: string
+          nome?: string
+          telefone?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           criado_em: string
@@ -212,6 +242,56 @@ export type Database = {
         }
         Relationships: []
       }
+      pedidos_casa_apoio: {
+        Row: {
+          ar_condicionado: boolean
+          casa_id: string
+          categoria: string
+          criado_em: string
+          data_hora: string
+          id: string
+          ida_e_volta: boolean
+          pacientes: Json
+          solicitante_email: string
+          status: string
+          valor: number
+        }
+        Insert: {
+          ar_condicionado?: boolean
+          casa_id: string
+          categoria?: string
+          criado_em?: string
+          data_hora: string
+          id?: string
+          ida_e_volta?: boolean
+          pacientes?: Json
+          solicitante_email: string
+          status?: string
+          valor?: number
+        }
+        Update: {
+          ar_condicionado?: boolean
+          casa_id?: string
+          categoria?: string
+          criado_em?: string
+          data_hora?: string
+          id?: string
+          ida_e_volta?: boolean
+          pacientes?: Json
+          solicitante_email?: string
+          status?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedidos_casa_apoio_casa_id_fkey"
+            columns: ["casa_id"]
+            isOneToOne: false
+            referencedRelation: "casas_de_apoio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       planos_modalidade: {
         Row: {
           criado_em: string
@@ -244,6 +324,53 @@ export type Database = {
           viagens_mes?: number
         }
         Relationships: []
+      }
+      solicitantes_casa_apoio: {
+        Row: {
+          aprovador: string | null
+          cargo: string
+          casa_id: string | null
+          casa_nome_informado: string
+          criado_em: string
+          email: string
+          id: string
+          nome: string
+          status: string
+          whatsapp: string
+        }
+        Insert: {
+          aprovador?: string | null
+          cargo?: string
+          casa_id?: string | null
+          casa_nome_informado?: string
+          criado_em?: string
+          email: string
+          id?: string
+          nome: string
+          status?: string
+          whatsapp?: string
+        }
+        Update: {
+          aprovador?: string | null
+          cargo?: string
+          casa_id?: string | null
+          casa_nome_informado?: string
+          criado_em?: string
+          email?: string
+          id?: string
+          nome?: string
+          status?: string
+          whatsapp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitantes_casa_apoio_casa_id_fkey"
+            columns: ["casa_id"]
+            isOneToOne: false
+            referencedRelation: "casas_de_apoio"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -372,6 +499,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acesso_casa_apoio: { Args: { _email: string }; Returns: Json }
+      criar_pedido_casa_apoio: {
+        Args: {
+          _ar: boolean
+          _categoria: string
+          _data_hora: string
+          _email: string
+          _ida_e_volta: boolean
+          _pacientes: Json
+          _valor: number
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -385,6 +525,16 @@ export type Database = {
         Returns: Json
       }
       reivindicar_primeiro_admin: { Args: never; Returns: boolean }
+      solicitar_acesso_casa_apoio: {
+        Args: {
+          _cargo: string
+          _casa: string
+          _email: string
+          _nome: string
+          _whatsapp: string
+        }
+        Returns: string
+      }
       usar_codigo_indicacao: {
         Args: { _codigo: string; _email: string; _nome: string }
         Returns: string

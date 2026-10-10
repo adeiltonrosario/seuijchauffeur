@@ -356,6 +356,13 @@ export const calcularValorEspera = (
 
 export const modalidades: Modalidade[] = [
   {
+    nome: "Translado Casas de Apoio",
+    valorPorKm: 3,
+    precoAvulso: 90,
+    caracteristicas:
+      "Embarque fixo na Casa de Apoio cadastrada. Cobrança por paciente (com ou sem acompanhante), + R$ 2,00 por hospital diferente no mesmo município, ar-condicionado opcional + R$ 15,00. Acesso liberado pelo administrador.",
+  },
+  {
     nome: "Executivo aeroporto",
     valorPorKm: 3.5,
     precoAvulso: 150,

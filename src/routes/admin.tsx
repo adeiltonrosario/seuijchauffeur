@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { AcessoEquipe } from "@/components/acesso-equipe";
 import { PlanosPorModalidade } from "@/components/planos-por-modalidade";
+import { AdminCasasApoio } from "@/components/admin-casas-apoio";
 import { TabelaIndicacoes } from "@/components/tabela-indicacoes";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -550,6 +551,7 @@ function Admin() {
           <TabsTrigger value="assinaturas">Assinaturas</TabsTrigger>
           <TabsTrigger value="recebimento">Recebimento</TabsTrigger>
           <TabsTrigger value="publicidades">Publicidades</TabsTrigger>
+          <TabsTrigger value="casas-apoio">Casas de Apoio</TabsTrigger>
         </TabsList>
 
 
@@ -1317,6 +1319,10 @@ function Admin() {
           </div>
           <PlanosPorModalidade modalidades={modalidades} />
           <div className="mt-6"><TabelaIndicacoes /></div>
+        </TabsContent>
+
+        <TabsContent value="casas-apoio" className="mt-6">
+          <AdminCasasApoio />
         </TabsContent>
 
         <TabsContent value="publicidades" className="mt-6">

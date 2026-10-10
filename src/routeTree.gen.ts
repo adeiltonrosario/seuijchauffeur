@@ -18,6 +18,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SejaMotoristaRouteImport } from './routes/seja-motorista'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
 import { Route as ClienteAssinaturaRouteImport } from './routes/cliente.assinatura'
+import { Route as ClienteCasaApoioRouteImport } from './routes/cliente.casa-apoio'
 import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento'
 import { Route as ClientePlantaoRouteImport } from './routes/cliente.plantao'
 import { Route as MotoristaDisponibilidadeRouteImport } from './routes/motorista.disponibilidade'
@@ -71,6 +72,11 @@ const ClienteIndexRoute = ClienteIndexRouteImport.update({
 const ClienteAssinaturaRoute = ClienteAssinaturaRouteImport.update({
   id: '/cliente/assinatura',
   path: '/cliente/assinatura',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClienteCasaApoioRoute = ClienteCasaApoioRouteImport.update({
+  id: '/cliente/casa-apoio',
+  path: '/cliente/casa-apoio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClientePagamentoRoute = ClientePagamentoRouteImport.update({
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/assinatura': typeof ClienteAssinaturaRoute
+  '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/assinatura': typeof ClienteAssinaturaRoute
+  '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/assinatura': typeof ClienteAssinaturaRoute
+  '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/seja-motorista'
     | '/cliente/assinatura'
+    | '/cliente/casa-apoio'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/motorista/disponibilidade'
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/seja-motorista'
     | '/cliente/assinatura'
+    | '/cliente/casa-apoio'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/motorista/disponibilidade'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/seja-motorista'
     | '/cliente/assinatura'
+    | '/cliente/casa-apoio'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/motorista/disponibilidade'
@@ -254,6 +266,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SejaMotoristaRoute: typeof SejaMotoristaRoute
   ClienteAssinaturaRoute: typeof ClienteAssinaturaRoute
+  ClienteCasaApoioRoute: typeof ClienteCasaApoioRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
   ClientePlantaoRoute: typeof ClientePlantaoRoute
   MotoristaDisponibilidadeRoute: typeof MotoristaDisponibilidadeRoute
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClienteAssinaturaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cliente/casa-apoio': {
+      id: '/cliente/casa-apoio'
+      path: '/cliente/casa-apoio'
+      fullPath: '/cliente/casa-apoio'
+      preLoaderRoute: typeof ClienteCasaApoioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cliente/pagamento': {
       id: '/cliente/pagamento'
       path: '/cliente/pagamento'
@@ -406,6 +426,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SejaMotoristaRoute: SejaMotoristaRoute,
   ClienteAssinaturaRoute: ClienteAssinaturaRoute,
+  ClienteCasaApoioRoute: ClienteCasaApoioRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
   ClientePlantaoRoute: ClientePlantaoRoute,
   MotoristaDisponibilidadeRoute: MotoristaDisponibilidadeRoute,
