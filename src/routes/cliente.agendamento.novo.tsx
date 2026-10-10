@@ -672,6 +672,18 @@ function NovoAgendamento() {
                   </div>
                 ) : null}
 
+                {modalidade.nome === "Translado Casas de Apoio" ? (
+                  <div className="glow-gold mt-4 rounded-lg border border-primary/40 p-4">
+                    <p className="text-sm font-medium">Modalidade com liberação do administrador</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Embarque fixo na Casa de Apoio, lista de pacientes e acompanhantes e cobrança por paciente.
+                    </p>
+                    <Button className="mt-3" asChild>
+                      <Link to="/cliente/casa-apoio">Abrir Translado Casas de Apoio</Link>
+                    </Button>
+                  </div>
+                ) : null}
+
                 {modalidade.nome === "Rota de plantonista" ? (
                   <div className="glow-gold mt-4 rounded-lg border border-primary/40 p-4">
                     <p className="text-sm font-medium">Monte sua escala de plantão</p>
