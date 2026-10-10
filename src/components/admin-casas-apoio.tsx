@@ -30,9 +30,9 @@ export function AdminCasasApoio() {
   useEffect(() => { void carregar(); }, []);
 
   async function criarCasa() {
-    if (!nova.nome.trim() || !nova.endereco.trim()) return toast.error("Informe nome e endereço.");
+    if (!nova.nome.trim() || !nova.endereco.trim()) { toast.error("Informe nome e endereço."); return; }
     const { error } = await supabase.from("casas_de_apoio").insert(nova);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setNova({ nome: "", endereco: "", municipio: "Salvador", telefone: "" });
     toast.success("Casa de Apoio cadastrada.");
     void carregar();
@@ -47,7 +47,7 @@ export function AdminCasasApoio() {
     if (error) toast.error("Não foi possível excluir (há pedidos vinculados). Desative a casa."); else void carregar();
   }
   async function decidir(s: Sol, status: string, casa_id = s.casa_id) {
-    if (status === "aprovado" && !casa_id) return toast.error("Vincule uma Casa de Apoio antes de aprovar.");
+    if (status === "aprovado" && !casa_id) { toast.error("Vincule uma Casa de Apoio antes de aprovar."); return; }
     const { data: u } = await supabase.auth.getUser();
     const { error } = await supabase.from("solicitantes_casa_apoio").update({ status, casa_id, aprovador: u.user?.email ?? null }).eq("id", s.id);
     if (error) toast.error(error.message); else { toast.success("Solicitante atualizado."); void carregar(); }

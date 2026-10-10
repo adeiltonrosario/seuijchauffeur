@@ -48,7 +48,7 @@ function TransladoCasaApoio() {
   const [categoria, setCategoria] = useState<string>(CATEGORIAS_PASSAGEIROS[0] as string);
 
   async function consultar(e: string) {
-    if (!e.includes("@")) return setAcesso(null);
+    if (!e.includes("@")) { setAcesso(null); return; }
     const { data } = await supabase.rpc("acesso_casa_apoio", { _email: e });
     setAcesso((data as Acesso) ?? null);
   }
@@ -65,21 +65,21 @@ function TransladoCasaApoio() {
   async function solicitar() {
     const e = email.trim().toLowerCase();
     const { data, error } = await supabase.rpc("solicitar_acesso_casa_apoio", { _email: e, _nome: form.nome, _cargo: form.cargo, _whatsapp: form.whatsapp, _casa: form.casa });
-    if (error || data !== "ok") return toast.error(String(data ?? error?.message));
+    if (error || data !== "ok") { toast.error(String(data ?? error?.message)); return; }
     localStorage.setItem("seuchauffeur:cliente-email", e);
     toast.success("Solicitação enviada. Aguarde a liberação do administrador.");
     void consultar(e);
   }
 
   async function confirmar() {
-    if (!dataHora) return toast.error("Informe data e horário.");
-    if (calc.bloqueios.length) return toast.error(calc.bloqueios[0]!);
-    if (pacientes.some((p) => p.paciente.trim() && !p.hospital.trim())) return toast.error("Informe o hospital de cada paciente.");
+    if (!dataHora) { toast.error("Informe data e horário."); return; }
+    if (calc.bloqueios.length) { toast.error(calc.bloqueios[0]!); return; }
+    if (pacientes.some((p) => p.paciente.trim() && !p.hospital.trim())) { toast.error("Informe o hospital de cada paciente."); return; }
     const { data, error } = await supabase.rpc("criar_pedido_casa_apoio", {
       _email: email, _data_hora: dataHora, _ida_e_volta: idaVolta, _ar: ar,
       _pacientes: pacientes.filter((p) => p.paciente.trim()) as never, _categoria: categoria, _valor: calc.total,
     });
-    if (error || data !== "ok") return toast.error(String(data ?? error?.message));
+    if (error || data !== "ok") { toast.error(String(data ?? error?.message)); return; }
     toast.success("Translado solicitado! O manifesto foi enviado à operação.");
     setPacientes([novoPaciente(acesso?.casa?.municipio)]);
   }
