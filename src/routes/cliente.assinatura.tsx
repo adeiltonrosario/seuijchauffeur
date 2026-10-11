@@ -10,9 +10,6 @@ import { Label } from "@/components/ui/label";
 import { formatarBRL } from "@/lib/dados";
 import {
   calcularPlano,
-  carregarCreditos,
-  gerarLotes,
-  rotuloPeriodicidade,
   salvarCreditos,
   type Periodicidade,
 } from "@/lib/assinaturas";

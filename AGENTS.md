@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Approval fields (motoristas.status, veiculos.status/aprovador) are protected by DB triggers that only accept changes from admin/gerente roles in user_roles; why: client-side approval cannot be trusted.
+- Créditos de plano só são liberados no servidor após pagamento aprovado pelo provedor; quilômetros acumulados nunca expiram e renovações somam ao saldo.
