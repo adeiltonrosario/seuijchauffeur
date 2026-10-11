@@ -10,10 +10,10 @@ import { Label } from "@/components/ui/label";
 import { formatarBRL } from "@/lib/dados";
 import {
   calcularPlano,
-  salvarCreditos,
+  rotuloPeriodicidade,
   type Periodicidade,
 } from "@/lib/assinaturas";
-import { clienteAtual, descontoTitular, meuCodigo, usarCodigo, validarCodigo } from "@/lib/indicacao";
+import { clienteAtual, descontoTitular, meuCodigo, validarCodigo } from "@/lib/indicacao";
 import { valorComIndicacao } from "@/lib/indicacao-preco";
 import { supabase } from "@/integrations/supabase/client";
 
