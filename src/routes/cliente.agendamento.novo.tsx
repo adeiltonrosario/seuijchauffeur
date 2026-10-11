@@ -1,6 +1,6 @@
 import { carregarStatus, motoristaAtivo } from "@/lib/status-motorista";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,7 +19,7 @@ import {
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
-import { BotaoFinalizarRota } from "@/components/finalizar-rota";
+import { calcularRota } from "@/components/finalizar-rota";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
@@ -339,6 +339,34 @@ function NovoAgendamento() {
   const maxAjudantes = Math.min(escolhido.ajudantes, MAX_AJUDANTES);
   const ajudantesEfetivos = cargaSelecionada ? Math.min(ajudantes, maxAjudantes) : 0;
   const valorAjudantes = Math.round(ajudantesEfetivos * escolhido.valorAjudante * 100) / 100;
+  // Cálculo automático da distância (ida e volta) a partir dos endereços, sem digitação.
+  const [rotaAuto, setRotaAuto] = useState({ calculando: false, falha: false });
+  const chaveIda = [embarque, ...paradas.map((p) => p.endereco), desembarque].join("|");
+  const chaveVolta = idaEVolta
+    ? [embarqueVolta || desembarque, ...paradasVolta.map((p) => p.endereco), desembarqueVolta || embarque].join("|")
+    : "";
+  useEffect(() => {
+    const ida = chaveIda.split("|").filter((s) => s.trim());
+    if (!embarque.trim() || !desembarque.trim()) return;
+    let ativo = true;
+    const t = setTimeout(async () => {
+      setRotaAuto({ calculando: true, falha: false });
+      try {
+        const r = await calcularRota(ida);
+        if (!ativo) return;
+        setDistancia(String(r.km));
+        if (chaveVolta) {
+          const v = await calcularRota(chaveVolta.split("|").filter((s) => s.trim()));
+          if (ativo) setDistanciaVolta(String(v.km));
+        } else setDistanciaVolta("");
+        if (ativo) setRotaAuto({ calculando: false, falha: false });
+      } catch {
+        if (ativo) setRotaAuto({ calculando: false, falha: true });
+      }
+    }, 800);
+    return () => { ativo = false; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chaveIda, chaveVolta]);
   const kmIda = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
   const kmVoltaInformado = Math.max(Number(distanciaVolta.replace(",", ".")) || 0, 0);
   const kmVolta = idaEVolta ? (kmVoltaInformado > 0 ? kmVoltaInformado : kmIda) : 0;
@@ -1181,50 +1209,31 @@ function NovoAgendamento() {
                 </h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className="space-y-4">
-                    <BotaoFinalizarRota
-                      pontos={[embarque, ...paradas.map((p) => p.endereco), desembarque]}
-                      onCalculado={(r) => setDistancia(String(r.km))}
-                    />
-                    {idaEVolta && (embarqueVolta || desembarqueVolta || paradasVolta.length > 0) && (
-                      <BotaoFinalizarRota
-                        rotulo="Calcular trajeto da volta"
-                        pontos={[
-                          embarqueVolta || desembarque,
-                          ...paradasVolta.map((p) => p.endereco),
-                          desembarqueVolta || embarque,
-                        ]}
-                        onCalculado={(r) => setDistanciaVolta(String(r.km))}
-                      />
-                    )}
-                    <div className="space-y-2">
-                      <Label htmlFor="distancia">
-                        {porTurno ? "Distância total do turno (ida + volta, em km)" : "Distância estimada da ida (km)"}
-                      </Label>
-                      <Input
-                        id="distancia"
-                        inputMode="decimal"
-                        value={distancia}
-                        onChange={(e) => setDistancia(e.target.value)}
-                      />
-                    </div>
-                    {idaEVolta && (
-                      <div className="space-y-2">
-                        <Label htmlFor="distancia-volta">Distância estimada da volta (km)</Label>
-                        <Input
-                          id="distancia-volta"
-                          inputMode="decimal"
-                          value={distanciaVolta}
-                          placeholder={distancia}
-                          onChange={(e) => setDistanciaVolta(e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Em branco, usamos a mesma distância da ida.
-                        </p>
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      Soma de todos os trechos de cada percurso, incluindo as paradas.
+                    <p className={`text-sm ${rotaAuto.falha ? "text-destructive" : "text-muted-foreground"}`}>
+                      {rotaAuto.calculando
+                        ? "Calculando o trajeto pelos endereços informados…"
+                        : rotaAuto.falha
+                          ? "Não foi possível calcular a rota automaticamente. Informe os km abaixo."
+                          : kmIda > 0
+                            ? "Distância calculada automaticamente pelos endereços (incluindo paradas)."
+                            : "Informe embarque e desembarque para calcular a distância automaticamente."}
                     </p>
+                    {rotaAuto.falha && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="distancia">
+                            {porTurno ? "Distância total do turno (ida + volta, em km)" : "Distância da ida (km)"}
+                          </Label>
+                          <Input id="distancia" inputMode="decimal" value={distancia} onChange={(e) => setDistancia(e.target.value)} />
+                        </div>
+                        {idaEVolta && (
+                          <div className="space-y-2">
+                            <Label htmlFor="distancia-volta">Distância da volta (km)</Label>
+                            <Input id="distancia-volta" inputMode="decimal" value={distanciaVolta} onChange={(e) => setDistanciaVolta(e.target.value)} />
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                   <div className="rounded-lg bg-secondary/50 p-4 text-sm">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Memória de cálculo</p>
