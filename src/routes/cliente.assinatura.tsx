@@ -18,6 +18,7 @@ import {
 } from "@/lib/assinaturas";
 import { clienteAtual, descontoTitular, meuCodigo, usarCodigo, validarCodigo } from "@/lib/indicacao";
 import { valorComIndicacao } from "@/lib/indicacao-preco";
+import { supabase } from "@/integrations/supabase/client";
 
 type Busca = { p: Periodicidade; v: number; preco: number; mod?: string | undefined };
 
