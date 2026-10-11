@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      carteira_km_movimentos: {
+        Row: {
+          agendamento_id: string | null
+          ciclo: number | null
+          cliente_email: string
+          criado_em: string
+          id: string
+          justificativa: string | null
+          km: number
+          origem: string
+          pedido_id: string | null
+          responsavel: string | null
+          saldo_anterior: number
+          saldo_posterior: number
+          tipo: string
+        }
+        Insert: {
+          agendamento_id?: string | null
+          ciclo?: number | null
+          cliente_email: string
+          criado_em?: string
+          id?: string
+          justificativa?: string | null
+          km: number
+          origem?: string
+          pedido_id?: string | null
+          responsavel?: string | null
+          saldo_anterior: number
+          saldo_posterior: number
+          tipo: string
+        }
+        Update: {
+          agendamento_id?: string | null
+          ciclo?: number | null
+          cliente_email?: string
+          criado_em?: string
+          id?: string
+          justificativa?: string | null
+          km?: number
+          origem?: string
+          pedido_id?: string | null
+          responsavel?: string | null
+          saldo_anterior?: number
+          saldo_posterior?: number
+          tipo?: string
+        }
+        Relationships: []
+      }
       casas_de_apoio: {
         Row: {
           ativa: boolean
@@ -239,6 +287,57 @@ export type Database = {
           valor?: number
           valor_ajudante?: number
           veiculo?: string
+        }
+        Relationships: []
+      }
+      pedidos_assinatura: {
+        Row: {
+          atualizado_em: string
+          ciclos: number
+          cliente_email: string
+          codigo_indicacao: string | null
+          criado_em: string
+          franquia_km: number
+          id: string
+          modalidade: string
+          moeda: string
+          periodicidade: string
+          provedor: string
+          provedor_pagamento_id: string | null
+          status: string
+          valor: number
+        }
+        Insert: {
+          atualizado_em?: string
+          ciclos?: number
+          cliente_email: string
+          codigo_indicacao?: string | null
+          criado_em?: string
+          franquia_km?: number
+          id?: string
+          modalidade?: string
+          moeda?: string
+          periodicidade: string
+          provedor?: string
+          provedor_pagamento_id?: string | null
+          status?: string
+          valor: number
+        }
+        Update: {
+          atualizado_em?: string
+          ciclos?: number
+          cliente_email?: string
+          codigo_indicacao?: string | null
+          criado_em?: string
+          franquia_km?: number
+          id?: string
+          modalidade?: string
+          moeda?: string
+          periodicidade?: string
+          provedor?: string
+          provedor_pagamento_id?: string | null
+          status?: string
+          valor?: number
         }
         Relationships: []
       }
@@ -500,6 +599,22 @@ export type Database = {
     }
     Functions: {
       acesso_casa_apoio: { Args: { _email: string }; Returns: Json }
+      conceder_franquia_pedido: {
+        Args: { _ciclo: number; _pedido: string }
+        Returns: string
+      }
+      criar_pedido_assinatura: {
+        Args: {
+          _ciclos: number
+          _codigo: string
+          _email: string
+          _franquia_km: number
+          _modalidade: string
+          _periodicidade: string
+          _valor: number
+        }
+        Returns: string
+      }
       criar_pedido_casa_apoio: {
         Args: {
           _ar: boolean
@@ -525,6 +640,7 @@ export type Database = {
         Returns: Json
       }
       reivindicar_primeiro_admin: { Args: never; Returns: boolean }
+      saldo_carteira_km: { Args: { _email: string }; Returns: Json }
       solicitar_acesso_casa_apoio: {
         Args: {
           _cargo: string
@@ -533,6 +649,10 @@ export type Database = {
           _nome: string
           _whatsapp: string
         }
+        Returns: string
+      }
+      status_pedido_assinatura: {
+        Args: { _email: string; _id: string }
         Returns: string
       }
       usar_codigo_indicacao: {

@@ -10,14 +10,12 @@ import { Label } from "@/components/ui/label";
 import { formatarBRL } from "@/lib/dados";
 import {
   calcularPlano,
-  carregarCreditos,
-  gerarLotes,
   rotuloPeriodicidade,
-  salvarCreditos,
   type Periodicidade,
 } from "@/lib/assinaturas";
-import { clienteAtual, descontoTitular, meuCodigo, usarCodigo, validarCodigo } from "@/lib/indicacao";
+import { clienteAtual, descontoTitular, meuCodigo, validarCodigo } from "@/lib/indicacao";
 import { valorComIndicacao } from "@/lib/indicacao-preco";
+import { supabase } from "@/integrations/supabase/client";
 
 type Busca = { p: Periodicidade; v: number; preco: number; mod?: string | undefined };
 
@@ -77,18 +75,26 @@ function Assinatura() {
     toast.success("Código aplicado: 10% de desconto na 1ª mensalidade.");
   };
 
+  const [pedidoId, setPedidoId] = useState<string | null>(null);
+
+  const irParaPix = async () => {
+    if (!email.includes("@")) { toast.error("Informe seu e-mail de cadastro."); return; }
+    const { data, error } = await supabase.rpc("criar_pedido_assinatura", {
+      _email: email, _modalidade: mod ?? "", _periodicidade: p,
+      _franquia_km: Math.max(1, plano.viagensPorMes * 18), _ciclos: plano.creditosTotais / Math.max(1, plano.viagensPorMes),
+      _valor: valores.total, _codigo: codigoOk ? codigo : "",
+    });
+    if (error) { toast.error("Não foi possível registrar o pedido."); return; }
+    setPedidoId(data as string);
+    setEtapa("pix");
+  };
+
+  // "Já paguei" apenas consulta o status: a liberação só ocorre no servidor após aprovação do Mercado Pago.
   const confirmarPagamento = async () => {
-    if (codigoOk) {
-      const erro = await usarCodigo(codigo, email, nome);
-      if (erro) {
-        setCodigoOk(false);
-        setEtapa("revisar");
-        toast.error(erro); return;
-      }
-    }
-    salvarCreditos([...carregarCreditos(), ...gerarLotes(plano)]);
-    setEtapa("pago");
-    toast.success(`Pagamento confirmado: ${plano.creditosTotais} créditos liberados.`);
+    if (!pedidoId) return;
+    const { data } = await supabase.rpc("status_pedido_assinatura", { _id: pedidoId, _email: email });
+    if (data === "aprovado") { setEtapa("pago"); toast.success("Pagamento aprovado."); return; }
+    toast.info("Pagamento ainda não confirmado pelo banco. Os quilômetros serão liberados automaticamente após a aprovação.");
   };
 
   return (
