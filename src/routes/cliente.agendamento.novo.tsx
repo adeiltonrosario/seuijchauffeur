@@ -339,6 +339,34 @@ function NovoAgendamento() {
   const maxAjudantes = Math.min(escolhido.ajudantes, MAX_AJUDANTES);
   const ajudantesEfetivos = cargaSelecionada ? Math.min(ajudantes, maxAjudantes) : 0;
   const valorAjudantes = Math.round(ajudantesEfetivos * escolhido.valorAjudante * 100) / 100;
+  // Cálculo automático da distância (ida e volta) a partir dos endereços, sem digitação.
+  const [rotaAuto, setRotaAuto] = useState({ calculando: false, falha: false });
+  const chaveIda = [embarque, ...paradas.map((p) => p.endereco), desembarque].join("|");
+  const chaveVolta = idaEVolta
+    ? [embarqueVolta || desembarque, ...paradasVolta.map((p) => p.endereco), desembarqueVolta || embarque].join("|")
+    : "";
+  useEffect(() => {
+    const ida = chaveIda.split("|").filter((s) => s.trim());
+    if (!embarque.trim() || !desembarque.trim()) return;
+    let ativo = true;
+    const t = setTimeout(async () => {
+      setRotaAuto({ calculando: true, falha: false });
+      try {
+        const r = await calcularRota(ida);
+        if (!ativo) return;
+        setDistancia(String(r.km));
+        if (chaveVolta) {
+          const v = await calcularRota(chaveVolta.split("|").filter((s) => s.trim()));
+          if (ativo) setDistanciaVolta(String(v.km));
+        } else setDistanciaVolta("");
+        if (ativo) setRotaAuto({ calculando: false, falha: false });
+      } catch {
+        if (ativo) setRotaAuto({ calculando: false, falha: true });
+      }
+    }, 800);
+    return () => { ativo = false; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chaveIda, chaveVolta]);
   const kmIda = Math.max(Number(distancia.replace(",", ".")) || 0, 0);
   const kmVoltaInformado = Math.max(Number(distanciaVolta.replace(",", ".")) || 0, 0);
   const kmVolta = idaEVolta ? (kmVoltaInformado > 0 ? kmVoltaInformado : kmIda) : 0;
