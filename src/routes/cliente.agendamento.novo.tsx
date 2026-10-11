@@ -1181,50 +1181,31 @@ function NovoAgendamento() {
                 </h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className="space-y-4">
-                    <BotaoFinalizarRota
-                      pontos={[embarque, ...paradas.map((p) => p.endereco), desembarque]}
-                      onCalculado={(r) => setDistancia(String(r.km))}
-                    />
-                    {idaEVolta && (embarqueVolta || desembarqueVolta || paradasVolta.length > 0) && (
-                      <BotaoFinalizarRota
-                        rotulo="Calcular trajeto da volta"
-                        pontos={[
-                          embarqueVolta || desembarque,
-                          ...paradasVolta.map((p) => p.endereco),
-                          desembarqueVolta || embarque,
-                        ]}
-                        onCalculado={(r) => setDistanciaVolta(String(r.km))}
-                      />
-                    )}
-                    <div className="space-y-2">
-                      <Label htmlFor="distancia">
-                        {porTurno ? "Distância total do turno (ida + volta, em km)" : "Distância estimada da ida (km)"}
-                      </Label>
-                      <Input
-                        id="distancia"
-                        inputMode="decimal"
-                        value={distancia}
-                        onChange={(e) => setDistancia(e.target.value)}
-                      />
-                    </div>
-                    {idaEVolta && (
-                      <div className="space-y-2">
-                        <Label htmlFor="distancia-volta">Distância estimada da volta (km)</Label>
-                        <Input
-                          id="distancia-volta"
-                          inputMode="decimal"
-                          value={distanciaVolta}
-                          placeholder={distancia}
-                          onChange={(e) => setDistanciaVolta(e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Em branco, usamos a mesma distância da ida.
-                        </p>
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      Soma de todos os trechos de cada percurso, incluindo as paradas.
+                    <p className={`text-sm ${rotaAuto.falha ? "text-destructive" : "text-muted-foreground"}`}>
+                      {rotaAuto.calculando
+                        ? "Calculando o trajeto pelos endereços informados…"
+                        : rotaAuto.falha
+                          ? "Não foi possível calcular a rota automaticamente. Informe os km abaixo."
+                          : kmIda > 0
+                            ? "Distância calculada automaticamente pelos endereços (incluindo paradas)."
+                            : "Informe embarque e desembarque para calcular a distância automaticamente."}
                     </p>
+                    {rotaAuto.falha && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="distancia">
+                            {porTurno ? "Distância total do turno (ida + volta, em km)" : "Distância da ida (km)"}
+                          </Label>
+                          <Input id="distancia" inputMode="decimal" value={distancia} onChange={(e) => setDistancia(e.target.value)} />
+                        </div>
+                        {idaEVolta && (
+                          <div className="space-y-2">
+                            <Label htmlFor="distancia-volta">Distância da volta (km)</Label>
+                            <Input id="distancia-volta" inputMode="decimal" value={distanciaVolta} onChange={(e) => setDistanciaVolta(e.target.value)} />
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                   <div className="rounded-lg bg-secondary/50 p-4 text-sm">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Memória de cálculo</p>
