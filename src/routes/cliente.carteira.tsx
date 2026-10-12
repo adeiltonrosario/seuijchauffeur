@@ -78,7 +78,7 @@ function Carteira() {
         {movs.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Nenhuma movimentação ainda. Os km entram aqui só depois que o pagamento do plano é aprovado.{" "}
-            <Link to="/cliente/assinatura" className="text-primary underline">Ver planos</Link>
+            <Link to="/cliente/assinatura" search={{ p: "mensal", v: 12, preco: 150 }} className="text-primary underline">Ver planos</Link>
           </p>
         ) : (
           <ul className="divide-y divide-border/60 text-sm">
