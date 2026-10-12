@@ -18,6 +18,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SejaMotoristaRouteImport } from './routes/seja-motorista'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
 import { Route as ClienteAssinaturaRouteImport } from './routes/cliente.assinatura'
+import { Route as ClienteCarteiraRouteImport } from './routes/cliente.carteira'
 import { Route as ClienteCasaApoioRouteImport } from './routes/cliente.casa-apoio'
 import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento'
 import { Route as ClientePlantaoRouteImport } from './routes/cliente.plantao'
@@ -72,6 +73,11 @@ const ClienteIndexRoute = ClienteIndexRouteImport.update({
 const ClienteAssinaturaRoute = ClienteAssinaturaRouteImport.update({
   id: '/cliente/assinatura',
   path: '/cliente/assinatura',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClienteCarteiraRoute = ClienteCarteiraRouteImport.update({
+  id: '/cliente/carteira',
+  path: '/cliente/carteira',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteCasaApoioRoute = ClienteCasaApoioRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/assinatura': typeof ClienteAssinaturaRoute
+  '/cliente/carteira': typeof ClienteCarteiraRoute
   '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/assinatura': typeof ClienteAssinaturaRoute
+  '/cliente/carteira': typeof ClienteCarteiraRoute
   '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/cliente/assinatura': typeof ClienteAssinaturaRoute
+  '/cliente/carteira': typeof ClienteCarteiraRoute
   '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/seja-motorista'
     | '/cliente/assinatura'
+    | '/cliente/carteira'
     | '/cliente/casa-apoio'
     | '/cliente/pagamento'
     | '/cliente/plantao'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/seja-motorista'
     | '/cliente/assinatura'
+    | '/cliente/carteira'
     | '/cliente/casa-apoio'
     | '/cliente/pagamento'
     | '/cliente/plantao'
@@ -244,6 +255,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/seja-motorista'
     | '/cliente/assinatura'
+    | '/cliente/carteira'
     | '/cliente/casa-apoio'
     | '/cliente/pagamento'
     | '/cliente/plantao'
@@ -266,6 +278,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SejaMotoristaRoute: typeof SejaMotoristaRoute
   ClienteAssinaturaRoute: typeof ClienteAssinaturaRoute
+  ClienteCarteiraRoute: typeof ClienteCarteiraRoute
   ClienteCasaApoioRoute: typeof ClienteCasaApoioRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
   ClientePlantaoRoute: typeof ClientePlantaoRoute
@@ -342,6 +355,13 @@ declare module '@tanstack/react-router' {
       path: '/cliente/assinatura'
       fullPath: '/cliente/assinatura'
       preLoaderRoute: typeof ClienteAssinaturaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cliente/carteira': {
+      id: '/cliente/carteira'
+      path: '/cliente/carteira'
+      fullPath: '/cliente/carteira'
+      preLoaderRoute: typeof ClienteCarteiraRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cliente/casa-apoio': {
@@ -426,6 +446,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SejaMotoristaRoute: SejaMotoristaRoute,
   ClienteAssinaturaRoute: ClienteAssinaturaRoute,
+  ClienteCarteiraRoute: ClienteCarteiraRoute,
   ClienteCasaApoioRoute: ClienteCasaApoioRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
   ClientePlantaoRoute: ClientePlantaoRoute,

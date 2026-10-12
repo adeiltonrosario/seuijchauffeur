@@ -355,6 +355,7 @@ function NovoAgendamento() {
         const r = await calcularRota(ida);
         if (!ativo) return;
         setDistancia(String(r.km));
+        localStorage.setItem("seuchauffeur:ultima-rota-km", String(r.km));
         if (chaveVolta) {
           const v = await calcularRota(chaveVolta.split("|").filter((s) => s.trim()));
           if (ativo) setDistanciaVolta(String(v.km));

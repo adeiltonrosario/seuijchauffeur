@@ -640,6 +640,10 @@ export type Database = {
         Returns: Json
       }
       reivindicar_primeiro_admin: { Args: never; Returns: boolean }
+      reservar_km_corrida: {
+        Args: { _agendamento: string; _email: string; _km: number }
+        Returns: Json
+      }
       saldo_carteira_km: { Args: { _email: string }; Returns: Json }
       solicitar_acesso_casa_apoio: {
         Args: {
