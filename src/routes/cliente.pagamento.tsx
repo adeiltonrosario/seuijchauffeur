@@ -8,15 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatarBRL } from "@/lib/dados";
-import {
-  VALIDADE_CREDITOS_DIAS,
-  carregarCreditos,
-  consumirCreditos,
-  creditosAVencer,
-  saldoDisponivel,
-  salvarCreditos,
-  type LoteCredito,
-} from "@/lib/assinaturas";
+import { supabase } from "@/integrations/supabase/client";
+import { TARIFA_EXCEDENTE_KM, calcularCobertura, emailCliente } from "@/lib/carteira-km";
 
 export const Route = createFileRoute("/cliente/pagamento")({
   head: () => ({
@@ -34,32 +27,39 @@ const chavePix = "pix@seuchauffeur.com.br";
 
 function Pagamento() {
   const [metodo, setMetodo] = useState<"pix" | "cartao" | "plano">("pix");
-  const [lotes, setLotes] = useState<LoteCredito[]>([]);
+  const [saldo, setSaldo] = useState(0);
+  const [distancia, setDistancia] = useState(18.5);
+  const [enviando, setEnviando] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    setLotes(carregarCreditos());
+    const km = Number(localStorage.getItem("seuchauffeur:ultima-rota-km"));
+    if (km > 0) setDistancia(km);
+    const e = emailCliente();
+    if (e) void supabase.rpc("saldo_carteira_km", { _email: e }).then(({ data }) => setSaldo(Number((data as { saldo?: number } | null)?.saldo ?? 0)));
   }, []);
 
-  const saldo = saldoDisponivel(lotes);
-  const aVencer = creditosAVencer(lotes, 30);
-  const usandoCredito = metodo === "plano" && saldo > 0;
+  const cob = calcularCobertura(distancia, saldo);
+  const usandoCredito = metodo === "plano";
+  const valor = Math.round(distancia * TARIFA_EXCEDENTE_KM * 100) / 100;
+  const taxa = 8;
+  const total = usandoCredito ? cob.total : valor + taxa;
+  const fkm = (n: number) => `${n.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km`;
 
-  const valor = 320;
-  const taxa = 12.9;
-  const total = usandoCredito ? 0 : valor + taxa;
-
-  const confirmar = () => {
+  const confirmar = async () => {
     if (metodo === "plano") {
-      if (saldo < 1) {
-        toast.error("Você não tem créditos disponíveis. Assine um plano ou pague por Pix ou cartão.");
+      const e = emailCliente();
+      if (!e || saldo <= 0) {
+        toast.error("Sem km disponíveis na carteira. Assine um plano ou pague por Pix ou cartão.");
         return;
       }
-      const { lotes: atualizados } = consumirCreditos(lotes, 1);
-      setLotes(atualizados);
-      salvarCreditos(atualizados);
-      toast.success(`1 crédito usado nesta corrida. Saldo restante: ${saldo - 1}.`);
-      navigate({ to: "/cliente" });
+      setEnviando(true);
+      const { data, error } = await supabase.rpc("reservar_km_corrida", { _email: e, _agendamento: `AG-${Date.now()}`, _km: distancia });
+      setEnviando(false);
+      const r = data as { ok?: boolean; erro?: string } | null;
+      if (error || !r?.ok) { toast.error(r?.erro ?? "Não foi possível reservar os km."); return; }
+      toast.success(cob.excedente > 0 ? `${fkm(cob.coberto)} reservados. Pague o excedente de ${formatarBRL(cob.total)}.` : `${fkm(cob.coberto)} reservados da sua carteira.`);
+      navigate({ to: "/cliente/carteira" });
       return;
     }
     toast.success("Pagamento registrado. Aguardando confirmação do motorista.");
@@ -74,7 +74,7 @@ function Pagamento() {
             {[
               { id: "pix", rotulo: "Pix", icone: QrCode },
               { id: "cartao", rotulo: "Cartão de crédito", icone: CreditCard },
-              { id: "plano", rotulo: "Plano mensal", icone: Repeat },
+              { id: "plano", rotulo: "Carteira de km", icone: Repeat },
             ].map((opcao) => (
               <button
                 key={opcao.id}
@@ -135,22 +135,17 @@ function Pagamento() {
             ) : null}
 
             {metodo === "plano" ? (
-              <div className="rounded-lg bg-secondary/50 p-5">
-                <p className="text-sm font-medium">
-                  {saldo > 0
-                    ? `${saldo} ${saldo === 1 ? "crédito disponível" : "créditos disponíveis"} na sua assinatura`
-                    : "Nenhum crédito disponível"}
+              <div className="rounded-lg bg-secondary/50 p-5 text-sm">
+                <ul className="space-y-1">
+                  <li className="flex justify-between"><span>Trajeto calculado</span><span>{fkm(distancia)}</span></li>
+                  <li className="flex justify-between"><span>Saldo disponível</span><span>{fkm(saldo)}</span></li>
+                  <li className="flex justify-between"><span>Coberto pela carteira</span><span className="text-primary">−{fkm(cob.coberto)}</span></li>
+                  <li className="flex justify-between"><span>Km excedentes</span><span>{fkm(cob.excedente)}</span></li>
+                  <li className="flex justify-between"><span>Saldo após a corrida</span><span>{fkm(cob.saldoApos)}</span></li>
+                </ul>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Seus km nunca vencem. O excedente é cobrado a {formatarBRL(TARIFA_EXCEDENTE_KM)}/km + taxa de {formatarBRL(taxa)}.
                 </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {saldo > 0
-                    ? `Esta corrida consome 1 crédito, sem cobrança adicional. Cada crédito vale por ${VALIDADE_CREDITOS_DIAS} dias.`
-                    : "Assine um plano na tela inicial para receber créditos de viagem, ou pague por Pix ou cartão."}
-                </p>
-                {aVencer > 0 ? (
-                  <p className="mt-3 text-xs text-primary">
-                    {aVencer} {aVencer === 1 ? "crédito vence" : "créditos vencem"} nos próximos 30 dias.
-                  </p>
-                ) : null}
               </div>
             ) : null}
           </div>
@@ -160,7 +155,7 @@ function Pagamento() {
           <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Resumo de valores</h2>
           <ul className="mt-4 space-y-2 text-sm">
             <li className="flex justify-between text-muted-foreground">
-              <span>Corrida ida e retorno</span>
+              <span>Corrida ({fkm(distancia)})</span>
               <span className="text-foreground">{formatarBRL(valor)}</span>
             </li>
             <li className="flex justify-between text-muted-foreground">
@@ -169,8 +164,8 @@ function Pagamento() {
             </li>
             {usandoCredito ? (
               <li className="flex justify-between text-muted-foreground">
-                <span>Crédito do plano (1 viagem)</span>
-                <span className="text-primary">−{formatarBRL(valor + taxa)}</span>
+                <span>Carteira ({fkm(cob.coberto)})</span>
+                <span className="text-primary">−{formatarBRL(valor + taxa - cob.total)}</span>
               </li>
             ) : null}
             <li className="flex justify-between border-t border-border/70 pt-3 text-muted-foreground">
@@ -178,8 +173,8 @@ function Pagamento() {
               <span className="font-display text-lg text-primary">{formatarBRL(total)}</span>
             </li>
           </ul>
-          <Button className="mt-5 w-full" onClick={confirmar}>
-            {usandoCredito ? "Usar 1 crédito e confirmar" : "Confirmar pagamento"}
+          <Button className="mt-5 w-full" onClick={confirmar} disabled={enviando}>
+            {usandoCredito ? `Confirmar com meus km (${fkm(cob.coberto)})` : "Confirmar pagamento"}
           </Button>
         </Card>
       </div>
