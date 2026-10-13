@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Car, UserRound } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const menuCliente = [
   { para: "/cliente", texto: "Início" },
@@ -32,7 +33,19 @@ export function AppShell({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const areaMotorista = pathname.startsWith("/motorista");
   const areaAdmin = pathname.startsWith("/admin");
-  const navegacao = areaAdmin ? [] : areaMotorista ? menuMotorista : menuCliente;
+  const [casaApoio, setCasaApoio] = useState(false);
+  useEffect(() => {
+    if (areaMotorista || areaAdmin) return;
+    const email = localStorage.getItem("seuchauffeur:cliente-email") ?? "";
+    if (!email.includes("@")) return;
+    void supabase.rpc("acesso_casa_apoio", { _email: email }).then(({ data }) => {
+      const a = data as { status?: string } | null;
+      setCasaApoio(a?.status === "ativo");
+    });
+  }, [areaMotorista, areaAdmin]);
+  const itensCliente: { para: string; texto: string }[] = [...menuCliente];
+  if (casaApoio) itensCliente.splice(3, 0, { para: "/cliente/casa-apoio", texto: "Casa de Apoio" });
+  const navegacao: readonly { para: string; texto: string }[] = areaAdmin ? [] : areaMotorista ? menuMotorista : itensCliente;
 
   return (
     <div className="min-h-screen bg-background">
