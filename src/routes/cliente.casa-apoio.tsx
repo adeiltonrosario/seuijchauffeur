@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Lock, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -139,7 +140,11 @@ function TransladoCasaApoio() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div><Label>Nome do paciente</Label><Input value={p.paciente} onChange={(e) => upd(i, "paciente", e.target.value)} /></div>
                     <div><Label>Acompanhante (opcional)</Label><Input value={p.acompanhante} onChange={(e) => upd(i, "acompanhante", e.target.value)} /></div>
-                    <div><Label>Hospital / clínica</Label><Input value={p.hospital} onChange={(e) => upd(i, "hospital", e.target.value)} /></div>
+                    <div><Label>Hospital / clínica</Label>
+                      <div className="flex gap-2">
+                        <Input value={p.hospital} onChange={(e) => upd(i, "hospital", e.target.value)} />
+                        <BotaoSelecionarMapa valor={p.hospital} onConfirmar={(v) => upd(i, "hospital", v)} rotulo="hospital" />
+                      </div></div>
                     <div><Label>Município do hospital</Label>
                       <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={p.municipio} onChange={(e) => upd(i, "municipio", e.target.value)}>
                         {MUNICIPIOS_RMS.map((m) => <option key={m}>{m}</option>)}
