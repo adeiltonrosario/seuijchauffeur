@@ -1,6 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { BellRing, CheckCircle2, Clock, PlayCircle, XCircle } from "lucide-react";
+import { BellRing, CheckCircle2, Clock, Navigation, PlayCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { AvisoWhatsapp } from "@/components/aviso-whatsapp";
@@ -92,6 +92,15 @@ function DetalhesMotorista() {
             <p className="mt-1 text-xs text-muted-foreground">
               Toque na imagem para abrir a navegação no GPS.
             </p>
+            <Button asChild className="mt-4 w-full">
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=${encodeURIComponent(agendamento.embarque)}&destination=${encodeURIComponent(agendamento.desembarque)}${agendamento.parada ? `&waypoints=${encodeURIComponent(agendamento.parada)}` : ""}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Navigation /> Abrir rota completa no GPS
+              </a>
+            </Button>
             <div className="mt-4 space-y-3">
               <MapaLocal
                 rotulo="Embarque"
