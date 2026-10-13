@@ -1,6 +1,6 @@
 import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
-import { BotaoFinalizarRota } from "@/components/finalizar-rota";
-import { useState } from "react";
+import { BotaoFinalizarRota, calcularRota } from "@/components/finalizar-rota";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Plus, Sparkles, Wand2, X } from "lucide-react";
@@ -45,6 +45,20 @@ export function ConsultorViagemIA() {
   const [km, setKm] = useState("18");
   const num = (v: string) => Math.max(0, Number(v.replace(",", ".")) || 0);
   const kmNum = num(km) + paradas.reduce((s, p) => s + num(p.km), 0);
+  const chaveRota = [origem, ...paradas.map((p) => p.local), destino].map((s) => s.trim()).join("|");
+  useEffect(() => {
+    if (!origem.trim() || !destino.trim()) return;
+    const t = setTimeout(() => {
+      calcularRota([origem, ...paradas.map((p) => p.local), destino])
+        .then((r) => {
+          setKm(String(r.km));
+          setParadas((l) => (l.some((p) => p.km) ? l.map((p) => ({ ...p, km: "" })) : l));
+        })
+        .catch(() => {});
+    }, 1000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chaveRota]);
   const [carregando, setCarregando] = useState(false);
   const [resultado, setResultado] = useState<{ recomendacao: Recomendacao; plano: PlanoCalculado } | null>(null);
 
