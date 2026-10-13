@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
 import { formatarBRL } from "@/lib/dados";
 import type { PacienteTranslado } from "@/lib/casa-apoio";
 
@@ -60,7 +61,10 @@ export function AdminCasasApoio() {
         <p className="font-medium">Cadastrar Casa de Apoio</p>
         <div className="grid gap-2 sm:grid-cols-4">
           <Input placeholder="Nome" value={nova.nome} onChange={(e) => setNova({ ...nova, nome: e.target.value })} />
-          <Input placeholder="Endereço completo" value={nova.endereco} onChange={(e) => setNova({ ...nova, endereco: e.target.value })} />
+          <div className="flex gap-2">
+            <Input placeholder="Endereço completo" value={nova.endereco} onChange={(e) => setNova({ ...nova, endereco: e.target.value })} />
+            <BotaoSelecionarMapa valor={nova.endereco} onConfirmar={(v) => setNova((n) => ({ ...n, endereco: v }))} rotulo="endereço da casa" />
+          </div>
           <Input placeholder="Município" value={nova.municipio} onChange={(e) => setNova({ ...nova, municipio: e.target.value })} />
           <Input placeholder="Telefone" value={nova.telefone} onChange={(e) => setNova({ ...nova, telefone: e.target.value })} />
         </div>
