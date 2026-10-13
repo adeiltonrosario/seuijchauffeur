@@ -2,61 +2,39 @@ import { useState } from "react";
 import { Route as IconeRota, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const BROWSER_KEY = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"] as string | undefined;
-
+// Rotas 100% gratuitas: Nominatim (OpenStreetMap) para endereços + OSRM para o trajeto viário.
 export type ResultadoRota = { km: number; minutos: number };
 
 function comRegiao(e: string) {
-  return /salvador|bahia|\bBA\b|lauro|cama[cç]ari|sim[oõ]es|candeias/i.test(e) ? e : `${e}, Salvador, BA`;
+  return /salvador|bahia|\bBA\b|lauro|cama[cç]ari|sim[oõ]es|candeias|dias d|itapu/i.test(e) ? e : `${e}, Salvador, BA`;
 }
 
-type GoogleMaps = {
-  maps: {
-    DirectionsService: new () => {
-      route: (req: unknown) => Promise<{
-        routes: { legs: { distance?: { value: number }; duration?: { value: number } }[] }[];
-      }>;
-    };
-  };
-};
-
-let carregando: Promise<GoogleMaps> | null = null;
-function carregarMaps(): Promise<GoogleMaps> {
-  const w = window as unknown as { google?: GoogleMaps };
-  if (w.google?.maps?.DirectionsService) return Promise.resolve(w.google);
-  if (!carregando) {
-    carregando = new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = `https://maps.googleapis.com/maps/api/js?key=${BROWSER_KEY}&language=pt-BR&region=BR`;
-      s.async = true;
-      s.onload = () => (w.google ? resolve(w.google) : reject(new Error("Mapa indisponível")));
-      s.onerror = () => {
-        carregando = null;
-        reject(new Error("Mapa indisponível"));
-      };
-      document.head.appendChild(s);
-    });
-  }
-  return carregando;
+const cache = new Map<string, [number, number]>();
+async function geocodificar(endereco: string): Promise<[number, number]> {
+  const q = comRegiao(endereco);
+  const salvo = cache.get(q);
+  if (salvo) return salvo;
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&viewbox=-38.75,-12.40,-37.90,-13.05&q=${encodeURIComponent(q)}`;
+  const r = await fetch(url, { headers: { "Accept-Language": "pt-BR" } });
+  const d = (await r.json()) as { lat: string; lon: string }[];
+  if (!d[0]) throw new Error(`Endereço não encontrado: ${endereco}`);
+  const p: [number, number] = [Number(d[0].lon), Number(d[0].lat)];
+  cache.set(q, p);
+  return p;
 }
 
 /** Calcula a rota consolidada Origem → Paradas → Destino (km e minutos). */
 export async function calcularRota(pontos: string[]): Promise<ResultadoRota> {
   const lista = pontos.map((p) => p.trim()).filter(Boolean);
   if (lista.length < 2) throw new Error("Informe ao menos origem e destino.");
-  if (!BROWSER_KEY) throw new Error("Mapa não configurado.");
-  const g = await carregarMaps();
-  const res = await new g.maps.DirectionsService().route({
-    origin: comRegiao(lista[0]!),
-    destination: comRegiao(lista[lista.length - 1]!),
-    waypoints: lista.slice(1, -1).map((p) => ({ location: comRegiao(p), stopover: true })),
-    travelMode: "DRIVING",
-    region: "BR",
-  });
-  const legs = res.routes[0]?.legs ?? [];
-  const metros = legs.reduce((s, l) => s + (l.distance?.value ?? 0), 0);
-  const seg = legs.reduce((s, l) => s + (l.duration?.value ?? 0), 0);
-  return { km: Math.round(metros / 10) / 100, minutos: Math.round(seg / 60) };
+  const coords: [number, number][] = [];
+  for (const p of lista) coords.push(await geocodificar(p)); // sequencial: respeita limite do Nominatim
+  const caminho = coords.map((c) => c.join(",")).join(";");
+  const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${caminho}?overview=false`);
+  const d = (await r.json()) as { code: string; routes?: { distance: number; duration: number }[] };
+  const rota = d.routes?.[0];
+  if (d.code !== "Ok" || !rota) throw new Error("Rota indisponível");
+  return { km: Math.round(rota.distance / 10) / 100, minutos: Math.round(rota.duration / 60) };
 }
 
 export function BotaoFinalizarRota({
