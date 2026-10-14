@@ -1,5 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { ClientOnly, createFileRoute } from "@tanstack/react-router";
+import { Suspense, lazy, useMemo, useRef, useState } from "react";
+import type { PontoMapa } from "@/components/mapa-real";
+
+const MapaReal = lazy(() => import("@/components/mapa-real"));
 import {
   Car,
   Crosshair,
@@ -63,50 +66,38 @@ function Mapa() {
       (busca.trim() === "" || p.nome.toLowerCase().includes(busca.trim().toLowerCase())),
   );
 
-  const corrida = visiveis.find((a) => a.id === destacado) ?? null;
+  const [versaoCentro, setVersaoCentro] = useState(0);
+  const [rotaReal, setRotaReal] = useState<{ km: number; minutos: number } | null>(null);
+  void satelite;
+  void setSatelite;
+  void arraste;
+  void pan;
+  void setPan;
 
-  /** Traçado entre o motorista e o cliente do agendamento em destaque. */
-  const rota = useMemo(() => {
-    if (!corrida) return null;
-    const motorista = participantesMapa.find((p) => p.agendamento === corrida.id && p.tipo === "motorista");
-    const cliente = participantesMapa.find((p) => p.agendamento === corrida.id && p.tipo === "cliente");
-    if (!motorista || !cliente) return null;
-    const meioX = (motorista.x + cliente.x) / 2;
-    return {
-      d: `M ${motorista.x} ${motorista.y} L ${meioX} ${motorista.y} L ${meioX} ${cliente.y} L ${cliente.x} ${cliente.y}`,
-      km: Math.round(
-        Math.hypot(cliente.x - motorista.x, cliente.y - motorista.y) * 0.42 * 10,
-      ) / 10,
-    };
-  }, [corrida]);
+  const pontosReais = useMemo<PontoMapa[]>(
+    () =>
+      marcadores.map((p) => ({
+        id: p.id,
+        nome: p.nome,
+        tipo: p.tipo,
+        grupo: p.agendamento,
+        // converte a posição ilustrativa (%) para coordenadas reais em Salvador/RMS
+        lat: -12.86 - (p.y / 100) * 0.2,
+        lng: -38.56 + (p.x / 100) * 0.26,
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(marcadores.map((m) => m.id))],
+  );
 
-  const minutos = rota ? Math.max(3, Math.round(rota.km * 2.4)) : 0;
-
-  const iniciarArraste = (e: React.PointerEvent<HTMLDivElement>) => {
-    arraste.current = { x: e.clientX, y: e.clientY, px: pan.x, py: pan.y };
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-
-  const mover = (e: React.PointerEvent<HTMLDivElement>) => {
-    const inicio = arraste.current;
-    if (!inicio) return;
-    const limite = 120 * zoom;
-    setPan({
-      x: Math.max(-limite, Math.min(limite, inicio.px + (e.clientX - inicio.x))),
-      y: Math.max(-limite, Math.min(limite, inicio.py + (e.clientY - inicio.y))),
-    });
-  };
-
-  const soltar = () => {
-    arraste.current = null;
-  };
+  const rota = rotaReal;
+  const minutos = rotaReal?.minutos ?? 0;
 
   const ajustarZoom = (delta: number) =>
     setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round((z + delta) * 100) / 100)));
 
   const recentralizar = () => {
-    setPan({ x: 0, y: 0 });
     setZoom(1.15);
+    setVersaoCentro((v) => v + 1);
   };
 
   return (
