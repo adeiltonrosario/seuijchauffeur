@@ -225,6 +225,7 @@ function TransladoCasaApoio() {
             <p className="font-medium">Resumo</p>
             {calc.itens.map((x, i) => <div key={i} className="flex justify-between gap-2 text-sm"><span className="text-muted-foreground">{x.descricao}</span><span>{formatarBRL(x.valor)}</span></div>)}
             <div className="flex justify-between border-t border-border pt-2 font-medium"><span>Total</span><span className="text-gold">{formatarBRL(calc.total)}</span></div>
+            {rota ? <p className="text-xs text-muted-foreground">Rota: {rota.km.toLocaleString("pt-BR")} km · ~{rota.minutos} min{idaVolta ? " (ida e volta)" : ""}</p> : null}
             <p className="text-xs text-muted-foreground">Ocupantes: {calc.ocupantes} de {cap} lugares</p>
             {calc.bloqueios.map((b, i) => <p key={i} className="text-xs text-destructive">{b}</p>)}
             <Button className="w-full" disabled={calc.bloqueios.length > 0} onClick={confirmar}>Confirmar translado</Button>
