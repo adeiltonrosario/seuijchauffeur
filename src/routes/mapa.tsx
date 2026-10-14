@@ -66,6 +66,7 @@ function Mapa() {
       (busca.trim() === "" || p.nome.toLowerCase().includes(busca.trim().toLowerCase())),
   );
 
+  const corrida = visiveis.find((a) => a.id === destacado) ?? null;
   const [versaoCentro, setVersaoCentro] = useState(0);
   const [rotaReal, setRotaReal] = useState<{ km: number; minutos: number } | null>(null);
   void satelite;
