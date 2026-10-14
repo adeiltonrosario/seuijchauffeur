@@ -1,6 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { Lock, Plus, Trash2 } from "lucide-react";
+import { ClientOnly, createFileRoute } from "@tanstack/react-router";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { Loader2, Lock, Plus, Trash2 } from "lucide-react";
+import { calcularRotaCompleta, type RotaCompleta } from "@/components/finalizar-rota";
+
+const MapaTrajeto = lazy(() => import("@/components/mapa-trajeto"));
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
@@ -62,6 +65,41 @@ function TransladoCasaApoio() {
 
   const cap = capacidade(categoria);
   const calc = useMemo(() => calcularTranslado(pacientes, { ar, capacidade: cap }), [pacientes, ar, cap]);
+
+  // Trajeto completo: Casa de Apoio → hospitais (sem repetir) → retorno à Casa (ida e volta)
+  const origem = acesso?.casa ? `${acesso.casa.endereco}, ${acesso.casa.municipio}` : "";
+  const paradas = useMemo(() => {
+    const vistos = new Map<string, string[]>();
+    pacientes.filter((p) => p.hospital.trim()).forEach((p) => {
+      const ch = `${p.hospital.trim()}, ${p.municipio}`;
+      vistos.set(ch, [...(vistos.get(ch) ?? []), p.paciente.trim() || "Paciente"]);
+    });
+    return [...vistos.entries()].map(([endereco, nomes]) => ({ endereco, nomes }));
+  }, [pacientes]);
+  const [rota, setRota] = useState<RotaCompleta | null>(null);
+  const [rotaEstado, setRotaEstado] = useState<"ocioso" | "calculando" | "erro">("ocioso");
+  const chaveRota = [origem, ...paradas.map((p) => p.endereco), idaVolta ? "iv" : "i"].join("|");
+  useEffect(() => {
+    if (!origem || !paradas.length) { setRota(null); setRotaEstado("ocioso"); return; }
+    const t = setTimeout(async () => {
+      setRotaEstado("calculando");
+      try {
+        const pts = [origem, ...paradas.map((p) => p.endereco), ...(idaVolta ? [origem] : [])];
+        setRota(await calcularRotaCompleta(pts));
+        setRotaEstado("ocioso");
+      } catch { setRota(null); setRotaEstado("erro"); }
+    }, 1000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chaveRota]);
+  const pontosMapa = useMemo(() => {
+    if (!rota) return [];
+    return rota.pontos.map((c, i) => ({
+      lat: c[0], lng: c[1],
+      tipo: (i === 0 ? "origem" : idaVolta && i === rota.pontos.length - 1 ? "retorno" : "parada") as "origem" | "parada" | "retorno",
+      rotulo: i === 0 ? `Embarque: ${acesso?.casa?.nome}` : idaVolta && i === rota.pontos.length - 1 ? "Retorno à Casa de Apoio" : `${paradas[i - 1]?.endereco} — ${paradas[i - 1]?.nomes.join(", ")}`,
+    }));
+  }, [rota, idaVolta, paradas, acesso]);
 
   async function solicitar() {
     const e = email.trim().toLowerCase();
@@ -160,6 +198,28 @@ function TransladoCasaApoio() {
               );
             })}
             <Button variant="outline" onClick={() => setPacientes([...pacientes, novoPaciente(pacientes[0]?.municipio)])}><Plus className="size-4" /> Adicionar paciente</Button>
+            <Card className="space-y-3 border-primary/40 p-5">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-medium">Trajeto completo</p>
+                {rota ? <span className="text-sm text-gold">{rota.km.toLocaleString("pt-BR")} km · ~{rota.minutos} min</span> : null}
+              </div>
+              {!paradas.length ? <p className="text-sm text-muted-foreground">Informe o hospital de um paciente para calcular a rota.</p> : (
+                <ol className="space-y-1 text-sm">
+                  <li><span className="text-success">●</span> {acesso.casa.nome} (embarque)</li>
+                  {paradas.map((p, i) => <li key={i}><span className="text-primary">●</span> {p.endereco} — <span className="text-muted-foreground">{p.nomes.join(", ")}</span></li>)}
+                  {idaVolta ? <li><span className="text-primary">●</span> Retorno: {acesso.casa.nome}</li> : null}
+                </ol>
+              )}
+              {rotaEstado === "calculando" ? <p className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="size-3 animate-spin" /> Calculando rota…</p> : null}
+              {rotaEstado === "erro" ? <p className="text-xs text-destructive">Não foi possível localizar algum endereço. Use o botão do mapa para escolher o hospital.</p> : null}
+              {rota ? (
+                <ClientOnly fallback={<div className="h-72 rounded-lg bg-secondary/30" />}>
+                  <Suspense fallback={<div className="h-72 rounded-lg bg-secondary/30" />}>
+                    <MapaTrajeto pontos={pontosMapa} linha={rota.linha} />
+                  </Suspense>
+                </ClientOnly>
+              ) : null}
+            </Card>
           </div>
           <Card className="h-fit space-y-3 border-border/60 p-5 lg:sticky lg:top-6">
             <p className="font-medium">Resumo</p>
