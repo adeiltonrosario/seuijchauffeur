@@ -37,6 +37,28 @@ export async function calcularRota(pontos: string[]): Promise<ResultadoRota> {
   return { km: Math.round(rota.distance / 10) / 100, minutos: Math.round(rota.duration / 60) };
 }
 
+export type RotaCompleta = ResultadoRota & { pontos: [number, number][]; linha: [number, number][] };
+
+/** Igual a calcularRota, mas devolve também coordenadas (lat,lng) dos pontos e o traçado viário. */
+export async function calcularRotaCompleta(pontos: string[]): Promise<RotaCompleta> {
+  const lista = pontos.map((p) => p.trim()).filter(Boolean);
+  if (lista.length < 2) throw new Error("Informe ao menos origem e destino.");
+  const coords: [number, number][] = [];
+  for (const p of lista) coords.push(await geocodificar(p));
+  const caminho = coords.map((c) => c.join(",")).join(";");
+  const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${caminho}?overview=full&geometries=geojson`);
+  const d = (await r.json()) as { code: string; routes?: { distance: number; duration: number; geometry: { coordinates: [number, number][] } }[] };
+  const rota = d.routes?.[0];
+  if (d.code !== "Ok" || !rota) throw new Error("Rota indisponível");
+  return {
+    km: Math.round(rota.distance / 10) / 100,
+    minutos: Math.round(rota.duration / 60),
+    pontos: coords.map(([lng, lat]) => [lat, lng]),
+    linha: rota.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
+  };
+}
+
+
 export function BotaoFinalizarRota({
   pontos,
   onCalculado,
