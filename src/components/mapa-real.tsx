@@ -42,9 +42,9 @@ export default function MapaReal({ pontos, destacado, onSelecionar, zoom, versao
   useEffect(() => {
     if (!div.current || mapa.current) return;
     const m = L.map(div.current, { zoomControl: false, attributionControl: true }).setView(CENTRO, 12);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-      attribution: "© OpenStreetMap © CARTO",
-      subdomains: "abcd",
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap",
+      className: "mapa-escuro",
       maxZoom: 19,
     }).addTo(m);
     camada.current = L.layerGroup().addTo(m);
@@ -111,5 +111,10 @@ export default function MapaReal({ pontos, destacado, onSelecionar, zoom, versao
     };
   }, [pontos, destacado, onRota]);
 
-  return <div ref={div} className="absolute inset-0 z-0" />;
+  return (
+    <>
+      <style>{".mapa-escuro{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.4)}"}</style>
+      <div ref={div} className="absolute inset-0 z-0" />
+    </>
+  );
 }
