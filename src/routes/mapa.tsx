@@ -112,86 +112,18 @@ function Mapa() {
   return (
     <AppShell titulo="Mapa de agendamentos" descricao="Motoristas e clientes conectados, com seus agendamentos ativos.">
       <Card className="relative h-[clamp(520px,72vh,760px)] overflow-hidden border-border/60 p-0">
-        {/* Camada do mapa — arrastável e com zoom */}
-        <div
-          onPointerDown={iniciarArraste}
-          onPointerMove={mover}
-          onPointerUp={soltar}
-          onPointerCancel={soltar}
-          className="absolute inset-0 cursor-grab touch-none active:cursor-grabbing"
-        >
-          <div
-            className="absolute inset-0 origin-center transition-transform duration-150 ease-out"
-            style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
-          >
-            <MapaRuas />
-            {satelite ? (
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,oklch(0.38_0.05_150/0.55),transparent_55%),radial-gradient(circle_at_70%_60%,oklch(0.3_0.04_60/0.6),transparent_60%)] mix-blend-screen" />
-            ) : null}
-
-            {/* Traçado da corrida em destaque */}
-            {rota ? (
-              <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full">
-                <path
-                  d={rota.d}
-                  fill="none"
-                  stroke="var(--color-primary)"
-                  strokeOpacity="0.25"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  vectorEffect="non-scaling-stroke"
-                />
-                <path
-                  d={rota.d}
-                  fill="none"
-                  stroke="var(--color-primary)"
-                  strokeWidth="1"
-                  strokeLinecap="round"
-                  strokeDasharray="4 3"
-                  vectorEffect="non-scaling-stroke"
-                />
-              </svg>
-            ) : null}
-
-            {/* Marcadores em formato de pino */}
-            {marcadores.map((p) => {
-              const ativo = destacado === p.agendamento;
-              const motorista = p.tipo === "motorista";
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={() => setDestacado(p.agendamento)}
-                  style={{ left: `${p.x}%`, top: `${p.y}%`, transform: `scale(${1 / zoom})` }}
-                  className="absolute origin-bottom -translate-x-1/2 -translate-y-full"
-                  title={p.nome}
-                >
-                  <span className="flex flex-col items-center">
-                    <span
-                      className={`flex size-9 items-center justify-center rounded-full rounded-br-none border shadow-lg transition-transform ${
-                        motorista
-                          ? "border-primary/60 bg-primary text-primary-foreground"
-                          : "border-accent/60 bg-accent text-accent-foreground"
-                      } ${ativo ? "scale-110 glow-gold" : ""}`}
-                      style={{ rotate: "45deg" }}
-                    >
-                      <span style={{ rotate: "-45deg" }}>
-                        {motorista ? <Car className="size-4" /> : <UserRound className="size-4" />}
-                      </span>
-                    </span>
-                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-foreground/40 blur-[1px]" />
-                    {ativo ? (
-                      <span className="mt-1 max-w-32 truncate rounded-md border border-border/70 bg-card/95 px-2 py-0.5 text-[11px] font-medium shadow-md backdrop-blur">
-                        {p.nome}
-                      </span>
-                    ) : null}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <ClientOnly fallback={<div className="absolute inset-0 bg-card" />}>
+          <Suspense fallback={<div className="absolute inset-0 bg-card" />}>
+            <MapaReal
+              pontos={pontosReais}
+              destacado={destacado}
+              onSelecionar={setDestacado}
+              zoom={zoom}
+              versaoCentro={versaoCentro}
+              onRota={setRotaReal}
+            />
+          </Suspense>
+        </ClientOnly>
 
         {/* Busca flutuante + filtros */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3 sm:p-4">
