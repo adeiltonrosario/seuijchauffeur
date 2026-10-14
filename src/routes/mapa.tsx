@@ -1,5 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { ClientOnly, createFileRoute } from "@tanstack/react-router";
+import { Suspense, lazy, useMemo, useRef, useState } from "react";
+import type { PontoMapa } from "@/components/mapa-real";
+
+const MapaReal = lazy(() => import("@/components/mapa-real"));
 import {
   Car,
   Crosshair,
@@ -64,134 +67,55 @@ function Mapa() {
   );
 
   const corrida = visiveis.find((a) => a.id === destacado) ?? null;
+  const [versaoCentro, setVersaoCentro] = useState(0);
+  const [rotaReal, setRotaReal] = useState<{ km: number; minutos: number } | null>(null);
+  void satelite;
+  void setSatelite;
+  void arraste;
+  void pan;
+  void setPan;
 
-  /** Traçado entre o motorista e o cliente do agendamento em destaque. */
-  const rota = useMemo(() => {
-    if (!corrida) return null;
-    const motorista = participantesMapa.find((p) => p.agendamento === corrida.id && p.tipo === "motorista");
-    const cliente = participantesMapa.find((p) => p.agendamento === corrida.id && p.tipo === "cliente");
-    if (!motorista || !cliente) return null;
-    const meioX = (motorista.x + cliente.x) / 2;
-    return {
-      d: `M ${motorista.x} ${motorista.y} L ${meioX} ${motorista.y} L ${meioX} ${cliente.y} L ${cliente.x} ${cliente.y}`,
-      km: Math.round(
-        Math.hypot(cliente.x - motorista.x, cliente.y - motorista.y) * 0.42 * 10,
-      ) / 10,
-    };
-  }, [corrida]);
+  const pontosReais = useMemo<PontoMapa[]>(
+    () =>
+      marcadores.map((p) => ({
+        id: p.id,
+        nome: p.nome,
+        tipo: p.tipo,
+        grupo: p.agendamento,
+        // converte a posição ilustrativa (%) para coordenadas reais em Salvador/RMS
+        lat: -12.86 - (p.y / 100) * 0.2,
+        lng: -38.56 + (p.x / 100) * 0.26,
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(marcadores.map((m) => m.id))],
+  );
 
-  const minutos = rota ? Math.max(3, Math.round(rota.km * 2.4)) : 0;
-
-  const iniciarArraste = (e: React.PointerEvent<HTMLDivElement>) => {
-    arraste.current = { x: e.clientX, y: e.clientY, px: pan.x, py: pan.y };
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-
-  const mover = (e: React.PointerEvent<HTMLDivElement>) => {
-    const inicio = arraste.current;
-    if (!inicio) return;
-    const limite = 120 * zoom;
-    setPan({
-      x: Math.max(-limite, Math.min(limite, inicio.px + (e.clientX - inicio.x))),
-      y: Math.max(-limite, Math.min(limite, inicio.py + (e.clientY - inicio.y))),
-    });
-  };
-
-  const soltar = () => {
-    arraste.current = null;
-  };
+  const rota = rotaReal;
+  const minutos = rotaReal?.minutos ?? 0;
 
   const ajustarZoom = (delta: number) =>
     setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round((z + delta) * 100) / 100)));
 
   const recentralizar = () => {
-    setPan({ x: 0, y: 0 });
     setZoom(1.15);
+    setVersaoCentro((v) => v + 1);
   };
 
   return (
     <AppShell titulo="Mapa de agendamentos" descricao="Motoristas e clientes conectados, com seus agendamentos ativos.">
       <Card className="relative h-[clamp(520px,72vh,760px)] overflow-hidden border-border/60 p-0">
-        {/* Camada do mapa — arrastável e com zoom */}
-        <div
-          onPointerDown={iniciarArraste}
-          onPointerMove={mover}
-          onPointerUp={soltar}
-          onPointerCancel={soltar}
-          className="absolute inset-0 cursor-grab touch-none active:cursor-grabbing"
-        >
-          <div
-            className="absolute inset-0 origin-center transition-transform duration-150 ease-out"
-            style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
-          >
-            <MapaRuas />
-            {satelite ? (
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,oklch(0.38_0.05_150/0.55),transparent_55%),radial-gradient(circle_at_70%_60%,oklch(0.3_0.04_60/0.6),transparent_60%)] mix-blend-screen" />
-            ) : null}
-
-            {/* Traçado da corrida em destaque */}
-            {rota ? (
-              <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full">
-                <path
-                  d={rota.d}
-                  fill="none"
-                  stroke="var(--color-primary)"
-                  strokeOpacity="0.25"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  vectorEffect="non-scaling-stroke"
-                />
-                <path
-                  d={rota.d}
-                  fill="none"
-                  stroke="var(--color-primary)"
-                  strokeWidth="1"
-                  strokeLinecap="round"
-                  strokeDasharray="4 3"
-                  vectorEffect="non-scaling-stroke"
-                />
-              </svg>
-            ) : null}
-
-            {/* Marcadores em formato de pino */}
-            {marcadores.map((p) => {
-              const ativo = destacado === p.agendamento;
-              const motorista = p.tipo === "motorista";
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={() => setDestacado(p.agendamento)}
-                  style={{ left: `${p.x}%`, top: `${p.y}%`, transform: `scale(${1 / zoom})` }}
-                  className="absolute origin-bottom -translate-x-1/2 -translate-y-full"
-                  title={p.nome}
-                >
-                  <span className="flex flex-col items-center">
-                    <span
-                      className={`flex size-9 items-center justify-center rounded-full rounded-br-none border shadow-lg transition-transform ${
-                        motorista
-                          ? "border-primary/60 bg-primary text-primary-foreground"
-                          : "border-accent/60 bg-accent text-accent-foreground"
-                      } ${ativo ? "scale-110 glow-gold" : ""}`}
-                      style={{ rotate: "45deg" }}
-                    >
-                      <span style={{ rotate: "-45deg" }}>
-                        {motorista ? <Car className="size-4" /> : <UserRound className="size-4" />}
-                      </span>
-                    </span>
-                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-foreground/40 blur-[1px]" />
-                    {ativo ? (
-                      <span className="mt-1 max-w-32 truncate rounded-md border border-border/70 bg-card/95 px-2 py-0.5 text-[11px] font-medium shadow-md backdrop-blur">
-                        {p.nome}
-                      </span>
-                    ) : null}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <ClientOnly fallback={<div className="absolute inset-0 bg-card" />}>
+          <Suspense fallback={<div className="absolute inset-0 bg-card" />}>
+            <MapaReal
+              pontos={pontosReais}
+              destacado={destacado}
+              onSelecionar={setDestacado}
+              zoom={zoom}
+              versaoCentro={versaoCentro}
+              onRota={setRotaReal}
+            />
+          </Suspense>
+        </ClientOnly>
 
         {/* Busca flutuante + filtros */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3 sm:p-4">
