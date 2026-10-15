@@ -18,6 +18,11 @@ export type PacienteTranslado = {
   municipio: string;
   /** Destino em outro município, aguardando aceite do motorista. */
   extensao?: boolean;
+  /** 2º turno no mesmo dia (mesmo paciente, sem novo assento): hospital 1 → hospital 2. */
+  turno2?: boolean;
+  horario2?: string;
+  hospital2?: string;
+  municipio2?: string;
 };
 
 export type ResultadoTranslado = {
@@ -52,6 +57,9 @@ export function calcularTranslado(
     itens.push({ descricao: `${p.paciente}${p.acompanhante.trim() ? ` + ${p.acompanhante}` : ""}`, valor: VALOR_POR_PACIENTE });
     if (i > 0 && primeiro && p.hospital.trim().toLowerCase() !== primeiro.hospital.trim().toLowerCase()) {
       itens.push({ descricao: `Parada em hospital diferente (${p.hospital})`, valor: TAXA_HOSPITAL_DIFERENTE });
+    }
+    if (p.turno2 && p.hospital2?.trim()) {
+      itens.push({ descricao: `2º turno ${p.horario2 || ""} — ${p.paciente} → ${p.hospital2}`.replace("  ", " "), valor: TAXA_HOSPITAL_DIFERENTE });
     }
   });
   if (ocupantes > opts.capacidade) bloqueios.push(`Ocupantes (${ocupantes}) acima da capacidade do veículo (${opts.capacidade}).`);

@@ -71,10 +71,10 @@ function TransladoCasaApoio() {
   const origem = acesso?.casa ? `${acesso.casa.endereco}, ${acesso.casa.municipio}` : "";
   const paradas = useMemo(() => {
     const vistos = new Map<string, string[]>();
-    pacientes.filter((p) => p.hospital.trim()).forEach((p) => {
-      const ch = `${p.hospital.trim()}, ${p.municipio}`;
-      vistos.set(ch, [...(vistos.get(ch) ?? []), p.paciente.trim() || "Paciente"]);
-    });
+    const add = (ch: string, nome: string) => vistos.set(ch, [...(vistos.get(ch) ?? []), nome]);
+    pacientes.filter((p) => p.hospital.trim()).forEach((p) => add(`${p.hospital.trim()}, ${p.municipio}`, p.paciente.trim() || "Paciente"));
+    pacientes.filter((p) => p.turno2 && p.hospital2?.trim()).forEach((p) =>
+      add(`${p.hospital2!.trim()}, ${p.municipio2 ?? p.municipio}`, `${p.paciente.trim() || "Paciente"} (2º turno${p.horario2 ? " " + p.horario2 : ""})`));
     return [...vistos.entries()].map(([endereco, nomes]) => ({ endereco, nomes }));
   }, [pacientes]);
   const [rota, setRota] = useState<RotaCompleta | null>(null);
@@ -207,6 +207,27 @@ function TransladoCasaApoio() {
                         {MUNICIPIOS_RMS.map((m) => <option key={m}>{m}</option>)}
                       </select></div>
                   </div>
+                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!p.turno2} onChange={(e) => upd(i, "turno2", e.target.checked)} /> 2º turno no mesmo dia (outro hospital, sem cobrar novo assento)</label>
+                  {p.turno2 ? (
+                    <div className="grid gap-3 rounded-md border border-primary/40 p-3 sm:grid-cols-3">
+                      <div><Label>Horário do 2º turno</Label><Input type="time" value={p.horario2 ?? ""} onChange={(e) => upd(i, "horario2", e.target.value)} /></div>
+                      <div><Label>Hospital do 2º turno</Label>
+                        <div className="flex gap-2">
+                          <Input list="hospitais-rms" value={p.hospital2 ?? ""}
+                            className={p.hospital2?.trim() && falhou(p.hospital2, p.municipio2 ?? p.municipio) ? "border-warning" : undefined}
+                            onChange={(e) => {
+                              const v = e.target.value; upd(i, "hospital2", v);
+                              const h = HOSPITAIS_RMS.find((x) => x.nome === v);
+                              if (h && MUNICIPIOS_RMS.includes(h.municipio as never)) upd(i, "municipio2", h.municipio);
+                            }} />
+                          <BotaoSelecionarMapa valor={p.hospital2 ?? ""} onConfirmar={(v) => upd(i, "hospital2", v)} rotulo="hospital" />
+                        </div></div>
+                      <div><Label>Município</Label>
+                        <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={p.municipio2 ?? p.municipio} onChange={(e) => upd(i, "municipio2", e.target.value)}>
+                          {MUNICIPIOS_RMS.map((m) => <option key={m}>{m}</option>)}
+                        </select></div>
+                    </div>
+                  ) : null}
                   {outro && cap <= 5 ? (
                     <label className="flex items-center gap-2 rounded-md border border-primary/40 p-3 text-sm">
                       <input type="checkbox" checked={!!p.extensao} onChange={(e) => upd(i, "extensao", e.target.checked)} />
