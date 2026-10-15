@@ -1,7 +1,8 @@
 import { ClientOnly, createFileRoute } from "@tanstack/react-router";
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { Loader2, Lock, Plus, Trash2 } from "lucide-react";
-import { calcularRotaCompleta, type RotaCompleta } from "@/components/finalizar-rota";
+import { calcularRotaTolerante, type RotaCompleta } from "@/components/finalizar-rota";
+import { HOSPITAIS_RMS } from "@/lib/hospitais-rms";
 
 const MapaTrajeto = lazy(() => import("@/components/mapa-trajeto"));
 import { toast } from "sonner";
@@ -78,28 +79,38 @@ function TransladoCasaApoio() {
   }, [pacientes]);
   const [rota, setRota] = useState<RotaCompleta | null>(null);
   const [rotaEstado, setRotaEstado] = useState<"ocioso" | "calculando" | "erro">("ocioso");
+  const [falhas, setFalhas] = useState<string[]>([]);
+  const [indicesOk, setIndicesOk] = useState<number[]>([]);
   const chaveRota = [origem, ...paradas.map((p) => p.endereco), idaVolta ? "iv" : "i"].join("|");
   useEffect(() => {
-    if (!origem || !paradas.length) { setRota(null); setRotaEstado("ocioso"); return; }
+    if (!origem || !paradas.length) { setRota(null); setFalhas([]); setRotaEstado("ocioso"); return; }
     const t = setTimeout(async () => {
       setRotaEstado("calculando");
       try {
         const pts = [origem, ...paradas.map((p) => p.endereco), ...(idaVolta ? [origem] : [])];
-        setRota(await calcularRotaCompleta(pts));
+        const r = await calcularRotaTolerante(pts);
+        setFalhas(r.falhas.map((i) => pts[i]!));
+        setIndicesOk(r.indices);
+        if (r.rota) setRota(r.rota);
         setRotaEstado("ocioso");
-      } catch { setRota(null); setRotaEstado("erro"); }
+      } catch { setRotaEstado("erro"); }
     }, 1000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chaveRota]);
+  const falhou = (hospital: string, municipio: string) => falhas.includes(`${hospital.trim()}, ${municipio}`);
   const pontosMapa = useMemo(() => {
     if (!rota) return [];
-    return rota.pontos.map((c, i) => ({
-      lat: c[0], lng: c[1],
-      tipo: (i === 0 ? "origem" : idaVolta && i === rota.pontos.length - 1 ? "retorno" : "parada") as "origem" | "parada" | "retorno",
-      rotulo: i === 0 ? `Embarque: ${acesso?.casa?.nome}` : idaVolta && i === rota.pontos.length - 1 ? "Retorno à Casa de Apoio" : `${paradas[i - 1]?.endereco} — ${paradas[i - 1]?.nomes.join(", ")}`,
-    }));
-  }, [rota, idaVolta, paradas, acesso]);
+    return rota.pontos.map((c, k) => {
+      const i = indicesOk[k] ?? k;
+      const ultimo = idaVolta && i === paradas.length + 1;
+      return {
+        lat: c[0], lng: c[1],
+        tipo: (i === 0 ? "origem" : ultimo ? "retorno" : "parada") as "origem" | "parada" | "retorno",
+        rotulo: i === 0 ? `Embarque: ${acesso?.casa?.nome}` : ultimo ? "Retorno à Casa de Apoio" : `${paradas[i - 1]?.endereco} — ${paradas[i - 1]?.nomes.join(", ")}`,
+      };
+    });
+  }, [rota, idaVolta, paradas, acesso, indicesOk]);
 
   async function solicitar() {
     const e = email.trim().toLowerCase();
@@ -180,9 +191,17 @@ function TransladoCasaApoio() {
                     <div><Label>Acompanhante (opcional)</Label><Input value={p.acompanhante} onChange={(e) => upd(i, "acompanhante", e.target.value)} /></div>
                     <div><Label>Hospital / clínica</Label>
                       <div className="flex gap-2">
-                        <Input value={p.hospital} onChange={(e) => upd(i, "hospital", e.target.value)} />
+                        <Input list="hospitais-rms" placeholder="Ex.: HUPES, HGE, Aristides Maltez" value={p.hospital}
+                          className={p.hospital.trim() && falhou(p.hospital, p.municipio) ? "border-warning" : undefined}
+                          onChange={(e) => {
+                            const v = e.target.value; upd(i, "hospital", v);
+                            const h = HOSPITAIS_RMS.find((x) => x.nome === v);
+                            if (h && MUNICIPIOS_RMS.includes(h.municipio as never)) upd(i, "municipio", h.municipio);
+                          }} />
                         <BotaoSelecionarMapa valor={p.hospital} onConfirmar={(v) => upd(i, "hospital", v)} rotulo="hospital" />
-                      </div></div>
+                      </div>
+                      {p.hospital.trim() && falhou(p.hospital, p.municipio) ? <p className="mt-1 text-xs text-warning">Endereço não localizado. Escolha um hospital da lista ou use o botão do mapa.</p> : null}
+                    </div>
                     <div><Label>Município do hospital</Label>
                       <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={p.municipio} onChange={(e) => upd(i, "municipio", e.target.value)}>
                         {MUNICIPIOS_RMS.map((m) => <option key={m}>{m}</option>)}
