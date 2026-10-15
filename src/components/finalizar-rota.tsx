@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Route as IconeRota, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { acharHospital, limparEndereco } from "@/lib/hospitais-rms";
 
 // Rotas 100% gratuitas: Nominatim (OpenStreetMap) para endereços + OSRM para o trajeto viário.
 export type ResultadoRota = { km: number; minutos: number };
@@ -11,7 +12,9 @@ function comRegiao(e: string) {
 
 const cache = new Map<string, [number, number]>();
 async function geocodificar(endereco: string): Promise<[number, number]> {
-  const q = comRegiao(endereco);
+  const h = acharHospital(endereco);
+  if (h) return [h.lng, h.lat];
+  const q = limparEndereco(comRegiao(limparEndereco(endereco)));
   const salvo = cache.get(q);
   if (salvo) return salvo;
   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&viewbox=-38.75,-12.40,-37.90,-13.05&q=${encodeURIComponent(q)}`;
@@ -21,6 +24,31 @@ async function geocodificar(endereco: string): Promise<[number, number]> {
   const p: [number, number] = [Number(d[0].lon), Number(d[0].lat)];
   cache.set(q, p);
   return p;
+}
+
+/** Rota tolerante: ignora pontos não localizados e informa quais falharam (índices). */
+export async function calcularRotaTolerante(pontos: string[]): Promise<{ rota: RotaCompleta | null; falhas: number[]; indices: number[] }> {
+  const coords: [number, number][] = [];
+  const falhas: number[] = [];
+  const indices: number[] = [];
+  for (let i = 0; i < pontos.length; i++) {
+    try { coords.push(await geocodificar(pontos[i]!)); indices.push(i); } catch { falhas.push(i); }
+  }
+  if (coords.length < 2) return { rota: null, falhas, indices };
+  const caminho = coords.map((c) => c.join(",")).join(";");
+  const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${caminho}?overview=full&geometries=geojson`);
+  const d = (await r.json()) as { code: string; routes?: { distance: number; duration: number; geometry: { coordinates: [number, number][] } }[] };
+  const rota = d.routes?.[0];
+  if (d.code !== "Ok" || !rota) throw new Error("Rota indisponível");
+  return {
+    falhas, indices,
+    rota: {
+      km: Math.round(rota.distance / 10) / 100,
+      minutos: Math.round(rota.duration / 60),
+      pontos: coords.map(([lng, lat]) => [lat, lng]),
+      linha: rota.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
+    },
+  };
 }
 
 /** Calcula a rota consolidada Origem → Paradas → Destino (km e minutos). */
