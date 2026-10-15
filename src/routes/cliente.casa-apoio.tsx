@@ -216,6 +216,7 @@ function TransladoCasaApoio() {
                 </Card>
               );
             })}
+            <datalist id="hospitais-rms">{HOSPITAIS_RMS.map((h) => <option key={h.nome} value={h.nome}>{h.municipio}</option>)}</datalist>
             <Button variant="outline" onClick={() => setPacientes([...pacientes, novoPaciente(pacientes[0]?.municipio)])}><Plus className="size-4" /> Adicionar paciente</Button>
             <Card className="space-y-3 border-primary/40 p-5">
               <div className="flex items-center justify-between gap-2">
@@ -230,7 +231,8 @@ function TransladoCasaApoio() {
                 </ol>
               )}
               {rotaEstado === "calculando" ? <p className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="size-3 animate-spin" /> Calculando rota…</p> : null}
-              {rotaEstado === "erro" ? <p className="text-xs text-destructive">Não foi possível localizar algum endereço. Use o botão do mapa para escolher o hospital.</p> : null}
+              {rotaEstado === "erro" ? <p className="text-xs text-warning">Serviço de rotas indisponível no momento. Tente novamente em instantes.</p> : null}
+              {falhas.length ? <p className="text-xs text-warning">{falhas.length} ponto(s) sem localização — a rota mostra os demais.</p> : null}
               {rota ? (
                 <ClientOnly fallback={<div className="h-72 rounded-lg bg-secondary/30" />}>
                   <Suspense fallback={<div className="h-72 rounded-lg bg-secondary/30" />}>
