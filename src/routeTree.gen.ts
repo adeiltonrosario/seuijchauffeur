@@ -22,6 +22,7 @@ import { Route as ClienteCarteiraRouteImport } from './routes/cliente.carteira'
 import { Route as ClienteCasaApoioRouteImport } from './routes/cliente.casa-apoio'
 import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento'
 import { Route as ClientePlantaoRouteImport } from './routes/cliente.plantao'
+import { Route as ClienteTransladoEsportivoRouteImport } from './routes/cliente.translado-esportivo'
 import { Route as MotoristaDisponibilidadeRouteImport } from './routes/motorista.disponibilidade'
 import { Route as MotoristaGanhosRouteImport } from './routes/motorista.ganhos'
 import { Route as MotoristaVeiculosRouteImport } from './routes/motorista.veiculos'
@@ -95,6 +96,12 @@ const ClientePlantaoRoute = ClientePlantaoRouteImport.update({
   path: '/cliente/plantao',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClienteTransladoEsportivoRoute =
+  ClienteTransladoEsportivoRouteImport.update({
+    id: '/cliente/translado-esportivo',
+    path: '/cliente/translado-esportivo',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const MotoristaDisponibilidadeRoute =
   MotoristaDisponibilidadeRouteImport.update({
     id: '/motorista/disponibilidade',
@@ -146,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
+  '/cliente/translado-esportivo': typeof ClienteTransladoEsportivoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
   '/motorista/ganhos': typeof MotoristaGanhosRoute
   '/motorista/veiculos': typeof MotoristaVeiculosRoute
@@ -168,6 +176,7 @@ export interface FileRoutesByTo {
   '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
+  '/cliente/translado-esportivo': typeof ClienteTransladoEsportivoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
   '/motorista/ganhos': typeof MotoristaGanhosRoute
   '/motorista/veiculos': typeof MotoristaVeiculosRoute
@@ -191,6 +200,7 @@ export interface FileRoutesById {
   '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
+  '/cliente/translado-esportivo': typeof ClienteTransladoEsportivoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
   '/motorista/ganhos': typeof MotoristaGanhosRoute
   '/motorista/veiculos': typeof MotoristaVeiculosRoute
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/cliente/casa-apoio'
     | '/cliente/pagamento'
     | '/cliente/plantao'
+    | '/cliente/translado-esportivo'
     | '/motorista/disponibilidade'
     | '/motorista/ganhos'
     | '/motorista/veiculos'
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/cliente/casa-apoio'
     | '/cliente/pagamento'
     | '/cliente/plantao'
+    | '/cliente/translado-esportivo'
     | '/motorista/disponibilidade'
     | '/motorista/ganhos'
     | '/motorista/veiculos'
@@ -259,6 +271,7 @@ export interface FileRouteTypes {
     | '/cliente/casa-apoio'
     | '/cliente/pagamento'
     | '/cliente/plantao'
+    | '/cliente/translado-esportivo'
     | '/motorista/disponibilidade'
     | '/motorista/ganhos'
     | '/motorista/veiculos'
@@ -282,6 +295,7 @@ export interface RootRouteChildren {
   ClienteCasaApoioRoute: typeof ClienteCasaApoioRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
   ClientePlantaoRoute: typeof ClientePlantaoRoute
+  ClienteTransladoEsportivoRoute: typeof ClienteTransladoEsportivoRoute
   MotoristaDisponibilidadeRoute: typeof MotoristaDisponibilidadeRoute
   MotoristaGanhosRoute: typeof MotoristaGanhosRoute
   MotoristaVeiculosRoute: typeof MotoristaVeiculosRoute
@@ -385,6 +399,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientePlantaoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cliente/translado-esportivo': {
+      id: '/cliente/translado-esportivo'
+      path: '/cliente/translado-esportivo'
+      fullPath: '/cliente/translado-esportivo'
+      preLoaderRoute: typeof ClienteTransladoEsportivoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/motorista/disponibilidade': {
       id: '/motorista/disponibilidade'
       path: '/motorista/disponibilidade'
@@ -450,6 +471,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClienteCasaApoioRoute: ClienteCasaApoioRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
   ClientePlantaoRoute: ClientePlantaoRoute,
+  ClienteTransladoEsportivoRoute: ClienteTransladoEsportivoRoute,
   MotoristaDisponibilidadeRoute: MotoristaDisponibilidadeRoute,
   MotoristaGanhosRoute: MotoristaGanhosRoute,
   MotoristaVeiculosRoute: MotoristaVeiculosRoute,

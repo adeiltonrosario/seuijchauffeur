@@ -7,6 +7,7 @@ const menuCliente = [
   { para: "/cliente", texto: "Início" },
   { para: "/cliente/agendamento/novo", texto: "Agendar" },
   { para: "/cliente/carteira", texto: "Carteira" },
+  { para: "/cliente/translado-esportivo", texto: "Esportivo" },
   { para: "/mapa", texto: "Mapa" },
   { para: "/favoritos", texto: "Favoritos" },
   { para: "/agente-suporte", texto: "Suporte IA" },
