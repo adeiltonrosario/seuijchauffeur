@@ -96,12 +96,12 @@ function TransladoEsportivo() {
     });
   }, [rota, indices, pontos, idaVolta]);
 
-  function solicitar() {
-    if (!clube.nome.trim() || !clube.responsavel.trim() || !clube.whatsapp.trim()) return toast.error("Informe clube, responsável e WhatsApp.");
-    if (!dataHora || !origem.trim() || !destino.trim()) return toast.error("Informe data, horário, saída e destino.");
-    if (totalPassageiros < 1) return toast.error("Informe ao menos um passageiro.");
-    if (lotacaoExcedida) return toast.error("Lotação acima da capacidade do veículo escolhido.");
-    toast.success(`Solicitação enviada: ${quantidade}× ${VEICULOS[veiculo].nome}${backup ? " com motorista reserva" : ""}. Aguarde confirmação.`);
+  function solicitar(): void {
+    if (!clube.nome.trim() || !clube.responsavel.trim() || !clube.whatsapp.trim()) { toast.error("Informe clube, responsável e WhatsApp."); return; }
+    if (!dataHora || !origem.trim() || !destino.trim()) { toast.error("Informe data, horário, saída e destino."); return; }
+    if (totalPassageiros < 1) { toast.error("Informe ao menos um passageiro."); return; }
+    if (lotacaoExcedida) { toast.error("Lotação acima da capacidade do veículo escolhido."); return; }
+    void toast.success(`Solicitação enviada: ${quantidade}× ${VEICULOS[veiculo].nome}${backup ? " com motorista reserva" : ""}. Aguarde confirmação.`);
   }
 
   const campo = "h-10 w-full rounded-md border border-input bg-background px-3 text-sm";
@@ -128,18 +128,18 @@ function TransladoEsportivo() {
 
           <Card className="surface-luxe space-y-4 p-5">
             <h2 className="text-gold font-semibold">Rota (sede, CT, hotel, estádio, aeroporto)</h2>
-            <div><Label>Saída</Label><div className="flex gap-2"><Input value={origem} onChange={(e) => setOrigem(e.target.value)} placeholder="Ex.: CT do clube" /><BotaoSelecionarMapa onSelecionar={setOrigem} /></div>
+            <div><Label>Saída</Label><div className="flex gap-2"><Input value={origem} onChange={(e) => setOrigem(e.target.value)} placeholder="Ex.: CT do clube" /><BotaoSelecionarMapa valor={origem} onConfirmar={setOrigem} /></div>
               {falhas.includes(0) && <p className="mt-1 text-xs text-gold">Endereço não localizado — use o mapa.</p>}</div>
             {paradas.map((p, i) => (
               <div key={i}><Label>Parada {i + 1}</Label>
                 <div className="flex gap-2">
                   <Input value={p} onChange={(e) => setParadas(paradas.map((x, j) => (j === i ? e.target.value : x)))} placeholder="Ex.: Hotel da delegação" />
-                  <BotaoSelecionarMapa onSelecionar={(v) => setParadas(paradas.map((x, j) => (j === i ? v : x)))} />
+                  <BotaoSelecionarMapa valor={p} onConfirmar={(v: string) => setParadas(paradas.map((x, j) => (j === i ? v : x)))} />
                   <Button variant="ghost" size="icon" onClick={() => setParadas(paradas.filter((_, j) => j !== i))}><Trash2 className="h-4 w-4" /></Button>
                 </div></div>
             ))}
             <Button variant="outline" size="sm" onClick={() => setParadas([...paradas, ""])}><Plus className="mr-1 h-4 w-4" />Adicionar parada</Button>
-            <div><Label>Destino</Label><div className="flex gap-2"><Input value={destino} onChange={(e) => setDestino(e.target.value)} placeholder="Ex.: Arena Fonte Nova" /><BotaoSelecionarMapa onSelecionar={setDestino} /></div></div>
+            <div><Label>Destino</Label><div className="flex gap-2"><Input value={destino} onChange={(e) => setDestino(e.target.value)} placeholder="Ex.: Arena Fonte Nova" /><BotaoSelecionarMapa valor={destino} onConfirmar={setDestino} /></div></div>
             <div className="flex flex-wrap items-center gap-4">
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={idaVolta} onChange={(e) => setIdaVolta(e.target.checked)} />Ida e volta</label>
               {idaVolta && <div className="flex items-center gap-2"><Label>Horário do retorno</Label><Input type="time" className="w-32" value={horaRetorno} onChange={(e) => setHoraRetorno(e.target.value)} /></div>}
