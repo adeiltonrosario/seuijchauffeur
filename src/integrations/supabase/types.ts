@@ -424,6 +424,27 @@ export type Database = {
         }
         Relationships: []
       }
+      precos_esportivo: {
+        Row: {
+          atualizado_em: string
+          por_km: number
+          valor_evento: number
+          veiculo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          por_km?: number
+          valor_evento?: number
+          veiculo: string
+        }
+        Update: {
+          atualizado_em?: string
+          por_km?: number
+          valor_evento?: number
+          veiculo?: string
+        }
+        Relationships: []
+      }
       solicitantes_casa_apoio: {
         Row: {
           aprovador: string | null
