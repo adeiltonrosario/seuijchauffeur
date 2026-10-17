@@ -71,6 +71,13 @@
       "when": 1791764817199,
       "tag": "0009_reserva_km_corrida",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792248776431,
+      "tag": "0010_precos_translado_esportivo",
+      "breakpoints": true
     }
   ]
 }
