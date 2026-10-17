@@ -29,7 +29,7 @@ export type Calculo = { linhas: { texto: string; valor: number }[]; total: numbe
 export function calcularEsportivo(p: {
   cobranca: Cobranca; veiculo: Veiculo; quantidade: number; km: number; saldoFranquiaKm?: number;
   /** Valores definidos pelo Administrador (sobrepõem os de referência). */
-  valorEvento?: number; porKm?: number;
+  valorEvento?: number | undefined; porKm?: number | undefined;
 }): Calculo {
   const km = Math.max(0, p.km);
   const q = Math.max(1, p.quantidade);
