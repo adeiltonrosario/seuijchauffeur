@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { VEICULOS, calcularEsportivo, recomendarVeiculos, type Cobranca, type Veiculo } from "@/lib/translado-esportivo";
+import { carregarPrecosEsportivo } from "@/lib/precos-esportivo";
 
 const MapaTrajeto = lazy(() => import("@/components/mapa-trajeto"));
 
@@ -79,8 +80,13 @@ function TransladoEsportivo() {
     return () => clearTimeout(t);
   }, [pontos, origem, destino]);
 
+  const [precos, setPrecos] = useState<Awaited<ReturnType<typeof carregarPrecosEsportivo>>>(null);
+  useEffect(() => { void carregarPrecosEsportivo().then(setPrecos); }, []);
   const km = rota?.km ?? 0;
-  const calc = calcularEsportivo({ cobranca, veiculo, quantidade, km, saldoFranquiaKm: saldoFranquia });
+  const calc = calcularEsportivo({
+    cobranca, veiculo, quantidade, km, saldoFranquiaKm: saldoFranquia,
+    valorEvento: precos?.[veiculo]?.valorEvento, porKm: precos?.[veiculo]?.porKm,
+  });
 
   const pontosMapa = useMemo(() => {
     if (!rota) return [];

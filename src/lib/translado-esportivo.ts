@@ -28,27 +28,31 @@ export type Calculo = { linhas: { texto: string; valor: number }[]; total: numbe
 
 export function calcularEsportivo(p: {
   cobranca: Cobranca; veiculo: Veiculo; quantidade: number; km: number; saldoFranquiaKm?: number;
+  /** Valores definidos pelo Administrador (sobrepõem os de referência). */
+  valorEvento?: number; porKm?: number;
 }): Calculo {
   const km = Math.max(0, p.km);
   const q = Math.max(1, p.quantidade);
   const nome = VEICULOS[p.veiculo].nome;
+  const valorEvento = p.valorEvento ?? VEICULOS[p.veiculo].valorEvento;
+  const TARIFA_KM_EF = Math.max(TARIFA_KM_MINIMA, p.porKm ?? TARIFA_KM);
   if (p.cobranca === "evento") {
-    const v = centavos(VEICULOS[p.veiculo].valorEvento * q);
+    const v = centavos(valorEvento * q);
     return { linhas: [{ texto: `Valor fechado por evento — ${q}× ${nome}`, valor: v }], total: v, kmConsumidos: 0, kmExcedente: 0 };
   }
   if (p.cobranca === "km") {
-    const v = centavos(km * TARIFA_KM * q);
-    return { linhas: [{ texto: `${km.toFixed(1)} km × R$ ${TARIFA_KM.toFixed(2)} × ${q} veículo(s)`, valor: v }], total: v, kmConsumidos: 0, kmExcedente: 0 };
+    const v = centavos(km * TARIFA_KM_EF * q);
+    return { linhas: [{ texto: `${km.toFixed(1)} km × R$ ${TARIFA_KM_EF.toFixed(2)} × ${q} veículo(s)`, valor: v }], total: v, kmConsumidos: 0, kmExcedente: 0 };
   }
   const necessario = km * q;
   const saldo = Math.max(0, p.saldoFranquiaKm ?? 0);
   const consumidos = Math.min(saldo, necessario);
   const excedente = centavos(necessario - consumidos);
-  const v = centavos(excedente * TARIFA_KM);
+  const v = centavos(excedente * TARIFA_KM_EF);
   return {
     linhas: [
       { texto: `Franquia mensal: ${consumidos.toFixed(1)} km debitados`, valor: 0 },
-      { texto: `Excedente: ${excedente.toFixed(1)} km × R$ ${TARIFA_KM.toFixed(2)}`, valor: v },
+      { texto: `Excedente: ${excedente.toFixed(1)} km × R$ ${TARIFA_KM_EF.toFixed(2)}`, valor: v },
     ],
     total: v, kmConsumidos: centavos(consumidos), kmExcedente: excedente,
   };
