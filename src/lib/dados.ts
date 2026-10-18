@@ -1,7 +1,7 @@
 export const CAPACIDADE_PADRAO = 4;
 
 /** Categorias de veículos de passageiros. */
-export const CATEGORIAS_PASSAGEIROS = ["Sedan", "SUV", "Hatch", "Minivan executiva", "Van executiva"] as const;
+export const CATEGORIAS_PASSAGEIROS = ["Sedan", "SUV", "Utilitário Esportivo", "Hatch", "Minivan executiva", "Van executiva"] as const;
 
 /** Categorias de veículos utilitários de carga (carretos e mudanças). */
 export const CATEGORIAS_CARGA = [
@@ -23,6 +23,8 @@ export const capacidadeDaCategoria = (categoria: string) => {
   switch (categoria) {
     case "Minivan executiva":
       return 6;
+    case "Utilitário Esportivo":
+      return 5;
     case "Van executiva":
       return 10;
     case "Fiorino / Furgão leve":
@@ -41,6 +43,8 @@ export const faixaCapacidade = (categoria: string): { min: number; max: number; 
   switch (categoria) {
     case "Minivan executiva":
       return { min: 5, max: 7, ajustavel: true };
+    case "Utilitário Esportivo":
+      return { min: 5, max: 6, ajustavel: true };
     case "Van executiva":
       return { min: 10, max: 30, ajustavel: true };
     default: {
@@ -62,6 +66,8 @@ export const ajudaCapacidade = (categoria: string) => {
   switch (categoria) {
     case "Minivan executiva":
       return "Escolha a lotação do veículo: 5, 6 ou 7 ocupantes.";
+    case "Utilitário Esportivo":
+      return "Escolha a lotação do veículo: 5 ou 6 ocupantes, conforme o CRLV.";
     case "Van executiva":
       return "Informe a lotação homologada no CRLV do veículo (mínimo 10 ocupantes, ex.: 10, 12, 15, 18 ou 20).";
     default:
