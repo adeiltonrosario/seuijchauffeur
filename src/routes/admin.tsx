@@ -7,6 +7,7 @@ import { AcessoEquipe } from "@/components/acesso-equipe";
 import { PlanosPorModalidade } from "@/components/planos-por-modalidade";
 import { AdminCasasApoio } from "@/components/admin-casas-apoio";
 import { TabelaIndicacoes } from "@/components/tabela-indicacoes";
+import { AdminPrecosEsportivo } from "@/components/admin-precos-esportivo";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -1075,6 +1076,10 @@ function Admin() {
               </div>
             </div>
           </Card>
+
+          <div className="mb-6">
+            <AdminPrecosEsportivo />
+          </div>
 
           <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
 
