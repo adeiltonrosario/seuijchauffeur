@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      acessos_modulos: {
+        Row: {
+          criado_em: string
+          email: string
+          modulo: string
+        }
+        Insert: {
+          criado_em?: string
+          email: string
+          modulo: string
+        }
+        Update: {
+          criado_em?: string
+          email?: string
+          modulo?: string
+        }
+        Relationships: []
+      }
       carteira_km_movimentos: {
         Row: {
           agendamento_id: string | null
@@ -660,6 +678,7 @@ export type Database = {
         Args: { _email: string; _nome: string }
         Returns: Json
       }
+      modulos_liberados: { Args: { _email: string }; Returns: string[] }
       reivindicar_primeiro_admin: { Args: never; Returns: boolean }
       reservar_km_corrida: {
         Args: { _agendamento: string; _email: string; _km: number }
