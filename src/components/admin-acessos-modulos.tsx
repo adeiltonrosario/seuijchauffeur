@@ -21,9 +21,9 @@ export function AdminAcessosModulos() {
 
   const liberar = async () => {
     const e = email.trim().toLowerCase();
-    if (!e.includes("@")) return toast.error("Informe o e-mail do cliente.");
+    if (!e.includes("@")) { toast.error("Informe o e-mail do cliente."); return; }
     const { error } = await supabase.from("acessos_modulos").insert({ email: e, modulo });
-    if (error) return toast.error("Não foi possível liberar (já liberado?).");
+    if (error) { toast.error("Não foi possível liberar (já liberado?)."); return; }
     toast.success("Acesso liberado.");
     setEmail("");
     void carregar();
