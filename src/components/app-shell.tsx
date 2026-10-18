@@ -7,9 +7,13 @@ const menuCliente = [
   { para: "/cliente", texto: "Início" },
   { para: "/cliente/agendamento/novo", texto: "Agendar" },
   { para: "/cliente/carteira", texto: "Carteira" },
-  { para: "/cliente/translado-esportivo", texto: "Esportivo" },
   { para: "/mapa", texto: "Mapa" },
   { para: "/favoritos", texto: "Favoritos" },
+] as const;
+
+const menuAdmin = [
+  { para: "/admin", texto: "Painel" },
+  { para: "/cliente/translado-esportivo", texto: "Esportivo" },
   { para: "/agente-suporte", texto: "Suporte IA" },
 ] as const;
 
@@ -35,6 +39,7 @@ export function AppShell({
   const areaMotorista = pathname.startsWith("/motorista");
   const areaAdmin = pathname.startsWith("/admin");
   const [casaApoio, setCasaApoio] = useState(false);
+  const [modulos, setModulos] = useState<string[]>([]);
   useEffect(() => {
     if (areaMotorista || areaAdmin) return;
     const email = localStorage.getItem("seuchauffeur:cliente-email") ?? "";
@@ -43,10 +48,15 @@ export function AppShell({
       const a = data as { status?: string } | null;
       setCasaApoio(a?.status === "ativo");
     });
+    void supabase.rpc("modulos_liberados", { _email: email }).then(({ data }) => {
+      setModulos((data as string[] | null) ?? []);
+    });
   }, [areaMotorista, areaAdmin]);
   const itensCliente: { para: string; texto: string }[] = [...menuCliente];
   if (casaApoio) itensCliente.splice(3, 0, { para: "/cliente/casa-apoio", texto: "Casa de Apoio" });
-  const navegacao: readonly { para: string; texto: string }[] = areaAdmin ? [] : areaMotorista ? menuMotorista : itensCliente;
+  if (modulos.includes("esportivo")) itensCliente.push({ para: "/cliente/translado-esportivo", texto: "Esportivo" });
+  if (modulos.includes("suporte_ia")) itensCliente.push({ para: "/agente-suporte", texto: "Suporte IA" });
+  const navegacao: readonly { para: string; texto: string }[] = areaAdmin ? menuAdmin : areaMotorista ? menuMotorista : itensCliente;
 
   return (
     <div className="min-h-screen bg-background">
