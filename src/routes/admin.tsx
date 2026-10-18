@@ -60,6 +60,7 @@ import {
 import { gravarMotorista, gravarVeiculoFrota, listarFrota, listarMotoristas } from "@/lib/banco";
 import { supabase } from "@/integrations/supabase/client";
 import { Save } from "lucide-react";
+import { AdminAcessosModulos } from "@/components/admin-acessos-modulos";
 
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
@@ -557,6 +558,7 @@ function Admin() {
 
 
         <TabsContent value="motoristas" className="mt-6">
+          <div className="mb-6"><AdminAcessosModulos /></div>
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="surface-luxe border-border/60 p-6">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Novo motorista</h2>

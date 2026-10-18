@@ -78,6 +78,13 @@
       "when": 1792248776431,
       "tag": "0010_precos_translado_esportivo",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792294083714,
+      "tag": "0011_acessos_modulos",
+      "breakpoints": true
     }
   ]
 }
