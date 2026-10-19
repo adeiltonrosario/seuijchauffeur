@@ -85,6 +85,13 @@
       "when": 1792294083714,
       "tag": "0011_acessos_modulos",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792384428157,
+      "tag": "0012_motor_creditos_lotes_cofre_expiracao",
+      "breakpoints": true
     }
   ]
 }
