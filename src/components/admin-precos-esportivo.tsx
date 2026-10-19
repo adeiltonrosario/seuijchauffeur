@@ -1,3 +1,4 @@
+import { CampoMoeda } from "@/components/campo-moeda";
 import { useEffect, useState } from "react";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
@@ -41,11 +42,11 @@ export function AdminPrecosEsportivo() {
             <p className="text-sm text-gold">{VEICULOS[p.veiculo].nome} ({VEICULOS[p.veiculo].min}–{VEICULOS[p.veiculo].max})</p>
             <div className="space-y-1">
               <Label htmlFor={`ev-${p.veiculo}`}>Valor por evento (R$)</Label>
-              <Input id={`ev-${p.veiculo}`} inputMode="decimal" value={p.valorEvento} onChange={(e) => mudar(i, "valorEvento", e.target.value)} />
+              <CampoMoeda id={`ev-${p.veiculo}`} valor={p.valorEvento} aoMudar={(n) => mudar(i, "valorEvento", String(n))} />
             </div>
             <div className="space-y-1">
               <Label htmlFor={`km-${p.veiculo}`}>Valor por km (R$)</Label>
-              <Input id={`km-${p.veiculo}`} inputMode="decimal" value={p.porKm} onChange={(e) => mudar(i, "porKm", e.target.value)} />
+              <CampoMoeda id={`km-${p.veiculo}`} valor={p.porKm} aoMudar={(n) => mudar(i, "porKm", String(n))} />
             </div>
           </div>
         ))}
