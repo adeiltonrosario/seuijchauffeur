@@ -32,6 +32,50 @@ export type Database = {
         }
         Relationships: []
       }
+      carteira_admin_movimentos: {
+        Row: {
+          chave: string | null
+          criado_em: string
+          descricao: string
+          id: string
+          lote_origem: string | null
+          quantidade: number
+          ref: string | null
+          responsavel: string | null
+          tipo: string
+        }
+        Insert: {
+          chave?: string | null
+          criado_em?: string
+          descricao?: string
+          id?: string
+          lote_origem?: string | null
+          quantidade: number
+          ref?: string | null
+          responsavel?: string | null
+          tipo: string
+        }
+        Update: {
+          chave?: string | null
+          criado_em?: string
+          descricao?: string
+          id?: string
+          lote_origem?: string | null
+          quantidade?: number
+          ref?: string | null
+          responsavel?: string | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carteira_admin_movimentos_lote_origem_fkey"
+            columns: ["lote_origem"]
+            isOneToOne: false
+            referencedRelation: "credito_lotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       carteira_km_movimentos: {
         Row: {
           agendamento_id: string | null
@@ -221,6 +265,130 @@ export type Database = {
         }
         Relationships: []
       }
+      credito_config: {
+        Row: {
+          atualizado_em: string
+          creditos_por_km: number
+          id: boolean
+          preco_credito: number
+          taxa_cofre: number
+          validade_cofre_meses: number
+        }
+        Insert: {
+          atualizado_em?: string
+          creditos_por_km?: number
+          id?: boolean
+          preco_credito?: number
+          taxa_cofre?: number
+          validade_cofre_meses?: number
+        }
+        Update: {
+          atualizado_em?: string
+          creditos_por_km?: number
+          id?: boolean
+          preco_credito?: number
+          taxa_cofre?: number
+          validade_cofre_meses?: number
+        }
+        Relationships: []
+      }
+      credito_lotes: {
+        Row: {
+          cliente_email: string
+          concedido_em: string
+          id: string
+          local: string
+          lote_pai: string | null
+          origem: string
+          origem_ref: string | null
+          quantidade: number
+          saldo: number
+          status: string
+          vence_em: string
+        }
+        Insert: {
+          cliente_email: string
+          concedido_em?: string
+          id?: string
+          local?: string
+          lote_pai?: string | null
+          origem: string
+          origem_ref?: string | null
+          quantidade: number
+          saldo: number
+          status?: string
+          vence_em: string
+        }
+        Update: {
+          cliente_email?: string
+          concedido_em?: string
+          id?: string
+          local?: string
+          lote_pai?: string | null
+          origem?: string
+          origem_ref?: string | null
+          quantidade?: number
+          saldo?: number
+          status?: string
+          vence_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credito_lotes_lote_pai_fkey"
+            columns: ["lote_pai"]
+            isOneToOne: false
+            referencedRelation: "credito_lotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credito_transacoes: {
+        Row: {
+          chave: string | null
+          cliente_email: string
+          criado_em: string
+          descricao: string
+          id: string
+          lote_id: string | null
+          quantidade: number
+          ref: string | null
+          responsavel: string | null
+          tipo: string
+        }
+        Insert: {
+          chave?: string | null
+          cliente_email: string
+          criado_em?: string
+          descricao?: string
+          id?: string
+          lote_id?: string | null
+          quantidade: number
+          ref?: string | null
+          responsavel?: string | null
+          tipo: string
+        }
+        Update: {
+          chave?: string | null
+          cliente_email?: string
+          criado_em?: string
+          descricao?: string
+          id?: string
+          lote_id?: string | null
+          quantidade?: number
+          ref?: string | null
+          responsavel?: string | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credito_transacoes_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "credito_lotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       modalidades: {
         Row: {
           caracteristicas: string
@@ -314,6 +482,7 @@ export type Database = {
           ciclos: number
           cliente_email: string
           codigo_indicacao: string | null
+          creditos: number | null
           criado_em: string
           franquia_km: number
           id: string
@@ -330,6 +499,7 @@ export type Database = {
           ciclos?: number
           cliente_email: string
           codigo_indicacao?: string | null
+          creditos?: number | null
           criado_em?: string
           franquia_km?: number
           id?: string
@@ -346,6 +516,7 @@ export type Database = {
           ciclos?: number
           cliente_email?: string
           codigo_indicacao?: string | null
+          creditos?: number | null
           criado_em?: string
           franquia_km?: number
           id?: string
@@ -637,10 +808,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _debitar_lotes: {
+        Args: {
+          _desc: string
+          _email: string
+          _locais: string[]
+          _qtd: number
+          _ref: string
+          _tipo: string
+        }
+        Returns: undefined
+      }
       acesso_casa_apoio: { Args: { _email: string }; Returns: Json }
       conceder_franquia_pedido: {
         Args: { _ciclo: number; _pedido: string }
         Returns: string
+      }
+      conceder_lote_plano: { Args: { _pedido: string }; Returns: string }
+      consumir_creditos: {
+        Args: { _quantidade: number; _ref: string }
+        Returns: Json
       }
       criar_pedido_assinatura: {
         Args: {
@@ -666,6 +853,8 @@ export type Database = {
         }
         Returns: string
       }
+      email_logado: { Args: never; Returns: string }
+      expirar_creditos: { Args: { _email?: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -678,7 +867,9 @@ export type Database = {
         Args: { _email: string; _nome: string }
         Returns: Json
       }
+      meus_creditos: { Args: { _email: string }; Returns: Json }
       modulos_liberados: { Args: { _email: string }; Returns: string[] }
+      painel_carteira_admin: { Args: never; Returns: Json }
       reivindicar_primeiro_admin: { Args: never; Returns: boolean }
       reservar_km_corrida: {
         Args: { _agendamento: string; _email: string; _km: number }
@@ -699,12 +890,17 @@ export type Database = {
         Args: { _email: string; _id: string }
         Returns: string
       }
+      transferir_para_cofre: { Args: { _quantidade: number }; Returns: Json }
       usar_codigo_indicacao: {
         Args: { _codigo: string; _email: string; _nome: string }
         Returns: string
       }
       validar_codigo_indicacao: {
         Args: { _codigo: string; _email: string }
+        Returns: string
+      }
+      vencimento_periodo: {
+        Args: { _base: string; _periodicidade: string }
         Returns: string
       }
     }
