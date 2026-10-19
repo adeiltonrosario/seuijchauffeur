@@ -1,3 +1,4 @@
+import { CampoMoeda } from "@/components/campo-moeda";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Pencil, Plus, RotateCcw, Save, Trash2, X } from "lucide-react";
@@ -216,7 +217,7 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
                       </div>
                       <div>
                         <Label className="text-xs">Preço por viagem (R$)</Label>
-                        <Input type="number" min={0} step="0.01" value={rascunho.precoViagem} onChange={(e) => setRascunho({ ...rascunho, precoViagem: Number(e.target.value) })} />
+                        <CampoMoeda valor={rascunho.precoViagem} aoMudar={(n) => setRascunho({ ...rascunho, precoViagem: n })} />
                       </div>
                     </div>
                   ) : (

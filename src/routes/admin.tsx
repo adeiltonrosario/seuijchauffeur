@@ -60,6 +60,7 @@ import {
 import { gravarMotorista, gravarVeiculoFrota, listarFrota, listarMotoristas } from "@/lib/banco";
 import { supabase } from "@/integrations/supabase/client";
 import { Save } from "lucide-react";
+import { CampoMoeda } from "@/components/campo-moeda";
 import { AdminAcessosModulos } from "@/components/admin-acessos-modulos";
 
 
@@ -1169,21 +1170,13 @@ function Admin() {
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground">Valor base</Label>
-                        <Input
-                          inputMode="decimal"
-                          value={String(m.valorBase)}
-                          onChange={(e) => atualizarModalidade(i, "valorBase", e.target.value)}
-                        />
+                        <CampoMoeda valor={m.valorBase} aoMudar={(n) => atualizarModalidade(i, "valorBase", String(n))} />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground">
                           Por km (mínimo {formatarBRL(VALOR_MINIMO_POR_KM)})
                         </Label>
-                        <Input
-                          inputMode="decimal"
-                          value={String(m.porKm)}
-                          onChange={(e) => atualizarModalidade(i, "porKm", e.target.value)}
-                        />
+                        <CampoMoeda valor={m.porKm} aoMudar={(n) => atualizarModalidade(i, "porKm", String(n))} />
                         {m.porKm < VALOR_MINIMO_POR_KM && (
                           <p className="text-xs text-destructive">
                             Abaixo do piso de {formatarBRL(VALOR_MINIMO_POR_KM)} por km.
@@ -1196,11 +1189,7 @@ function Admin() {
                       <div className="mt-3 grid gap-3 sm:grid-cols-2">
                         <div className="space-y-1">
                           <Label className="text-xs text-muted-foreground">Valor do turno</Label>
-                          <Input
-                            inputMode="decimal"
-                            value={String(m.valorTurno)}
-                            onChange={(e) => atualizarModalidade(i, "valorTurno", e.target.value)}
-                          />
+                          <CampoMoeda valor={m.valorTurno} aoMudar={(n) => atualizarModalidade(i, "valorTurno", String(n))} />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs text-muted-foreground">Franquia de km inclusa</Label>
