@@ -99,6 +99,13 @@
       "when": 1792469200140,
       "tag": "0013_proteger_meus_creditos",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792469397844,
+      "tag": "0014_agendar_expiracao_creditos",
+      "breakpoints": true
     }
   ]
 }

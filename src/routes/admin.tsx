@@ -62,6 +62,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Save } from "lucide-react";
 import { CampoMoeda } from "@/components/campo-moeda";
 import { AdminAcessosModulos } from "@/components/admin-acessos-modulos";
+import { AdminCarteiraCreditos } from "@/components/admin-carteira-creditos";
 
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
@@ -555,6 +556,7 @@ function Admin() {
           <TabsTrigger value="recebimento">Recebimento</TabsTrigger>
           <TabsTrigger value="publicidades">Publicidades</TabsTrigger>
           <TabsTrigger value="casas-apoio">Casas de Apoio</TabsTrigger>
+          <TabsTrigger value="creditos">Créditos vencidos</TabsTrigger>
         </TabsList>
 
 
@@ -1319,6 +1321,10 @@ function Admin() {
 
         <TabsContent value="casas-apoio" className="mt-6">
           <AdminCasasApoio />
+        </TabsContent>
+
+        <TabsContent value="creditos" className="mt-6">
+          <AdminCarteiraCreditos />
         </TabsContent>
 
         <TabsContent value="publicidades" className="mt-6">
