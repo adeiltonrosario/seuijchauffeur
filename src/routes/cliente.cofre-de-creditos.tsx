@@ -45,12 +45,12 @@ function Login() {
       ? await supabase.auth.signInWithPassword({ email, password: senha })
       : await supabase.auth.signUp({ email, password: senha, options: { emailRedirectTo: window.location.origin + "/cliente/cofre-de-creditos" } });
     setOcupado(false);
-    if (error) return toast.error(error.message.includes("Invalid") ? "E-mail ou senha incorretos." : error.message);
+    if (error) { toast.error(error.message.includes("Invalid") ? "E-mail ou senha incorretos." : error.message); return; }
     if (modo === "criar") toast.success("Conta criada. Confirme pelo link enviado ao seu e-mail.");
   }
 
   async function esqueci() {
-    if (!email) return toast.error("Digite seu e-mail primeiro.");
+    if (!email) { toast.error("Digite seu e-mail primeiro."); return; }
     await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/reset-password" });
     toast.success("Enviamos o link de redefinição de senha.");
   }
@@ -90,7 +90,7 @@ function Cofre() {
     if (!email) return;
     await supabase.rpc("expirar_creditos", { _email: email });
     const { data, error } = await supabase.rpc("meus_creditos", { _email: email });
-    if (error) return toast.error("Não foi possível carregar seus créditos.");
+    if (error) { toast.error("Não foi possível carregar seus créditos."); return; }
     setDados(data as unknown as Dados);
   }
   useEffect(() => { void carregar(); }, [sessao?.user.email]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -101,7 +101,7 @@ function Cofre() {
   async function transferir() {
     if (!sim) return;
     const { error } = await supabase.rpc("transferir_para_cofre", { _quantidade: n });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(`${sim.cofre} créditos guardados no Cofre.`);
     setQtd("");
     void carregar();
