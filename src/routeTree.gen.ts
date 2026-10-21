@@ -23,6 +23,7 @@ import { Route as ClienteCasaApoioRouteImport } from './routes/cliente.casa-apoi
 import { Route as ClienteCofreDeCreditosRouteImport } from './routes/cliente.cofre-de-creditos'
 import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento'
 import { Route as ClientePlantaoRouteImport } from './routes/cliente.plantao'
+import { Route as ClienteSaldaoRouteImport } from './routes/cliente.saldao'
 import { Route as ClienteTransladoEsportivoRouteImport } from './routes/cliente.translado-esportivo'
 import { Route as MotoristaDisponibilidadeRouteImport } from './routes/motorista.disponibilidade'
 import { Route as MotoristaGanhosRouteImport } from './routes/motorista.ganhos'
@@ -102,6 +103,11 @@ const ClientePlantaoRoute = ClientePlantaoRouteImport.update({
   path: '/cliente/plantao',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClienteSaldaoRoute = ClienteSaldaoRouteImport.update({
+  id: '/cliente/saldao',
+  path: '/cliente/saldao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClienteTransladoEsportivoRoute =
   ClienteTransladoEsportivoRouteImport.update({
     id: '/cliente/translado-esportivo',
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/cliente/cofre-de-creditos': typeof ClienteCofreDeCreditosRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
+  '/cliente/saldao': typeof ClienteSaldaoRoute
   '/cliente/translado-esportivo': typeof ClienteTransladoEsportivoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
   '/motorista/ganhos': typeof MotoristaGanhosRoute
@@ -184,6 +191,7 @@ export interface FileRoutesByTo {
   '/cliente/cofre-de-creditos': typeof ClienteCofreDeCreditosRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
+  '/cliente/saldao': typeof ClienteSaldaoRoute
   '/cliente/translado-esportivo': typeof ClienteTransladoEsportivoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
   '/motorista/ganhos': typeof MotoristaGanhosRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/cliente/cofre-de-creditos': typeof ClienteCofreDeCreditosRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
+  '/cliente/saldao': typeof ClienteSaldaoRoute
   '/cliente/translado-esportivo': typeof ClienteTransladoEsportivoRoute
   '/motorista/disponibilidade': typeof MotoristaDisponibilidadeRoute
   '/motorista/ganhos': typeof MotoristaGanhosRoute
@@ -235,6 +244,7 @@ export interface FileRouteTypes {
     | '/cliente/cofre-de-creditos'
     | '/cliente/pagamento'
     | '/cliente/plantao'
+    | '/cliente/saldao'
     | '/cliente/translado-esportivo'
     | '/motorista/disponibilidade'
     | '/motorista/ganhos'
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/cliente/cofre-de-creditos'
     | '/cliente/pagamento'
     | '/cliente/plantao'
+    | '/cliente/saldao'
     | '/cliente/translado-esportivo'
     | '/motorista/disponibilidade'
     | '/motorista/ganhos'
@@ -283,6 +294,7 @@ export interface FileRouteTypes {
     | '/cliente/cofre-de-creditos'
     | '/cliente/pagamento'
     | '/cliente/plantao'
+    | '/cliente/saldao'
     | '/cliente/translado-esportivo'
     | '/motorista/disponibilidade'
     | '/motorista/ganhos'
@@ -308,6 +320,7 @@ export interface RootRouteChildren {
   ClienteCofreDeCreditosRoute: typeof ClienteCofreDeCreditosRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
   ClientePlantaoRoute: typeof ClientePlantaoRoute
+  ClienteSaldaoRoute: typeof ClienteSaldaoRoute
   ClienteTransladoEsportivoRoute: typeof ClienteTransladoEsportivoRoute
   MotoristaDisponibilidadeRoute: typeof MotoristaDisponibilidadeRoute
   MotoristaGanhosRoute: typeof MotoristaGanhosRoute
@@ -419,6 +432,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientePlantaoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cliente/saldao': {
+      id: '/cliente/saldao'
+      path: '/cliente/saldao'
+      fullPath: '/cliente/saldao'
+      preLoaderRoute: typeof ClienteSaldaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cliente/translado-esportivo': {
       id: '/cliente/translado-esportivo'
       path: '/cliente/translado-esportivo'
@@ -492,6 +512,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClienteCofreDeCreditosRoute: ClienteCofreDeCreditosRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
   ClientePlantaoRoute: ClientePlantaoRoute,
+  ClienteSaldaoRoute: ClienteSaldaoRoute,
   ClienteTransladoEsportivoRoute: ClienteTransladoEsportivoRoute,
   MotoristaDisponibilidadeRoute: MotoristaDisponibilidadeRoute,
   MotoristaGanhosRoute: MotoristaGanhosRoute,
