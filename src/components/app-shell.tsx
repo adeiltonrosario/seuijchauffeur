@@ -8,6 +8,7 @@ const menuCliente = [
   { para: "/cliente/agendamento/novo", texto: "Agendar" },
   { para: "/cliente/carteira", texto: "Carteira" },
   { para: "/cliente/cofre-de-creditos", texto: "Cofre" },
+  { para: "/cliente/saldao", texto: "Saldão" },
   { para: "/mapa", texto: "Mapa" },
   { para: "/favoritos", texto: "Favoritos" },
 ] as const;

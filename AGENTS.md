@@ -11,3 +11,4 @@
 
 - Approval fields (motoristas.status, veiculos.status/aprovador) are protected by DB triggers that only accept changes from admin/gerente roles in user_roles; why: client-side approval cannot be trusted.
 - Créditos de plano só são liberados no servidor após pagamento aprovado pelo provedor; quilômetros acumulados nunca expiram e renovações somam ao saldo.
+- Saldão bonus credits come only from conceder_compra_saldao after the server marks the purchase 'aprovado'; reservations expire lazily (vitrine derives availability) plus the hourly cron backstop; why: clients cannot self-approve and no sub-hourly polling.

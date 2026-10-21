@@ -63,6 +63,7 @@ import { Save } from "lucide-react";
 import { CampoMoeda } from "@/components/campo-moeda";
 import { AdminAcessosModulos } from "@/components/admin-acessos-modulos";
 import { AdminCarteiraCreditos } from "@/components/admin-carteira-creditos";
+import { AdminSaldao } from "@/components/admin-saldao";
 
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
@@ -557,6 +558,7 @@ function Admin() {
           <TabsTrigger value="publicidades">Publicidades</TabsTrigger>
           <TabsTrigger value="casas-apoio">Casas de Apoio</TabsTrigger>
           <TabsTrigger value="creditos">Créditos vencidos</TabsTrigger>
+          <TabsTrigger value="saldao">Saldão</TabsTrigger>
         </TabsList>
 
 
@@ -1325,6 +1327,10 @@ function Admin() {
 
         <TabsContent value="creditos" className="mt-6">
           <AdminCarteiraCreditos />
+        </TabsContent>
+
+        <TabsContent value="saldao" className="mt-6">
+          <AdminSaldao />
         </TabsContent>
 
         <TabsContent value="publicidades" className="mt-6">
