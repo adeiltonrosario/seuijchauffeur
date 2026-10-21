@@ -199,6 +199,66 @@ export type Database = {
         }
         Relationships: []
       }
+      compras_saldao: {
+        Row: {
+          atualizado_em: string
+          cliente_email: string
+          criado_em: string
+          id: string
+          lote_id: string | null
+          oferta_id: string
+          provedor: string
+          provedor_pagamento_id: string | null
+          quantidade: number
+          reserva_expira_em: string
+          status: string
+          valor: number
+        }
+        Insert: {
+          atualizado_em?: string
+          cliente_email: string
+          criado_em?: string
+          id?: string
+          lote_id?: string | null
+          oferta_id: string
+          provedor?: string
+          provedor_pagamento_id?: string | null
+          quantidade: number
+          reserva_expira_em: string
+          status?: string
+          valor: number
+        }
+        Update: {
+          atualizado_em?: string
+          cliente_email?: string
+          criado_em?: string
+          id?: string
+          lote_id?: string | null
+          oferta_id?: string
+          provedor?: string
+          provedor_pagamento_id?: string | null
+          quantidade?: number
+          reserva_expira_em?: string
+          status?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compras_saldao_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "credito_lotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compras_saldao_oferta_id_fkey"
+            columns: ["oferta_id"]
+            isOneToOne: false
+            referencedRelation: "ofertas_saldao"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       corridas: {
         Row: {
           atualizado_em: string
@@ -473,6 +533,45 @@ export type Database = {
           valor?: number
           valor_ajudante?: number
           veiculo?: string
+        }
+        Relationships: []
+      }
+      ofertas_saldao: {
+        Row: {
+          criado_em: string
+          criado_por: string | null
+          disponivel: number
+          id: string
+          preco_unitario: number
+          quantidade_total: number
+          status: string
+          termina_em: string | null
+          titulo: string
+          validade_dias: number
+        }
+        Insert: {
+          criado_em?: string
+          criado_por?: string | null
+          disponivel: number
+          id?: string
+          preco_unitario: number
+          quantidade_total: number
+          status?: string
+          termina_em?: string | null
+          titulo: string
+          validade_dias?: number
+        }
+        Update: {
+          criado_em?: string
+          criado_por?: string | null
+          disponivel?: number
+          id?: string
+          preco_unitario?: number
+          quantidade_total?: number
+          status?: string
+          termina_em?: string | null
+          titulo?: string
+          validade_dias?: number
         }
         Relationships: []
       }
@@ -819,7 +918,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      _devolver_reserva_saldao: {
+        Args: { _compra: string; _novo_status: string }
+        Returns: undefined
+      }
+      _encerrar_oferta_saldao: {
+        Args: { _oferta: string; _responsavel: string }
+        Returns: undefined
+      }
       acesso_casa_apoio: { Args: { _email: string }; Returns: Json }
+      cancelar_compra_saldao: { Args: { _compra: string }; Returns: Json }
+      conceder_compra_saldao: { Args: { _compra: string }; Returns: string }
       conceder_franquia_pedido: {
         Args: { _ciclo: number; _pedido: string }
         Returns: string
@@ -827,6 +936,16 @@ export type Database = {
       conceder_lote_plano: { Args: { _pedido: string }; Returns: string }
       consumir_creditos: {
         Args: { _quantidade: number; _ref: string }
+        Returns: Json
+      }
+      criar_oferta_saldao: {
+        Args: {
+          _preco_unitario: number
+          _quantidade: number
+          _termina_em: string
+          _titulo: string
+          _validade_dias: number
+        }
         Returns: Json
       }
       criar_pedido_assinatura: {
@@ -854,6 +973,7 @@ export type Database = {
         Returns: string
       }
       email_logado: { Args: never; Returns: string }
+      encerrar_oferta_saldao: { Args: { _oferta: string }; Returns: Json }
       expirar_creditos: { Args: { _email?: string }; Returns: number }
       has_role: {
         Args: {
@@ -863,14 +983,21 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: never; Returns: boolean }
+      liberar_reservas_saldao: { Args: never; Returns: number }
       meu_codigo_indicacao: {
         Args: { _email: string; _nome: string }
         Returns: Json
       }
       meus_creditos: { Args: { _email: string }; Returns: Json }
+      minhas_compras_saldao: { Args: never; Returns: Json }
       modulos_liberados: { Args: { _email: string }; Returns: string[] }
       painel_carteira_admin: { Args: never; Returns: Json }
+      painel_saldao_admin: { Args: never; Returns: Json }
       reivindicar_primeiro_admin: { Args: never; Returns: boolean }
+      reservar_compra_saldao: {
+        Args: { _oferta: string; _quantidade: number }
+        Returns: Json
+      }
       reservar_km_corrida: {
         Args: { _agendamento: string; _email: string; _km: number }
         Returns: Json
@@ -903,6 +1030,7 @@ export type Database = {
         Args: { _base: string; _periodicidade: string }
         Returns: string
       }
+      vitrine_saldao: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "gerente"
