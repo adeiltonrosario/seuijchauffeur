@@ -3,6 +3,8 @@ import { useState } from "react";
 import qrWhatsapp from "@/assets/qr-whatsapp.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Hospital } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -58,6 +60,11 @@ const PILARES = [
 ];
 
 const MODALIDADES_VITRINE = [
+  {
+    icone: Hospital,
+    nome: "Translado Casas de Apoio",
+    resumo: "Transporte de pacientes e acompanhantes entre a Casa de Apoio e os hospitais.",
+  },
   {
     icone: Plane,
     nome: "Executivo aeroporto",
@@ -334,17 +341,31 @@ function Autenticacao() {
           antes da corrida.
         </p>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {MODALIDADES_VITRINE.map((m) => (
-            <Card key={m.nome} className="border-border/60 p-6">
-              <div className="flex size-10 items-center justify-center rounded-full border border-primary/40 bg-primary/10">
-                <m.icone className="size-5 text-primary" />
-              </div>
-              <h3 className="mt-4 text-base font-semibold">{m.nome}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{m.resumo}</p>
-            </Card>
-          ))}
-        </div>
+        <Carousel className="mt-8" opts={{ align: "start" }}>
+          <CarouselContent>
+            {Array.from({ length: Math.ceil(MODALIDADES_VITRINE.length / 6) }, (_, p) =>
+              MODALIDADES_VITRINE.slice(p * 6, p * 6 + 6),
+            ).map((pagina, p) => (
+              <CarouselItem key={p}>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {pagina.map((m) => (
+                    <Card key={m.nome} className="border-border/60 p-6">
+                      <div className="flex size-10 items-center justify-center rounded-full border border-primary/40 bg-primary/10">
+                        <m.icone className="size-5 text-primary" />
+                      </div>
+                      <h3 className="mt-4 text-base font-semibold">{m.nome}</h3>
+                      <p className="mt-2 text-sm text-muted-foreground">{m.resumo}</p>
+                    </Card>
+                  ))}
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <div className="mt-4 flex justify-end gap-2">
+            <CarouselPrevious className="static translate-y-0" />
+            <CarouselNext className="static translate-y-0" />
+          </div>
+        </Carousel>
       </section>
 
       {/* Planos sem preços */}
