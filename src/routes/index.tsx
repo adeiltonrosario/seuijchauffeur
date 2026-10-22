@@ -53,10 +53,10 @@ import {
 const WHATSAPP = "https://wa.me/5571996805321";
 
 const PILARES = [
-  { icone: Armchair, titulo: "Veículos confortáveis", texto: "Climatizados e higienizados a cada corrida." },
+  { icone: Armchair, titulo: "Veículos confortáveis", texto: "Climatizados e higienizados " },
   { icone: ShieldCheck, titulo: "Segurança e confiança", texto: "Motoristas cadastrados e veículo sempre vinculado." },
   { icone: Clock, titulo: "Pontualidade", texto: "Chegada no horário combinado." },
-  { icone: UserRoundCheck, titulo: "Atendimento executivo", texto: "Discrição, traje social e tratamento personalizado." },
+  { icone: UserRoundCheck, titulo: "Atendimento executivo", texto: "Discrição tratamento personalizado." },
 ];
 
 const MODALIDADES_VITRINE = [
@@ -72,18 +72,18 @@ const MODALIDADES_VITRINE = [
   },
   {
     icone: BriefcaseBusiness,
-    nome: "Viagem corporativa",
-    resumo: "Traje social, silêncio a bordo por padrão e registro de centro de custo.",
+    nome: "Translado corporativo",
+    resumo: "  Ideal para trajetos entre reuniões e almoços de négocios",
   },
   {
     icone: Stethoscope,
     nome: "Rota de plantonista",
-    resumo: "Vários trechos no mesmo dia, escalas 12x36 e 24x72, com motorista de backup.",
+    resumo: "Vários trechos no mesmo dia e escalas  de plantões com motorista de backup. Ideal para profissionais  de hospitais.",
   },
   {
     icone: HeartHandshake,
     nome: "Corrida assistida",
-    resumo: "Apoio no embarque e acompanhamento até a recepção do destino.",
+    resumo: " Rotas com destinos e trajetos semelhantes, com preço reduzidos. e compartilhados. Ideal para pessoas proximas da mesma rota.",
   },
   {
     icone: Camera,
