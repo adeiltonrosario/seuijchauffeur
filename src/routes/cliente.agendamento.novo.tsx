@@ -794,9 +794,7 @@ function NovoAgendamento() {
                 </div>
 
                 <p className="mt-4 text-xs text-muted-foreground">
-                  {saldoCreditos > 0
-                    ? `Você tem ${saldoCreditos} crédito(s) disponível(is) — esta corrida pode ser paga com 1 crédito.`
-                    : "Sem plano ativo: siga com a corrida avulsa e pague por Pix ou cartão na próxima etapa."}
+                  Você terá{"\u00a0"} créditos disponíveis para utilizar em suas corridas{"\u00a0"} e serão debitadas dos planos automaticamente.
                 </p>
               </Card>
 
