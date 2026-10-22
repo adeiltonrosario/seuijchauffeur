@@ -675,10 +675,9 @@ function NovoAgendamento() {
                     >
                       {ehModalidadeDeCarga(m) ? "🚚 " : ""}
                       {ehModalidadePorTurno(m) ? "🛒 " : ""}
-                      {m.nome} ·{" "}
-                      {ehModalidadePorTurno(m)
-                        ? `${formatarBRL(m.valorTurno ?? m.precoAvulso)}/turno`
-                        : `${formatarBRL(Math.max(m.valorPorKm, VALOR_MINIMO_POR_KM))}/km`}
+                      {m.nome}
+                      {["Executivo aeroporto", "Corrida assistida", "Carreto e pequenas mudanças"].includes(m.nome) ? " ·" : ""}
+                      {"\u00a0"}
                     </button>
                   ))}
                 </div>
