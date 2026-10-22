@@ -397,7 +397,7 @@ export const modalidades: Modalidade[] = [
       "Embarque: alinhar com o cliente a ordem dos pontos de visita e o tempo de parada em cada um. Desembarque: em cada parada o motorista informa o horário de retorno ao veículo e aguarda no ponto combinado. Roteiro pode ser ajustado durante o trajeto.",
   },
   {
-    nome: "Escolar recorrente",
+    nome: "Escolar ",
     valorPorKm: 1.85,
     precoAvulso: 80,
     caracteristicas:
