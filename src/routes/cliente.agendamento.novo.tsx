@@ -787,7 +787,7 @@ function NovoAgendamento() {
                         className="mt-4 w-full"
                         onClick={() => assinarPlano(plano)}
                       >
-                        Assinar e usar crédito
+                        Assinar{"\u00a0"}
                       </Button>
                     </div>
                   ))}
