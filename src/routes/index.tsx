@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Armchair,
   BriefcaseBusiness,
@@ -169,6 +170,20 @@ function Autenticacao() {
   };
 
   const [salvando, setSalvando] = useState(false);
+  const [senhaConta, setSenhaConta] = useState("");
+  const esqueciSenha = async () => {
+    const email = emailConta.trim().toLowerCase();
+    if (!email.includes("@")) {
+      toast.error("Digite seu e-mail acima para receber o link de redefinição.");
+      document.getElementById("email")?.focus();
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) return void toast.error("Não foi possível enviar o link. Tente novamente.");
+    toast.success("Enviamos o link de redefinição para o seu e-mail.");
+  };
   const entrar = async () => {
     if (salvando) return;
     if (criandoConta) {
@@ -220,6 +235,24 @@ function Autenticacao() {
       toast.success("Cadastro enviado! Seu acesso fica pendente até a aprovação do Administrador ou Gerente corporativo.");
       setCriandoConta(false);
       return;
+    }
+    if (!criandoConta && senhaConta) {
+      setSalvando(true);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailConta.trim().toLowerCase(),
+        password: senhaConta,
+      });
+      if (error || !data.user) {
+        setSalvando(false);
+        toast.error("E-mail ou senha incorretos.");
+        return;
+      }
+      const { data: papeis } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id);
+      setSalvando(false);
+      if (papeis?.some((p) => p.role === "admin" || p.role === "gerente")) {
+        navigate({ to: "/admin" });
+        return;
+      }
     }
     if (perfil === "cliente" && nomeConta.trim()) {
       localStorage.setItem("seuchauffeur:cliente-nome", nomeConta.trim());
@@ -466,8 +499,25 @@ function Autenticacao() {
               ) : null}
 
               <div className="space-y-2">
-                <Label htmlFor="senha">Senha</Label>
-                <Input id="senha" type="password" placeholder="••••••••" />
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="senha">Senha</Label>
+                  {!criandoConta ? (
+                    <button
+                      type="button"
+                      onClick={esqueciSenha}
+                      className="text-xs text-gold underline-offset-4 hover:underline"
+                    >
+                      Esqueci minha senha
+                    </button>
+                  ) : null}
+                </div>
+                <Input
+                  id="senha"
+                  type="password"
+                  placeholder="••••••••"
+                  value={senhaConta}
+                  onChange={(e) => setSenhaConta(e.target.value)}
+                />
               </div>
               {criandoConta && perfil === "motorista" ? (
                 <div className="rounded-lg border border-border/60 bg-secondary/30 p-4">
