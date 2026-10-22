@@ -93,18 +93,18 @@ const MODALIDADES_VITRINE = [
   {
     icone: Truck,
     nome: "Carreto e pequenas mudanças",
-    resumo: "Veículos de carga, proteção dos móveis e ajudantes opcionais.",
+    resumo: "Veículos de carga, transporte dos móveis e ajudantes opcionais.",
   },
   {
     icone: GraduationCap,
-    nome: "Escolar recorrente",
+    nome: "Escolar ",
     resumo: "Rota fixa nos dias úteis e entrega apenas ao responsável cadastrado.",
   },
   {
     icone: ShoppingBasket,
     nome: "Compras & Supermercado",
     resumo:
-      "Turno de manhã, tarde ou noite: acompanhamento dentro da loja e apoio com as sacolas até a sua porta.",
+      "Turno de manhã, tarde ou noite e apoio com as sacolas até a sua porta.",
   },
 ];
 
