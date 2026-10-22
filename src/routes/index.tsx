@@ -55,7 +55,7 @@ const WHATSAPP = "https://wa.me/5571996805321";
 const PILARES = [
   { icone: Armchair, titulo: "Veículos confortáveis", texto: "Climatizados e higienizados a cada corrida." },
   { icone: ShieldCheck, titulo: "Segurança e confiança", texto: "Motoristas cadastrados e veículo sempre vinculado." },
-  { icone: Clock, titulo: "Pontualidade", texto: "Chegada 10 minutos antes do horário combinado." },
+  { icone: Clock, titulo: "Pontualidade", texto: "Chegada no horário combinado." },
   { icone: UserRoundCheck, titulo: "Atendimento executivo", texto: "Discrição, traje social e tratamento personalizado." },
 ];
 
