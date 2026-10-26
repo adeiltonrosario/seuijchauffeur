@@ -16,6 +16,7 @@ import {
 import { clienteAtual, descontoTitular, meuCodigo, validarCodigo } from "@/lib/indicacao";
 import { valorComIndicacao } from "@/lib/indicacao-preco";
 import { supabase } from "@/integrations/supabase/client";
+import { gerarPixMercadoPago, verificarPixMercadoPago } from "@/lib/mercadopago.functions";
 
 type Busca = { p: Periodicidade; v: number; preco: number; mod?: string | undefined };
 
@@ -76,26 +77,44 @@ function Assinatura() {
   };
 
   const [pedidoId, setPedidoId] = useState<string | null>(null);
+  const [pix, setPix] = useState<{ pagamentoId: string; copiaECola: string; qrBase64: string } | null>(null);
+  const [gerando, setGerando] = useState(false);
 
   const irParaPix = async () => {
     if (!email.includes("@")) { toast.error("Informe seu e-mail de cadastro."); return; }
+    setGerando(true);
     const { data, error } = await supabase.rpc("criar_pedido_assinatura", {
       _email: email, _modalidade: mod ?? "", _periodicidade: p,
       _franquia_km: Math.max(1, plano.viagensPorMes * 18), _ciclos: plano.creditosTotais / Math.max(1, plano.viagensPorMes),
       _valor: valores.total, _codigo: codigoOk ? codigo : "",
     });
-    if (error) { toast.error("Não foi possível registrar o pedido."); return; }
+    if (error) { setGerando(false); toast.error("Não foi possível registrar o pedido."); return; }
     setPedidoId(data as string);
-    setEtapa("pix");
+    try {
+      setPix(await gerarPixMercadoPago({ data: { tipo: "assinatura", id: data as string } }));
+      setEtapa("pix");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não foi possível gerar o Pix.");
+    } finally { setGerando(false); }
   };
 
-  // "Já paguei" apenas consulta o status: a liberação só ocorre no servidor após aprovação do Mercado Pago.
+  // Só consulta: a liberação ocorre no servidor após o Mercado Pago aprovar.
   const confirmarPagamento = async () => {
     if (!pedidoId) return;
+    if (pix) await verificarPixMercadoPago({ data: { pagamentoId: pix.pagamentoId } }).catch(() => null);
     const { data } = await supabase.rpc("status_pedido_assinatura", { _id: pedidoId, _email: email });
     if (data === "aprovado") { setEtapa("pago"); toast.success("Pagamento aprovado."); return; }
-    toast.info("Pagamento ainda não confirmado pelo banco. Os quilômetros serão liberados automaticamente após a aprovação.");
+    toast.info("Pagamento ainda não confirmado pelo banco. Os créditos serão liberados automaticamente após a aprovação.");
   };
+
+  useEffect(() => {
+    if (etapa !== "pix" || !pedidoId) return;
+    const t = setInterval(async () => {
+      const { data } = await supabase.rpc("status_pedido_assinatura", { _id: pedidoId, _email: email });
+      if (data === "aprovado") { setEtapa("pago"); toast.success("Pagamento aprovado."); }
+    }, 8000);
+    return () => clearInterval(t);
+  }, [etapa, pedidoId, email]);
 
   return (
     <AppShell titulo={`Plano ${plano.rotulo}`} descricao="Os créditos só são liberados depois do pagamento confirmado.">
@@ -124,16 +143,22 @@ function Assinatura() {
                   <Button variant="secondary" disabled={!codigo} onClick={aplicar}>Aplicar</Button>
                 </div>
               </div>
-              <Button className="w-full" onClick={() => setEtapa("pix")}>
-                <QrCode /> Pagar {formatarBRL(valores.total)} com Pix
+              <Button className="w-full" disabled={gerando} onClick={irParaPix}>
+                <QrCode /> {gerando ? "Gerando Pix..." : `Pagar ${formatarBRL(valores.total)} com Pix`}
               </Button>
             </>
           )}
           {etapa === "pix" && (
             <div className="space-y-4 text-sm">
-              <p>Pague <strong className="text-gold">{formatarBRL(valores.total)}</strong> com Pix para a chave pix@seuchauffeur.com.br.</p>
+              <p>Pague <strong className="text-gold">{formatarBRL(valores.total)}</strong> lendo o QR Code no app do seu banco.</p>
+              {pix?.qrBase64 && <img src={`data:image/png;base64,${pix.qrBase64}`} alt="QR Code Pix" className="mx-auto size-56 rounded-md bg-card p-2" />}
+              {pix?.copiaECola && (
+                <Button variant="secondary" className="w-full" onClick={() => { void navigator.clipboard.writeText(pix.copiaECola); toast.success("Código Pix copiado."); }}>
+                  Copiar código Pix (copia e cola)
+                </Button>
+              )}
               <p className="text-muted-foreground">
-                Pagamento de demonstração: a confirmação automática pelo banco entra quando a conta Mercado Pago for conectada.
+                Assim que o Mercado Pago confirmar, seus créditos são liberados automaticamente nesta tela.
               </p>
               <div className="flex gap-2">
                 <Button variant="secondary" onClick={() => setEtapa("revisar")}>Voltar</Button>
