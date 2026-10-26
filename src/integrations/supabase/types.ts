@@ -733,6 +733,54 @@ export type Database = {
         }
         Relationships: []
       }
+      propostas_plano: {
+        Row: {
+          ciclos: number
+          cliente_email: string
+          criado_em: string
+          criado_por: string | null
+          franquia_km: number
+          id: string
+          modalidade: string
+          observacao: string | null
+          pedido_id: string | null
+          periodicidade: string
+          status: string
+          valor: number
+          viagens_mes: number
+        }
+        Insert: {
+          ciclos?: number
+          cliente_email: string
+          criado_em?: string
+          criado_por?: string | null
+          franquia_km: number
+          id?: string
+          modalidade?: string
+          observacao?: string | null
+          pedido_id?: string | null
+          periodicidade: string
+          status?: string
+          valor: number
+          viagens_mes?: number
+        }
+        Update: {
+          ciclos?: number
+          cliente_email?: string
+          criado_em?: string
+          criado_por?: string | null
+          franquia_km?: number
+          id?: string
+          modalidade?: string
+          observacao?: string | null
+          pedido_id?: string | null
+          periodicidade?: string
+          status?: string
+          valor?: number
+          viagens_mes?: number
+        }
+        Relationships: []
+      }
       solicitantes_casa_apoio: {
         Row: {
           aprovador: string | null
@@ -991,6 +1039,7 @@ export type Database = {
       meus_creditos: { Args: { _email: string }; Returns: Json }
       minhas_compras_saldao: { Args: never; Returns: Json }
       modulos_liberados: { Args: { _email: string }; Returns: string[] }
+      pagar_proposta: { Args: { _proposta: string }; Returns: string }
       painel_carteira_admin: { Args: never; Returns: Json }
       painel_saldao_admin: { Args: never; Returns: Json }
       reivindicar_primeiro_admin: { Args: never; Returns: boolean }
