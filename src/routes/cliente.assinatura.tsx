@@ -143,16 +143,22 @@ function Assinatura() {
                   <Button variant="secondary" disabled={!codigo} onClick={aplicar}>Aplicar</Button>
                 </div>
               </div>
-              <Button className="w-full" onClick={() => setEtapa("pix")}>
-                <QrCode /> Pagar {formatarBRL(valores.total)} com Pix
+              <Button className="w-full" disabled={gerando} onClick={irParaPix}>
+                <QrCode /> {gerando ? "Gerando Pix..." : `Pagar ${formatarBRL(valores.total)} com Pix`}
               </Button>
             </>
           )}
           {etapa === "pix" && (
             <div className="space-y-4 text-sm">
-              <p>Pague <strong className="text-gold">{formatarBRL(valores.total)}</strong> com Pix para a chave pix@seuchauffeur.com.br.</p>
+              <p>Pague <strong className="text-gold">{formatarBRL(valores.total)}</strong> lendo o QR Code no app do seu banco.</p>
+              {pix?.qrBase64 && <img src={`data:image/png;base64,${pix.qrBase64}`} alt="QR Code Pix" className="mx-auto size-56 rounded-md bg-card p-2" />}
+              {pix?.copiaECola && (
+                <Button variant="secondary" className="w-full" onClick={() => { void navigator.clipboard.writeText(pix.copiaECola); toast.success("Código Pix copiado."); }}>
+                  Copiar código Pix (copia e cola)
+                </Button>
+              )}
               <p className="text-muted-foreground">
-                Pagamento de demonstração: a confirmação automática pelo banco entra quando a conta Mercado Pago for conectada.
+                Assim que o Mercado Pago confirmar, seus créditos são liberados automaticamente nesta tela.
               </p>
               <div className="flex gap-2">
                 <Button variant="secondary" onClick={() => setEtapa("revisar")}>Voltar</Button>
