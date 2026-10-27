@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { ConsultorViagemIA } from "@/components/consultor-viagem-ia";
 import { BannerPublicidade } from "@/components/banner-publicidade";
 import { ClubeIndicacoes } from "@/components/clube-indicacoes";
+import { PropostasCliente } from "@/components/propostas-cliente";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { agendamentos, formatarBRL, motoristas } from "@/lib/dados";
@@ -70,6 +71,7 @@ function InicioCliente() {
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <section className="space-y-6">
+          <PropostasCliente />
           <ConsultorViagemIA />
           <BannerPublicidade publico="clientes" />
           <ClubeIndicacoes />
@@ -141,11 +143,8 @@ function InicioCliente() {
             ) : (
               <div className="mt-4">
                 <p className="text-xs text-muted-foreground">
-                  Você ainda não tem um plano ativo. Assine e ganhe até 30% de desconto.
+                  Você ainda não tem um plano ativo. Fale com a nossa equipe para receber uma proposta personalizada.
                 </p>
-                <Button variant="secondary" size="sm" className="mt-3" asChild>
-                  <Link to="/">Ver planos</Link>
-                </Button>
               </div>
             )}
           </Card>

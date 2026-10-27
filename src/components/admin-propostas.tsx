@@ -79,7 +79,7 @@ export function AdminPropostas() {
           <div className="space-y-2"><Label>Viagens/mês</Label><Input type="number" min={0} value={viagens} onChange={(e) => setViagens(Number(e.target.value))} /></div>
           <div className="space-y-2"><Label>Franquia (km)</Label><Input type="number" min={1} value={km} onChange={(e) => setKm(Number(e.target.value))} /></div>
         </div>
-        <div className="space-y-2"><Label>Valor total</Label><CampoMoeda valor={valor} onChange={setValor} /></div>
+        <div className="space-y-2"><Label>Valor total</Label><CampoMoeda valor={valor} aoMudar={setValor} /></div>
         <div className="space-y-2"><Label>Observação (opcional)</Label><Input value={obs} onChange={(e) => setObs(e.target.value)} /></div>
         <Button className="w-full" disabled={enviando} onClick={enviar}><Send /> Enviar proposta ao cliente</Button>
       </Card>
