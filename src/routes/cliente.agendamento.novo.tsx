@@ -726,6 +726,7 @@ function NovoAgendamento() {
                 ) : null}
               </Card>
 
+              {false && (
               <Card className="border-border/60 p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
@@ -797,6 +798,7 @@ function NovoAgendamento() {
                   Você terá{"\u00a0"} créditos disponíveis para utilizar em suas corridas{"\u00a0"} e serão debitadas dos planos automaticamente.
                 </p>
               </Card>
+              )}
 
               <Card className="border-border/60 p-6">
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">

@@ -368,6 +368,7 @@ function Autenticacao() {
         </Carousel>
       </section>
 
+      {false && (<>
       {/* Planos sem preços */}
       <section className="border-y border-border/60 bg-secondary/20">
         <div className="mx-auto max-w-6xl px-4 py-16">
@@ -441,6 +442,7 @@ function Autenticacao() {
           </div>
         </div>
       </section>
+      </>)}
 
       {/* Acesso */}
       <section id="acesso" className="mx-auto max-w-6xl px-4 py-16">
