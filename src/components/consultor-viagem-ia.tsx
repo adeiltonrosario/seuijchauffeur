@@ -187,7 +187,7 @@ export function ConsultorViagemIA() {
       </div>
 
       <div className="mt-4 space-y-2">
-        <Label>Com que frequência você viaja?</Label>
+        <Label>Com que frequência você utiliza esse roteiro?</Label>
         <div className="flex flex-wrap gap-2">
           {FREQUENCIAS.map((f) => (
             <Button
