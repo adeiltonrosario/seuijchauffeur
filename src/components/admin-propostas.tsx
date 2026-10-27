@@ -37,8 +37,8 @@ export function AdminPropostas() {
   useEffect(() => { void carregar(); }, []);
 
   const enviar = async () => {
-    if (!email.includes("@")) return toast.error("Informe o e-mail do cliente.");
-    if (km <= 0 || valor <= 0) return toast.error("Informe km e valor maiores que zero.");
+    if (!email.includes("@")) { toast.error("Informe o e-mail do cliente."); return; }
+    if (km <= 0 || valor <= 0) { toast.error("Informe km e valor maiores que zero."); return; }
     setEnviando(true);
     const { data: u } = await supabase.auth.getUser();
     const { error } = await supabase.from("propostas_plano").insert({
@@ -47,14 +47,14 @@ export function AdminPropostas() {
       criado_por: u.user?.email ?? null,
     });
     setEnviando(false);
-    if (error) return toast.error("Não foi possível enviar: " + error.message);
+    if (error) { toast.error("Não foi possível enviar: " + error.message); return; }
     toast.success("Proposta enviada ao cliente.");
     setEmail(""); setObs(""); void carregar();
   };
 
   const cancelar = async (id: string) => {
     const { error } = await supabase.from("propostas_plano").update({ status: "cancelada" }).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     void carregar();
   };
 
