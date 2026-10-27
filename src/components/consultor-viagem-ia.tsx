@@ -216,7 +216,7 @@ export function ConsultorViagemIA() {
 
       <Button className="mt-5 w-full" onClick={pedirRecomendacao} disabled={carregando}>
         {carregando ? <Loader2 className="animate-spin" /> : <Wand2 />}
-        {carregando ? "Analisando sua rotina..." : "Recomendar modalidade e plano"}
+        {carregando ? "Analisando sua rotina..." : "Solicitar uma proposta para minha rotina"}
       </Button>
 
       {resultado ? (
