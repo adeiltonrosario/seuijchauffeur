@@ -461,7 +461,7 @@ function NovoAgendamento() {
     setEtapa(2);
   };
 
-  const confirmar = () => {
+  const confirmar = async () => {
     if (!embarque.trim() || !desembarque.trim()) {
       toast.error("Informe o endereço de embarque e de desembarque.");
       return;
@@ -474,8 +474,36 @@ function NovoAgendamento() {
       toast.error("Liste os itens que serão transportados no carreto.");
       return;
     }
-    toast.success(`Agendamento enviado a ${escolhido.nome}. Total ${formatarBRL(total)}.`);
-    navigate({ to: "/cliente/pagamento" });
+    const { data: s } = await supabase.auth.getSession();
+    const email = s.session?.user.email;
+    if (!email) {
+      toast.error("Entre na sua conta de cliente para enviar o agendamento.");
+      return;
+    }
+    const nome = localStorage.getItem("seuchauffeur:cliente-nome") || email;
+    const id = await criarCorrida({
+      cliente: nome,
+      clienteEmail: email,
+      motorista: "",
+      embarque,
+      desembarque,
+      ida: `${dataIda!.toLocaleDateString("pt-BR")} ${horaIda}`,
+      ...(dataRetorno && tipo === "Ida e retorno"
+        ? { retorno: `${dataRetorno.toLocaleDateString("pt-BR")} ${horaRetorno}` }
+        : {}),
+      modalidade: modalidade.nome,
+      pagamento,
+      valor: total,
+      veiculo: "",
+      categoria: categoriasAceitas[0]!,
+      capacidade: capacidadeDaCategoria(categoriasAceitas[0]!) as number,
+    }, "aguardando_motorista");
+    if (!id) {
+      toast.error("Não foi possível salvar o agendamento. Tente novamente.");
+      return;
+    }
+    toast.success(`Agendamento criado. Total ${formatarBRL(total)}. Aguarde os motoristas interessados.`);
+    navigate({ to: "/cliente/corrida/$id", params: { id } });
   };
 
   return (
