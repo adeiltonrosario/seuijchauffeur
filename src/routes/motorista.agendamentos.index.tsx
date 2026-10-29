@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { agendamentos, formatarBRL } from "@/lib/dados";
+import { OportunidadesMotorista } from "@/components/agendamentos-abertos";
 import { MOTORISTA_ATUAL } from "@/lib/disponibilidade";
 import {
   BACKUP_LIMITE_MIN,
@@ -66,6 +67,8 @@ function AgendamentosMotorista() {
         <Label htmlFor="filtro-data">Filtrar por data</Label>
         <Input id="filtro-data" type="date" value={data} onChange={(e) => setData(e.target.value)} />
       </div>
+
+      <OportunidadesMotorista />
 
       {plantoes.length > 0 ? (
         <div className="mb-6 space-y-3">

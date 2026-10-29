@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { MeusAgendamentosCliente } from "@/components/agendamentos-abertos";
 import { useEffect, useState } from "react";
 import { CalendarPlus, ChevronRight, Star, Stethoscope, Ticket, UserRound } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
@@ -71,6 +72,7 @@ function InicioCliente() {
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <section className="space-y-6">
+          <MeusAgendamentosCliente />
           <PropostasCliente />
           <ConsultorViagemIA />
           <BannerPublicidade publico="clientes" />
