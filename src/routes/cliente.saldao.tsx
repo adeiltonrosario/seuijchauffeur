@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { formatarBRL } from "@/lib/dados";
 import { descontoPercentual, erroQuantidade, MINUTOS_RESERVA, minutosRestantes, rotuloStatusCompra, valorCompra } from "@/lib/saldao";
+import { gerarPixMercadoPago, verificarPixMercadoPago } from "@/lib/mercadopago.functions";
 
 export const Route = createFileRoute("/cliente/saldao")({
   head: () => ({
@@ -103,6 +104,24 @@ function Saldao() {
     void carregar();
   }
 
+  const [gerando, setGerando] = useState<string | null>(null);
+  const [pix, setPix] = useState<{ pagamentoId: string; copiaECola: string; qrBase64: string } | null>(null);
+
+  async function pagar(id: string) {
+    setGerando(id);
+    try { setPix(await gerarPixMercadoPago({ data: { tipo: "saldao", id } })); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Não foi possível gerar o Pix."); }
+    finally { setGerando(null); }
+  }
+
+  async function conferir() {
+    if (!pix) return;
+    const r = await verificarPixMercadoPago({ data: { pagamentoId: pix.pagamentoId } }).catch(() => null);
+    if (r?.resultado === "ok") { toast.success("Pagamento aprovado! Créditos liberados."); setPix(null); }
+    else toast.info("Pagamento ainda não confirmado. Os créditos entram automaticamente após a aprovação.");
+    void carregar();
+  }
+
   return (
     <AppShell titulo="Saldão de créditos" descricao="Créditos bônus com preço promocional, enquanto durar a oferta.">
       <div className="space-y-6">
@@ -140,12 +159,28 @@ function Saldao() {
                         {c.status === "aguardando_pagamento" && ` · vence em ${minutosRestantes(c.reserva_expira_em)} min`}
                       </p>
                     </div>
-                    {c.status === "aguardando_pagamento" && <Button size="sm" variant="outline" onClick={() => cancelar(c.id)}>Cancelar</Button>}
+                    {c.status === "aguardando_pagamento" && (
+                      <div className="flex gap-2">
+                        <Button size="sm" disabled={gerando === c.id} onClick={() => pagar(c.id)}>{gerando === c.id ? "Gerando..." : "Pagar com Pix"}</Button>
+                        <Button size="sm" variant="outline" onClick={() => cancelar(c.id)}>Cancelar</Button>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
             )}
-            <p className="mt-3 text-xs text-muted-foreground">O pagamento online ainda está sendo ligado. Até lá, as reservas ficam aguardando pagamento.</p>
+            {pix && (
+              <div className="mt-4 space-y-3 rounded-lg border border-primary/40 p-4 text-sm">
+                <p className="font-semibold text-gold">Pague com Pix</p>
+                {pix.qrBase64 && <img src={`data:image/png;base64,${pix.qrBase64}`} alt="QR Code Pix" className="size-48 rounded bg-foreground p-2" />}
+                <Input readOnly value={pix.copiaECola} onFocus={(e) => e.target.select()} />
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => { void navigator.clipboard.writeText(pix.copiaECola); toast.success("Código copiado."); }}>Copiar código</Button>
+                  <Button size="sm" onClick={conferir}>Já paguei</Button>
+                </div>
+                <p className="text-xs text-muted-foreground">Os créditos entram na carteira assim que o Mercado Pago confirmar o pagamento.</p>
+              </div>
+            )}
           </Card>
         )}
       </div>

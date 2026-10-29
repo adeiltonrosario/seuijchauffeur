@@ -21,7 +21,7 @@ export async function criarPix(tipo: TipoPedido, id: string, origem: string) {
   const { data: p } = await supabaseAdmin.from(tabela).select("id, cliente_email, valor, status").eq("id", id).maybeSingle();
   if (!p) throw new Error("Pedido não encontrado");
   if (tipo === "assinatura" && p.status !== "pendente") throw new Error("Pedido não está pendente");
-  if (tipo === "saldao" && p.status !== "reservado") throw new Error("Reserva não está ativa");
+  if (tipo === "saldao" && p.status !== "aguardando_pagamento") throw new Error("Reserva não está ativa");
 
   const host = new URL(origem).host;
   const webhook = host.startsWith("localhost") ? undefined : `https://${host}/api/public/mercadopago-webhook`;
@@ -69,7 +69,7 @@ export async function processarPagamento(pagamentoId: string) {
     await supabaseAdmin.rpc("conceder_lote_plano", { _pedido: id });
     await supabaseAdmin.rpc("conceder_franquia_pedido", { _pedido: id, _ciclo: 1 });
   } else {
-    if (p.status === "reservado") {
+    if (p.status === "aguardando_pagamento") {
       await supabaseAdmin.from("compras_saldao").update({ status: "aprovado", provedor_pagamento_id: String(pg.id), atualizado_em: new Date().toISOString() }).eq("id", id);
     }
     await supabaseAdmin.rpc("conceder_compra_saldao", { _compra: id });
