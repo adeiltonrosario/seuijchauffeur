@@ -17,6 +17,8 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { criarCorrida } from "@/lib/corridas";
 import { AppShell } from "@/components/app-shell";
 import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
 import { calcularRota } from "@/components/finalizar-rota";
@@ -461,7 +463,7 @@ function NovoAgendamento() {
     setEtapa(2);
   };
 
-  const confirmar = () => {
+  const confirmar = async () => {
     if (!embarque.trim() || !desembarque.trim()) {
       toast.error("Informe o endereço de embarque e de desembarque.");
       return;
@@ -474,8 +476,36 @@ function NovoAgendamento() {
       toast.error("Liste os itens que serão transportados no carreto.");
       return;
     }
-    toast.success(`Agendamento enviado a ${escolhido.nome}. Total ${formatarBRL(total)}.`);
-    navigate({ to: "/cliente/pagamento" });
+    const { data: s } = await supabase.auth.getSession();
+    const email = s.session?.user.email;
+    if (!email) {
+      toast.error("Entre na sua conta de cliente para enviar o agendamento.");
+      return;
+    }
+    const nome = localStorage.getItem("seuchauffeur:cliente-nome") || email;
+    const id = await criarCorrida({
+      cliente: nome,
+      clienteEmail: email,
+      motorista: "",
+      embarque,
+      desembarque,
+      ida: `${dataIda!.toLocaleDateString("pt-BR")} ${horaIda}`,
+      ...(dataRetorno && tipo === "Ida e retorno"
+        ? { retorno: `${dataRetorno.toLocaleDateString("pt-BR")} ${horaRetorno}` }
+        : {}),
+      modalidade: modalidade.nome,
+      pagamento,
+      valor: total,
+      veiculo: "",
+      categoria: categoriasAceitas[0]!,
+      capacidade: capacidadeDaCategoria(categoriasAceitas[0]!) as number,
+    }, "aguardando_motorista");
+    if (!id) {
+      toast.error("Não foi possível salvar o agendamento. Tente novamente.");
+      return;
+    }
+    toast.success(`Agendamento criado. Total ${formatarBRL(total)}. Aguarde os motoristas interessados.`);
+    navigate({ to: "/cliente/corrida/$id", params: { id } });
   };
 
   return (
@@ -802,11 +832,12 @@ function NovoAgendamento() {
 
               <Card className="border-border/60 p-6">
                 <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                  {cargaSelecionada ? "Veículos de carga disponíveis" : "Motoristas disponíveis"}{" "}
+                  {cargaSelecionada ? "Veículos de carga compatíveis" : "Motoristas compatíveis"}{" "}
                   {dataIda ? `para ${dataIda.toLocaleDateString("pt-BR")} às ${horaIda}` : ""}
                 </h2>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Categorias aceitas nesta modalidade: {categoriasAceitas.join(" · ")}
+                  Categorias aceitas nesta modalidade: {categoriasAceitas.join(" · ")}. O agendamento fica aberto
+                  para os motoristas; depois você escolhe e vincula um dos interessados.
                 </p>
                 <ul className="mt-4 grid gap-2 sm:grid-cols-2">
                   {motoristasDisponiveis.map((m) => (
@@ -1331,11 +1362,9 @@ function NovoAgendamento() {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Motorista</p>
-                <p>
-                  {escolhido.nome} ({escolhido.nota} ★)
-                </p>
+                <p>A definir</p>
                 <p className="text-xs text-muted-foreground">
-                  {escolhido.veiculo} · {capacidadeDaCategoria(escolhido.categoria)} ocupantes
+                  Motoristas interessados aparecem no seu agendamento para você vincular.
                 </p>
               </div>
               {etapa === 2 && (

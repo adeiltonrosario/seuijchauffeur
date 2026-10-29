@@ -95,9 +95,16 @@ export const cargaDaCategoria = (categoria: string) => {
 export const TAXA_AJUDANTE_PADRAO = 60;
 export const MAX_AJUDANTES = 2;
 
-export type StatusAgendamento = "pendente" | "confirmado" | "em-andamento" | "concluido" | "cancelado";
+export type StatusAgendamento =
+  | "aguardando_motorista"
+  | "pendente"
+  | "confirmado"
+  | "em-andamento"
+  | "concluido"
+  | "cancelado";
 
 export const rotuloStatus: Record<StatusAgendamento, string> = {
+  aguardando_motorista: "Aguardando motorista",
   pendente: "Pendente",
   confirmado: "Confirmado",
   "em-andamento": "Em andamento",
