@@ -31,6 +31,7 @@ import { Route as MotoristaVeiculosRouteImport } from './routes/motorista.veicul
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago-webhook'
 import { Route as ClienteAgendamentoNovoRouteImport } from './routes/cliente.agendamento.novo'
 import { Route as ClienteAgendamentosIdRouteImport } from './routes/cliente.agendamentos.$id'
+import { Route as ClienteCorridaIdRouteImport } from './routes/cliente.corrida.$id'
 import { Route as MotoristaAgendamentosIndexRouteImport } from './routes/motorista.agendamentos.index'
 import { Route as MotoristaAgendamentosIdRouteImport } from './routes/motorista.agendamentos.$id'
 
@@ -147,6 +148,11 @@ const ClienteAgendamentosIdRoute = ClienteAgendamentosIdRouteImport.update({
   path: '/cliente/agendamentos/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClienteCorridaIdRoute = ClienteCorridaIdRouteImport.update({
+  id: '/cliente/corrida/$id',
+  path: '/cliente/corrida/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MotoristaAgendamentosIndexRoute =
   MotoristaAgendamentosIndexRouteImport.update({
     id: '/motorista/agendamentos/',
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
   '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
+  '/cliente/corrida/$id': typeof ClienteCorridaIdRoute
   '/motorista/agendamentos/$id': typeof MotoristaAgendamentosIdRoute
   '/motorista/agendamentos/': typeof MotoristaAgendamentosIndexRoute
 }
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
   '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
+  '/cliente/corrida/$id': typeof ClienteCorridaIdRoute
   '/motorista/agendamentos/$id': typeof MotoristaAgendamentosIdRoute
   '/motorista/agendamentos': typeof MotoristaAgendamentosIndexRoute
 }
@@ -235,6 +243,7 @@ export interface FileRoutesById {
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/cliente/agendamento/novo': typeof ClienteAgendamentoNovoRoute
   '/cliente/agendamentos/$id': typeof ClienteAgendamentosIdRoute
+  '/cliente/corrida/$id': typeof ClienteCorridaIdRoute
   '/motorista/agendamentos/$id': typeof MotoristaAgendamentosIdRoute
   '/motorista/agendamentos/': typeof MotoristaAgendamentosIndexRoute
 }
@@ -263,6 +272,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago-webhook'
     | '/cliente/agendamento/novo'
     | '/cliente/agendamentos/$id'
+    | '/cliente/corrida/$id'
     | '/motorista/agendamentos/$id'
     | '/motorista/agendamentos/'
   fileRoutesByTo: FileRoutesByTo
@@ -289,6 +299,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago-webhook'
     | '/cliente/agendamento/novo'
     | '/cliente/agendamentos/$id'
+    | '/cliente/corrida/$id'
     | '/motorista/agendamentos/$id'
     | '/motorista/agendamentos'
   id:
@@ -315,6 +326,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago-webhook'
     | '/cliente/agendamento/novo'
     | '/cliente/agendamentos/$id'
+    | '/cliente/corrida/$id'
     | '/motorista/agendamentos/$id'
     | '/motorista/agendamentos/'
   fileRoutesById: FileRoutesById
@@ -342,6 +354,7 @@ export interface RootRouteChildren {
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
   ClienteAgendamentoNovoRoute: typeof ClienteAgendamentoNovoRoute
   ClienteAgendamentosIdRoute: typeof ClienteAgendamentosIdRoute
+  ClienteCorridaIdRoute: typeof ClienteCorridaIdRoute
   MotoristaAgendamentosIdRoute: typeof MotoristaAgendamentosIdRoute
   MotoristaAgendamentosIndexRoute: typeof MotoristaAgendamentosIndexRoute
 }
@@ -502,6 +515,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClienteAgendamentosIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cliente/corrida/$id': {
+      id: '/cliente/corrida/$id'
+      path: '/cliente/corrida/$id'
+      fullPath: '/cliente/corrida/$id'
+      preLoaderRoute: typeof ClienteCorridaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/motorista/agendamentos/': {
       id: '/motorista/agendamentos/'
       path: '/motorista/agendamentos'
@@ -542,6 +562,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
   ClienteAgendamentoNovoRoute: ClienteAgendamentoNovoRoute,
   ClienteAgendamentosIdRoute: ClienteAgendamentosIdRoute,
+  ClienteCorridaIdRoute: ClienteCorridaIdRoute,
   MotoristaAgendamentosIdRoute: MotoristaAgendamentosIdRoute,
   MotoristaAgendamentosIndexRoute: MotoristaAgendamentosIndexRoute,
 }
