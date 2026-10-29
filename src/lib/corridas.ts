@@ -29,13 +29,16 @@ function paraAgendamento(r: Linha): Agendamento {
   return a;
 }
 
-export async function criarCorrida(c: NovaCorrida): Promise<string | null> {
+export async function criarCorrida(
+  c: NovaCorrida,
+  status: "pendente" | "aguardando_motorista" = "pendente",
+): Promise<string | null> {
   const id = `AG-${Date.now().toString().slice(-6)}`;
   const { error } = await supabase.from("corridas").insert({
     id, cliente: c.cliente, cliente_email: c.clienteEmail ?? "", cliente_whatsapp: c.clienteWhatsapp ?? "",
     motorista: c.motorista, embarque: c.embarque, parada: c.parada ?? null, desembarque: c.desembarque,
     ida: c.ida, retorno: c.retorno ?? null, modalidade: c.modalidade, pagamento: c.pagamento,
-    valor: c.valor, status: "pendente", veiculo: c.veiculo, categoria: c.categoria, capacidade: c.capacidade,
+    valor: c.valor, status, veiculo: c.veiculo, categoria: c.categoria, capacidade: c.capacidade,
   });
   if (error) { console.error("[corridas] criar:", error.message); return null; }
   return id;
@@ -49,15 +52,20 @@ export async function atualizarStatusCorrida(id: string, status: StatusAgendamen
 }
 
 /** Lista corridas filtradas por cliente ou motorista, atualizando ao vivo. */
-export function useCorridas(filtro: { cliente?: string; motorista?: string }) {
+export function useCorridas(filtro: {
+  cliente?: string; motorista?: string; id?: string; status?: string; clienteEmail?: string;
+}) {
   const [lista, setLista] = useState<Agendamento[]>([]);
-  const chave = `${filtro.cliente ?? ""}|${filtro.motorista ?? ""}`;
+  const chave = `${filtro.cliente ?? ""}|${filtro.motorista ?? ""}|${filtro.id ?? ""}|${filtro.status ?? ""}|${filtro.clienteEmail ?? ""}`;
   useEffect(() => {
     let ativo = true;
     const carregar = async () => {
       let q = supabase.from("corridas").select("*").order("criado_em", { ascending: false });
       if (filtro.cliente) q = q.eq("cliente", filtro.cliente);
       if (filtro.motorista) q = q.eq("motorista", filtro.motorista);
+      if (filtro.id) q = q.eq("id", filtro.id);
+      if (filtro.status) q = q.eq("status", filtro.status);
+      if (filtro.clienteEmail) q = q.ilike("cliente_email", filtro.clienteEmail);
       const { data } = await q;
       if (ativo) setLista(((data ?? []) as Linha[]).map(paraAgendamento));
     };

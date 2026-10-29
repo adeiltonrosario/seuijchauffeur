@@ -17,6 +17,8 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { criarCorrida } from "@/lib/corridas";
 import { AppShell } from "@/components/app-shell";
 import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
 import { calcularRota } from "@/components/finalizar-rota";
