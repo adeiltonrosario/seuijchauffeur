@@ -32,6 +32,50 @@ export type Database = {
         }
         Relationships: []
       }
+      candidaturas_corrida: {
+        Row: {
+          categoria: string
+          corrida_id: string
+          criado_em: string
+          id: string
+          motorista_email: string
+          motorista_nome: string
+          placa: string
+          status: string
+          veiculo: string
+        }
+        Insert: {
+          categoria?: string
+          corrida_id: string
+          criado_em?: string
+          id?: string
+          motorista_email: string
+          motorista_nome: string
+          placa?: string
+          status?: string
+          veiculo?: string
+        }
+        Update: {
+          categoria?: string
+          corrida_id?: string
+          criado_em?: string
+          id?: string
+          motorista_email?: string
+          motorista_nome?: string
+          placa?: string
+          status?: string
+          veiculo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidaturas_corrida_corrida_id_fkey"
+            columns: ["corrida_id"]
+            isOneToOne: false
+            referencedRelation: "corridas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       carteira_admin_movimentos: {
         Row: {
           chave: string | null
@@ -294,7 +338,7 @@ export type Database = {
           id: string
           ida: string
           modalidade: string
-          motorista: string
+          motorista?: string
           pagamento?: string
           parada?: string | null
           retorno?: string | null
@@ -976,6 +1020,7 @@ export type Database = {
       }
       acesso_casa_apoio: { Args: { _email: string }; Returns: Json }
       cancelar_compra_saldao: { Args: { _compra: string }; Returns: Json }
+      candidatar_corrida: { Args: { _corrida: string }; Returns: string }
       conceder_compra_saldao: { Args: { _compra: string }; Returns: string }
       conceder_franquia_pedido: {
         Args: { _ciclo: number; _pedido: string }
@@ -1079,6 +1124,7 @@ export type Database = {
         Args: { _base: string; _periodicidade: string }
         Returns: string
       }
+      vincular_motorista: { Args: { _candidatura: string }; Returns: string }
       vitrine_saldao: { Args: never; Returns: Json }
     }
     Enums: {
