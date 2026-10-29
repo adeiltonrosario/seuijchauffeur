@@ -1,6 +1,7 @@
 import { rotuloStatus, type StatusAgendamento } from "@/lib/dados";
 
 const estilos: Record<StatusAgendamento, string> = {
+  aguardando_motorista: "bg-primary/15 text-primary border-primary/30",
   pendente: "bg-warning/15 text-warning border-warning/30",
   confirmado: "bg-success/15 text-success border-success/30",
   "em-andamento": "bg-accent/15 text-accent border-accent/30",
