@@ -8,6 +8,7 @@ import { ConsultorViagemIA } from "@/components/consultor-viagem-ia";
 import { BannerPublicidade } from "@/components/banner-publicidade";
 import { ClubeIndicacoes } from "@/components/clube-indicacoes";
 import { PropostasCliente } from "@/components/propostas-cliente";
+import { RotaExclusivaCliente } from "@/components/rota-exclusiva";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { agendamentos, formatarBRL, motoristas } from "@/lib/dados";
@@ -73,6 +74,7 @@ function InicioCliente() {
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <section className="space-y-6">
           <MeusAgendamentosCliente />
+          <RotaExclusivaCliente />
           <PropostasCliente />
           <ConsultorViagemIA />
           <BannerPublicidade publico="clientes" />

@@ -9,6 +9,7 @@ import { AdminCasasApoio } from "@/components/admin-casas-apoio";
 import { TabelaIndicacoes } from "@/components/tabela-indicacoes";
 import { AdminPrecosEsportivo } from "@/components/admin-precos-esportivo";
 import { AdminPropostas } from "@/components/admin-propostas";
+import { AdminRotaExclusiva } from "@/components/rota-exclusiva";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -557,7 +558,7 @@ function Admin() {
           <TabsTrigger value="veiculos">Veículos</TabsTrigger>
           <TabsTrigger value="modalidades">Modalidades e valores</TabsTrigger>
           <TabsTrigger value="assinaturas">Assinaturas</TabsTrigger>
-          <TabsTrigger value="propostas">Propostas</TabsTrigger>
+          <TabsTrigger value="propostas">Propostas e Rota Exclusiva</TabsTrigger>
           <TabsTrigger value="recebimento">Recebimento</TabsTrigger>
           <TabsTrigger value="publicidades">Publicidades</TabsTrigger>
           <TabsTrigger value="casas-apoio">Casas de Apoio</TabsTrigger>
@@ -1350,6 +1351,7 @@ function Admin() {
 
         <TabsContent value="propostas" className="mt-6">
           <AdminPropostas />
+          <div className="mt-8"><AdminRotaExclusiva /></div>
         </TabsContent>
 
         <TabsContent value="saldao" className="mt-6">

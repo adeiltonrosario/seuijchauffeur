@@ -71,10 +71,10 @@ export function AdminRotaExclusiva() {
         <div className="space-y-1"><Label>Origem fixa</Label><Input value={f.origem_fixa} onChange={(e) => set("origem_fixa", e.target.value)} /></div>
         <div className="space-y-1"><Label>Destino fixo</Label><Input value={f.destino_fixo} onChange={(e) => set("destino_fixo", e.target.value)} /></div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1"><Label>Valor por trecho fixo</Label><CampoMoeda valor={f.valor_trecho_fixo} onChange={(v) => set("valor_trecho_fixo", v)} /></div>
+          <div className="space-y-1"><Label>Valor por trecho fixo</Label><CampoMoeda valor={f.valor_trecho_fixo} aoMudar={(v) => set("valor_trecho_fixo", v)} /></div>
           <div className="space-y-1"><Label>Viagens inclusas/mês</Label><Input type="number" min={0} value={f.viagens_inclusas} onChange={(e) => set("viagens_inclusas", Number(e.target.value))} /></div>
-          <div className="space-y-1"><Label>Mensalidade (opcional)</Label><CampoMoeda valor={f.valor_mensal} onChange={(v) => set("valor_mensal", v)} /></div>
-          <div className="space-y-1"><Label>R$/km pontos variados</Label><CampoMoeda valor={f.por_km_variado} onChange={(v) => set("por_km_variado", v)} /></div>
+          <div className="space-y-1"><Label>Mensalidade (opcional)</Label><CampoMoeda valor={f.valor_mensal} aoMudar={(v) => set("valor_mensal", v)} /></div>
+          <div className="space-y-1"><Label>R$/km pontos variados</Label><CampoMoeda valor={f.por_km_variado} aoMudar={(v) => set("por_km_variado", v)} /></div>
         </div>
         <div className="space-y-1">
           <Label>Forma de pagamento</Label>
