@@ -127,6 +127,13 @@
       "when": 1793247806343,
       "tag": "0017_candidaturas_corrida",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793331630488,
+      "tag": "0018_planos_rota_exclusiva",
+      "breakpoints": true
     }
   ]
 }
