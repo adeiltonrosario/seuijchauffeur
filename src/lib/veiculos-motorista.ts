@@ -122,11 +122,15 @@ export function decidirVeiculo(
   status: StatusVeiculo,
   aprovador: Aprovador,
   motivo?: string,
+  categoriaOficial?: CategoriaVeiculo,
 ): VeiculoMotorista[] {
   const atualizada: VeiculoMotorista[] = lista.map((v) => {
     if (v.id !== id) return v;
+    const cat = categoriaOficial ?? v.categoria;
     const atualizado: VeiculoMotorista = {
       ...v,
+      categoria: cat,
+      capacidade: cat === v.categoria ? v.capacidade : capacidadeValida(cat, v.capacidade),
       status,
       aprovador,
       decididoEm: new Date().toISOString(),

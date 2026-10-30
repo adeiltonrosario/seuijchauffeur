@@ -1,3 +1,4 @@
+import { MarcaModelo } from "@/components/marca-modelo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -141,8 +142,7 @@ function SejaMotorista() {
 
               <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 space-y-3">
                 <p className="text-xs font-medium uppercase tracking-wide text-primary">Seu veículo</p>
-                <div className="space-y-2"><Label htmlFor="sm-modelo">Modelo *</Label>
-                  <Input id="sm-modelo" value={modelo} onChange={(e) => setModelo(e.target.value)} placeholder="Toyota Corolla" /></div>
+                <div className="sm:col-span-2"><MarcaModelo id="sm" onChange={setModelo} /></div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-2"><Label htmlFor="sm-placa">Placa *</Label>
                     <Input id="sm-placa" value={placa} onChange={(e) => setPlaca(e.target.value.toUpperCase())} placeholder="ABC-1D23" /></div>
