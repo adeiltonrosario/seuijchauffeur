@@ -133,77 +133,7 @@ export type Agendamento = {
   whatsappCliente?: string;
 };
 
-export const agendamentos: Agendamento[] = [
-  {
-    id: "AG-1042",
-    cliente: "Adeilton Oliveira",
-    motorista: "Marcos Vinícius",
-    embarque: "Av. Paulista, 1400 — São Paulo",
-    parada: "Rua Augusta, 900",
-    desembarque: "Aeroporto de Congonhas",
-    ida: "22/09/2026 07:30",
-    retorno: "22/09/2026 21:15",
-    modalidade: "Executivo aeroporto",
-    pagamento: "Pix",
-    valor: 320,
-    status: "confirmado",
-    veiculo: "Toyota Corolla — Preto",
-    categoria: "Sedan",
-    ocupantes: ["Adeilton Oliveira", "Carla Menezes"],
-    capacidade: CAPACIDADE_PADRAO,
-    whatsappCliente: "(71) 99680-5321",
-  },
-  {
-    id: "AG-1043",
-    cliente: "Renata Prado",
-    motorista: "Juliana Alves",
-    embarque: "Rua Oscar Freire, 233",
-    desembarque: "Hospital Albert Einstein",
-    ida: "23/09/2026 09:00",
-    modalidade: "Corrida assistida",
-    pagamento: "Plano mensal",
-    valor: 180,
-    status: "pendente",
-    veiculo: "Jeep Compass — Cinza",
-    categoria: "SUV",
-    ocupantes: ["Renata Prado"],
-    capacidade: CAPACIDADE_PADRAO,
-  },
-  {
-    id: "AG-1044",
-    cliente: "Eduardo Lima",
-    motorista: "Marcos Vinícius",
-    embarque: "Alameda Santos, 45",
-    parada: "Av. Faria Lima, 3500",
-    desembarque: "Aeroporto de Guarulhos",
-    ida: "24/09/2026 05:40",
-    retorno: "26/09/2026 23:10",
-    modalidade: "Viagem corporativa",
-    pagamento: "Cartão de crédito",
-    valor: 540,
-    status: "em-andamento",
-    veiculo: "Toyota Corolla — Preto",
-    categoria: "Sedan",
-    ocupantes: ["Eduardo Lima", "Paulo Braga", "Tiago Reis"],
-    capacidade: CAPACIDADE_PADRAO,
-  },
-  {
-    id: "AG-1045",
-    cliente: "Sofia Andrade",
-    motorista: "Rafael Costa",
-    embarque: "Rua Haddock Lobo, 120",
-    desembarque: "Shopping Iguatemi",
-    ida: "20/09/2026 18:00",
-    modalidade: "City tour",
-    pagamento: "Pix",
-    valor: 140,
-    status: "concluido",
-    veiculo: "Honda Fit — Branco",
-    categoria: "Hatch",
-    ocupantes: ["Sofia Andrade"],
-    capacidade: CAPACIDADE_PADRAO,
-  },
-];
+export const agendamentos: Agendamento[] = [];
 
 export type Motorista = {
   nome: string;
@@ -223,38 +153,7 @@ export type Motorista = {
   valorAjudante: number;
 };
 
-export const motoristas: Motorista[] = [
-  { nome: "Marcos Vinícius", email: "marcos.vinicius@seuchauffeur.com.br", whatsapp: "(71) 99680-5321", nota: 4.9, veiculo: "Toyota Corolla — Sedan", placa: "FQR-4E21", valor: 320, favorito: true, categoria: "Sedan", ajudantes: 0, valorAjudante: 0 },
-  { nome: "Juliana Alves", email: "juliana.alves@seuchauffeur.com.br", whatsapp: "(71) 99712-4408", nota: 4.8, veiculo: "Jeep Compass — SUV", placa: "GHT-9J04", valor: 365, favorito: true, categoria: "SUV", ajudantes: 0, valorAjudante: 0 },
-  { nome: "Rafael Costa", email: "rafael.costa@seuchauffeur.com.br", whatsapp: "(71) 99345-7712", nota: 4.7, veiculo: "Honda Fit — Hatch", placa: "KLM-2B77", valor: 280, favorito: false, categoria: "Hatch", ajudantes: 0, valorAjudante: 0 },
-  { nome: "Camila Duarte", email: "camila.duarte@seuchauffeur.com.br", whatsapp: "(71) 99488-2290", nota: 5.0, veiculo: "Volvo XC60 — SUV", placa: "RPA-7C55", valor: 420, favorito: false, categoria: "SUV", ajudantes: 0, valorAjudante: 0 },
-  {
-    nome: "Wagner Teixeira",
-    email: "wagner.teixeira@seuchauffeur.com.br",
-    whatsapp: "(71) 99551-6034",
-    nota: 4.8,
-    veiculo: "Fiat Fiorino Furgão — Fiorino / Furgão leve",
-    placa: "TRK-5H19",
-    valor: 240,
-    favorito: false,
-    categoria: "Fiorino / Furgão leve",
-    ajudantes: 2,
-    valorAjudante: 80,
-  },
-  {
-    nome: "Cleber Nunes",
-    email: "cleber.nunes@seuchauffeur.com.br",
-    whatsapp: "(71) 99620-8817",
-    nota: 4.9,
-    veiculo: "Hyundai HR Baú — Caminhão VUC / Baú 3/4",
-    placa: "VUC-8D30",
-    valor: 390,
-    favorito: false,
-    categoria: "Caminhão VUC / Baú 3/4",
-    ajudantes: 2,
-    valorAjudante: 70,
-  },
-];
+export const motoristas: Motorista[] = [];
 
 
 export const VALOR_MINIMO_POR_KM = 1.85;
@@ -452,14 +351,7 @@ export const planos = [
   { nome: "Corporativo", preco: "R$ 1.290/mês", corridas: "Ilimitado para equipes", destaque: false },
 ];
 
-export const participantesMapa = [
-  { id: "m1", nome: "Marcos Vinícius", tipo: "motorista" as const, x: 26, y: 32, agendamento: "AG-1042" },
-  { id: "m2", nome: "Juliana Alves", tipo: "motorista" as const, x: 64, y: 22, agendamento: "AG-1043" },
-  { id: "m3", nome: "Rafael Costa", tipo: "motorista" as const, x: 45, y: 70, agendamento: "AG-1045" },
-  { id: "c1", nome: "Adeilton Oliveira", tipo: "cliente" as const, x: 38, y: 48, agendamento: "AG-1042" },
-  { id: "c2", nome: "Renata Prado", tipo: "cliente" as const, x: 76, y: 56, agendamento: "AG-1043" },
-  { id: "c3", nome: "Eduardo Lima", tipo: "cliente" as const, x: 18, y: 66, agendamento: "AG-1044" },
-];
+export const participantesMapa: { id: string; nome: string; tipo: "motorista" | "cliente"; x: number; y: number; agendamento: string }[] = [];
 
 export type Veiculo = {
   placa: string;
@@ -469,59 +361,11 @@ export type Veiculo = {
   capacidade: number;
 };
 
-export const veiculos: Veiculo[] = [
-  { placa: "FQR-4E21", modelo: "Toyota Corolla", cor: "Preto", categoria: "Sedan", capacidade: capacidadeDaCategoria("Sedan") },
-  { placa: "GHT-9J04", modelo: "Jeep Compass", cor: "Cinza", categoria: "SUV", capacidade: capacidadeDaCategoria("SUV") },
-  { placa: "KLM-2B77", modelo: "Honda Fit", cor: "Branco", categoria: "Hatch", capacidade: capacidadeDaCategoria("Hatch") },
-  {
-    placa: "TRK-5H19",
-    modelo: "Fiat Fiorino Furgão",
-    cor: "Branco",
-    categoria: "Fiorino / Furgão leve",
-    capacidade: capacidadeDaCategoria("Fiorino / Furgão leve"),
-  },
-  {
-    placa: "VUC-8D30",
-    modelo: "Hyundai HR Baú",
-    cor: "Branco",
-    categoria: "Caminhão VUC / Baú 3/4",
-    capacidade: capacidadeDaCategoria("Caminhão VUC / Baú 3/4"),
-  },
-];
+export const veiculos: Veiculo[] = [];
 
-export const conversas = [
-  {
-    id: "cv-1",
-    cliente: "Adeilton Oliveira",
-    motorista: "Marcos Vinícius",
-    agendamento: "AG-1042",
-    assunto: "Motorista a caminho",
-    naoLidas: 2,
-  },
-  {
-    id: "cv-2",
-    cliente: "Renata Prado",
-    motorista: "Juliana Alves",
-    agendamento: "AG-1043",
-    assunto: "Confirmação de horário",
-    naoLidas: 0,
-  },
-  {
-    id: "cv-3",
-    cliente: "Eduardo Lima",
-    motorista: "Marcos Vinícius",
-    agendamento: "AG-1044",
-    assunto: "Troca de veículo",
-    naoLidas: 1,
-  },
-];
+export const conversas: { id: string; cliente: string; motorista: string; agendamento: string; assunto: string; naoLidas: number }[] = [];
 
-export const mensagensMediadas = [
-  { autor: "motorista" as const, texto: "Estou saindo agora, chego em 12 minutos.", hora: "07:14" },
-  { autor: "ia" as const, texto: "Olá! Seu motorista Marcos já está a caminho e chega em cerca de 12 minutos.", hora: "07:14" },
-  { autor: "cliente" as const, texto: "Perfeito, já desço para a portaria.", hora: "07:15" },
-  { autor: "ia" as const, texto: "O cliente aguardará na portaria do prédio.", hora: "07:15" },
-];
+export const mensagensMediadas: { autor: "motorista" | "cliente" | "ia"; texto: string; hora: string }[] = [];
 
 export const padroesAtendimento = [
   "Sempre confirme nome do cliente, endereço de embarque e horário antes de repassar qualquer mensagem.",
