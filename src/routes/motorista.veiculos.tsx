@@ -1,3 +1,4 @@
+import { MarcaModelo } from "@/components/marca-modelo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BadgeCheck, Car, FileText, IdCard, ImagePlus, ShieldAlert, Users } from "lucide-react";
@@ -162,7 +163,7 @@ function Veiculos() {
               <Input id="cor" value={cor} onChange={(e) => setCor(e.target.value)} placeholder="Preto" />
             </div>
             <div className="sm:col-span-2">
-              <MarcaModelo key={modelo === "" ? "novo" : "em-edicao"} id="veiculo" onChange={setModelo} />
+              <MarcaModelo key={solicitacoes.length} id="veiculo" onChange={setModelo} />
             </div>
           </div>
 

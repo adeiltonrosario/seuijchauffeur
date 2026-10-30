@@ -1,3 +1,4 @@
+import { MarcaModelo } from "@/components/marca-modelo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
