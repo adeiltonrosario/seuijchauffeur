@@ -121,7 +121,7 @@ export function AdminRotaExclusiva() {
             <div className="text-sm space-y-1">
               <p className="font-medium text-gold">{p.nome} {!p.ativo && <span className="text-muted-foreground">(inativo)</span>}</p>
               <p className="text-muted-foreground">{p.cliente_email}</p>
-              <p>{p.origem_fixa} ⇄ {p.destino_fixo}: {formatarBRL(p.valor_trecho_fixo)}/trecho · {p.viagens_inclusas} viagens/mês</p>
+              <p>{[p.origem_fixa, ...(p.paradas_fixas ?? []), p.destino_fixo].join(" → ")}{p.km_rota > 0 ? ` (${Number(p.km_rota).toLocaleString("pt-BR")} km)` : ""}: {formatarBRL(p.valor_trecho_fixo)}/trecho · {p.viagens_inclusas} viagens/mês</p>
               <p>Variados: {formatarBRL(p.por_km_variado)}/km · {FORMAS[p.forma_pagamento] ?? p.forma_pagamento}</p>
             </div>
             <div className="flex gap-1">
@@ -146,7 +146,7 @@ export function RotaExclusivaCliente() {
       {planos.map((p) => (
         <Card key={p.id} className="surface-luxe glow-gold border-border/60 p-5 space-y-2">
           <p className="flex items-center gap-2 text-gold font-medium"><Crown className="h-4 w-4" /> Seu plano {p.nome}</p>
-          <p className="text-sm">Rota habitual: {p.origem_fixa} ⇄ {p.destino_fixo} — <strong>{formatarBRL(p.valor_trecho_fixo)}</strong> por trecho{p.viagens_inclusas > 0 ? ` · ${p.viagens_inclusas} viagens/mês` : ""}</p>
+          <p className="text-sm">Rota habitual: {[p.origem_fixa, ...(p.paradas_fixas ?? []), p.destino_fixo].join(" → ")}{p.km_rota > 0 ? ` · ${Number(p.km_rota).toLocaleString("pt-BR")} km` : ""} — <strong>{formatarBRL(p.valor_trecho_fixo)}</strong> por trecho{p.viagens_inclusas > 0 ? ` · ${p.viagens_inclusas} viagens/mês` : ""}</p>
           {p.valor_mensal > 0 && <p className="text-sm">Mensalidade: {formatarBRL(p.valor_mensal)}</p>}
           <p className="text-sm">Outros destinos: tarifa sob medida de <strong>{formatarBRL(p.por_km_variado)}/km</strong></p>
           <p className="text-xs text-muted-foreground">Pagamento: {FORMAS[p.forma_pagamento] ?? p.forma_pagamento}</p>
