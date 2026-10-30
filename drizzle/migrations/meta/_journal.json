@@ -155,6 +155,13 @@
       "when": 1793391054554,
       "tag": "0021_documentos_motorista_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793393827282,
+      "tag": "0022_contato_motorista_corrida",
+      "breakpoints": true
     }
   ]
 }

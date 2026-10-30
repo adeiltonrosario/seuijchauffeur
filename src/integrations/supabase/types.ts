@@ -1103,6 +1103,7 @@ export type Database = {
         Args: { _quantidade: number; _ref: string }
         Returns: Json
       }
+      contato_motorista_corrida: { Args: { _corrida: string }; Returns: Json }
       criar_oferta_saldao: {
         Args: {
           _preco_unitario: number
