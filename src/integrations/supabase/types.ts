@@ -756,6 +756,60 @@ export type Database = {
         }
         Relationships: []
       }
+      planos_rota_exclusiva: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          cliente_email: string
+          criado_em: string
+          criado_por: string | null
+          destino_fixo: string
+          forma_pagamento: string
+          id: string
+          nome: string
+          observacao: string | null
+          origem_fixa: string
+          por_km_variado: number
+          valor_mensal: number
+          valor_trecho_fixo: number
+          viagens_inclusas: number
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          cliente_email: string
+          criado_em?: string
+          criado_por?: string | null
+          destino_fixo: string
+          forma_pagamento?: string
+          id?: string
+          nome?: string
+          observacao?: string | null
+          origem_fixa: string
+          por_km_variado?: number
+          valor_mensal?: number
+          valor_trecho_fixo?: number
+          viagens_inclusas?: number
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          cliente_email?: string
+          criado_em?: string
+          criado_por?: string | null
+          destino_fixo?: string
+          forma_pagamento?: string
+          id?: string
+          nome?: string
+          observacao?: string | null
+          origem_fixa?: string
+          por_km_variado?: number
+          valor_mensal?: number
+          valor_trecho_fixo?: number
+          viagens_inclusas?: number
+        }
+        Relationships: []
+      }
       precos_esportivo: {
         Row: {
           atualizado_em: string
