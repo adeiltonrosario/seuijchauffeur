@@ -36,6 +36,7 @@ import {
 } from "@/lib/dados";
 import { formatarTelefone, validarContato } from "@/lib/contatos";
 import { registrarPendente } from "@/lib/status-motorista";
+import { criarAcesso, validarSenhas } from "@/lib/cadastro-acesso";
 import { cadastrarCliente, gravarMotorista, gravarVeiculoFrota } from "@/lib/banco";
 
 import {
@@ -178,6 +179,7 @@ function Autenticacao() {
 
   const [salvando, setSalvando] = useState(false);
   const [senhaConta, setSenhaConta] = useState("");
+  const [senhaConfirmar, setSenhaConfirmar] = useState("");
   const esqueciSenha = async () => {
     const email = emailConta.trim().toLowerCase();
     if (!email.includes("@")) {
@@ -203,10 +205,24 @@ function Autenticacao() {
         toast.error(erroContato);
         return;
       }
+      const erroSenha = validarSenhas(senhaConta, senhaConfirmar);
+      if (erroSenha) {
+        toast.error(erroSenha);
+        return;
+      }
     }
     if (criandoConta && perfil === "motorista" && (!modelo || !placa || !cor)) {
       toast.error("Para se cadastrar como motorista, informe modelo, placa e cor do seu veículo.");
       return;
+    }
+    if (criandoConta) {
+      setSalvando(true);
+      const erroAcesso = await criarAcesso(emailConta, senhaConta, perfil === "cliente" ? "/cliente" : "/");
+      setSalvando(false);
+      if (erroAcesso) {
+        toast.error(erroAcesso);
+        return;
+      }
     }
 
     if (criandoConta && perfil === "motorista") {
