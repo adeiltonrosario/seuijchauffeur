@@ -556,7 +556,7 @@ function Admin() {
         <TabsList>
           <TabsTrigger value="motoristas">Motoristas</TabsTrigger>
           <TabsTrigger value="veiculos">Veículos</TabsTrigger>
-          <TabsTrigger value="modalidades">Modalidades e valores</TabsTrigger>
+          <TabsTrigger value="modalidades">Modalidades </TabsTrigger>
           <TabsTrigger value="assinaturas">Assinaturas</TabsTrigger>
           <TabsTrigger value="propostas">Propostas e Rota Exclusiva</TabsTrigger>
           <TabsTrigger value="recebimento">Recebimento</TabsTrigger>
