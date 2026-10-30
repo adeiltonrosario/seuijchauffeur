@@ -161,9 +161,8 @@ function Veiculos() {
               <Label htmlFor="cor">Cor</Label>
               <Input id="cor" value={cor} onChange={(e) => setCor(e.target.value)} placeholder="Preto" />
             </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="modelo">Modelo</Label>
-              <Input id="modelo" value={modelo} onChange={(e) => setModelo(e.target.value)} placeholder="Toyota Corolla" />
+            <div className="sm:col-span-2">
+              <MarcaModelo key={modelo === "" ? "novo" : "em-edicao"} id="veiculo" onChange={setModelo} />
             </div>
           </div>
 
