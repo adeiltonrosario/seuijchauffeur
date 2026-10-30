@@ -375,5 +375,5 @@ export const padroesAtendimento = [
   "Cancelamentos com menos de 2h devem oferecer reagendamento prioritário.",
 ];
 
-export const formatarBRL = (valor: number) =>
-  valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+export const formatarBRL = (valor: number | null | undefined) =>
+  (Number.isFinite(Number(valor)) ? Number(valor) : 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });

@@ -35,6 +35,20 @@ const planosPadrao = (modalidade: string, preco: number): PlanoModalidade[] =>
     desconto: DESCONTOS[p] * 100,
   }));
 
+/** Converte planos no formato antigo (viagens) para o formato em km, evitando campos vazios. */
+const normalizar = (p: Partial<PlanoModalidade> & { precoViagem?: number }): PlanoModalidade => {
+  const preco = Number(p.precoKm ?? p.precoViagem ?? 3) || 3;
+  return {
+    id: String(p.id ?? `plano-${Date.now()}`),
+    nome: p.nome ?? "Plano",
+    periodicidade: (p.periodicidade ?? "mensal") as Periodicidade,
+    kmMes: Number(p.kmMes) || KM_PADRAO,
+    precoKm: preco,
+    excedenteKm: Number(p.excedenteKm) || preco,
+    desconto: Number(p.desconto) || 0,
+  };
+};
+
 const calcular = (p: PlanoModalidade) => {
   const meses = MESES_DO_CICLO[p.periodicidade];
   const bruto = p.kmMes * p.precoKm * meses;
@@ -56,7 +70,8 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
       if (error) {
         toast.error("Não foi possível carregar os planos do banco.");
         try {
-          setPlanos(JSON.parse(localStorage.getItem(CHAVE) ?? "{}"));
+          const salvo = JSON.parse(localStorage.getItem(CHAVE) ?? "{}") as Record<string, PlanoModalidade[]>;
+          setPlanos(Object.fromEntries(Object.entries(salvo).map(([k, l]) => [k, (l ?? []).map(normalizar)])));
         } catch {
           setPlanos({});
         }
@@ -189,7 +204,7 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             {(planos[m.nome] ?? []).map((p) => {
               const emEdicao = editando === p.id && rascunho;
-              const r = emEdicao ? rascunho : p;
+              const r = normalizar(emEdicao ? rascunho : p);
               const c = calcular(r);
               return (
                 <div key={p.id} className="rounded-lg border border-border/60 p-4">
