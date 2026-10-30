@@ -768,30 +768,39 @@ export type Database = {
         Row: {
           criado_em: string
           desconto: number
+          excedente_km: number
           id: string
+          km_mes: number
           modalidade: string
           nome: string
           periodicidade: string
+          preco_km: number
           preco_viagem: number
           viagens_mes: number
         }
         Insert: {
           criado_em?: string
           desconto?: number
+          excedente_km?: number
           id: string
+          km_mes?: number
           modalidade: string
           nome: string
           periodicidade: string
+          preco_km?: number
           preco_viagem?: number
           viagens_mes?: number
         }
         Update: {
           criado_em?: string
           desconto?: number
+          excedente_km?: number
           id?: string
+          km_mes?: number
           modalidade?: string
           nome?: string
           periodicidade?: string
+          preco_km?: number
           preco_viagem?: number
           viagens_mes?: number
         }
