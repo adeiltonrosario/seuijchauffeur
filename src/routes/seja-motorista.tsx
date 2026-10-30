@@ -18,6 +18,7 @@ import {
 } from "@/lib/dados";
 import { formatarTelefone, validarContato } from "@/lib/contatos";
 import { registrarPendente } from "@/lib/status-motorista";
+import { cpfValido, criarAcesso, enviarDocumento, formatarCpf, validarSenhas } from "@/lib/cadastro-acesso";
 import { gravarMotorista, gravarVeiculoFrota } from "@/lib/banco";
 
 export const Route = createFileRoute("/seja-motorista")({
@@ -41,11 +42,22 @@ const REQUISITOS = [
   { icone: Clock, texto: "Pontualidade: chegada 10 minutos antes" },
 ];
 
+const DOCUMENTOS = [
+  { chave: "foto", rotulo: "Foto de perfil (rosto) *" },
+  { chave: "cnh", rotulo: "CNH com EAR (foto ou PDF) *" },
+  { chave: "crlv", rotulo: "CRLV do veículo (foto ou PDF) *" },
+  { chave: "antecedentes", rotulo: "Certidão de antecedentes criminais (opcional)" },
+] as const;
+
 function SejaMotorista() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [cpf, setCpf] = useState("");
   const [cnh, setCnh] = useState("");
+  const [senha, setSenha] = useState("");
+  const [confirmar, setConfirmar] = useState("");
+  const [arquivos, setArquivos] = useState<Record<string, File | null>>({});
   const [modelo, setModelo] = useState("");
   const [placa, setPlaca] = useState("");
   const [cor, setCor] = useState("");
@@ -64,37 +76,57 @@ function SejaMotorista() {
     if (!nome.trim()) return void toast.error("Informe seu nome completo.");
     const erro = validarContato(email, whatsapp);
     if (erro) return void toast.error(erro);
+    if (!cpfValido(cpf)) return void toast.error("Informe um CPF válido.");
     if (!cnh.trim()) return void toast.error("Informe o número da sua CNH.");
+    const erroSenha = validarSenhas(senha, confirmar);
+    if (erroSenha) return void toast.error(erroSenha);
     if (!modelo || !placa || !cor) return void toast.error("Informe modelo, placa e cor do veículo.");
     const faixa = faixaCapacidade(categoria);
     const informada = Number(capacidade);
     if (faixa.ajustavel && (!Number.isFinite(informada) || informada < faixa.min || informada > faixa.max)) {
       return void toast.error(`Informe a lotação entre ${faixa.min} e ${faixa.max} ocupantes conforme o CRLV.`);
     }
+    for (const d of DOCUMENTOS) {
+      if (d.chave !== "antecedentes" && !arquivos[d.chave]) return void toast.error(`Anexe: ${d.rotulo.replace(" *", "")}.`);
+    }
     setSalvando(true);
-    const nomeM = nome.trim();
-    await gravarMotorista({
-      nome: nomeM,
-      email: email.trim().toLowerCase(),
-      whatsapp: whatsapp.trim(),
-      status: "pendente",
-      veiculo: `${modelo} — ${categoria}`,
-      placa: placa.toUpperCase(),
-      categoria,
-    });
-    await gravarVeiculoFrota(
-      {
-        placa,
-        modelo,
-        cor,
+    try {
+      const documentos: Record<string, string> = {};
+      for (const d of DOCUMENTOS) {
+        const f = arquivos[d.chave];
+        if (f) documentos[d.chave] = await enviarDocumento(cpf, d.chave, f);
+      }
+      const erroAcesso = await criarAcesso(email, senha, "/");
+      if (erroAcesso) { setSalvando(false); return void toast.error(erroAcesso); }
+      const nomeM = nome.trim();
+      await gravarMotorista({
+        nome: nomeM,
+        email: email.trim().toLowerCase(),
+        whatsapp: whatsapp.trim(),
+        status: "pendente",
+        veiculo: `${modelo} — ${categoria}`,
+        placa: placa.toUpperCase(),
         categoria,
-        capacidade: faixa.ajustavel ? capacidadeValida(categoria, informada) : capacidadeDaCategoria(categoria),
-      },
-      nomeM,
-    );
-    registrarPendente(nomeM);
+        cpf: cpf.replace(/\D/g, ""),
+        cnh: cnh.trim(),
+        documentos,
+      });
+      await gravarVeiculoFrota(
+        {
+          placa,
+          modelo,
+          cor,
+          categoria,
+          capacidade: faixa.ajustavel ? capacidadeValida(categoria, informada) : capacidadeDaCategoria(categoria),
+        },
+        nomeM,
+      );
+      registrarPendente(nomeM);
+      setEnviado(true);
+    } catch (e) {
+      toast.error("Não foi possível enviar os documentos: " + (e as Error).message);
+    }
     setSalvando(false);
-    setEnviado(true);
   };
 
   return (
