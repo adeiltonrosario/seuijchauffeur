@@ -1,28 +1,32 @@
 import { useEffect, useState } from "react";
-import { Crown, Pencil, Trash2 } from "lucide-react";
+import { Crown, Pencil, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CampoMoeda } from "@/components/campo-moeda";
+import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
+import { BotaoFinalizarRota } from "@/components/finalizar-rota";
 import { supabase } from "@/integrations/supabase/client";
-import { formatarBRL } from "@/lib/dados";
+import { formatarBRL, TARIFA_PADRAO_POR_KM } from "@/lib/dados";
 
 type Plano = {
   id: string; cliente_email: string; nome: string; origem_fixa: string; destino_fixo: string;
+  paradas_fixas: string[]; km_rota: number; minutos_rota: number;
   valor_trecho_fixo: number; viagens_inclusas: number; valor_mensal: number; por_km_variado: number;
   forma_pagamento: string; observacao: string | null; ativo: boolean;
 };
 
 const FORMAS: Record<string, string> = {
-  pre_pago: "Pré-pago (Pix/cartão no app)",
+  pre_pago: "Pré-pago (Pix/Mercado Pago)",
   faturado_mensal: "Faturamento mensal (pós-pago)",
   faturado_quinzenal: "Faturamento quinzenal (pós-pago)",
 };
 
 const VAZIO = {
   cliente_email: "", nome: "Rota Exclusiva", origem_fixa: "", destino_fixo: "",
+  paradas_fixas: [] as string[], km_rota: 0, minutos_rota: 0,
   valor_trecho_fixo: 0, viagens_inclusas: 0, valor_mensal: 0, por_km_variado: 0,
   forma_pagamento: "pre_pago", observacao: "", ativo: true,
 };
@@ -68,8 +72,29 @@ export function AdminRotaExclusiva() {
         <p className="text-xs text-muted-foreground">Plano sob medida para um único cliente. Não aparece na vitrine.</p>
         <div className="space-y-1"><Label>E-mail do cliente</Label><Input value={f.cliente_email} onChange={(e) => set("cliente_email", e.target.value)} /></div>
         <div className="space-y-1"><Label>Nome do plano</Label><Input value={f.nome} onChange={(e) => set("nome", e.target.value)} /></div>
-        <div className="space-y-1"><Label>Origem fixa</Label><Input value={f.origem_fixa} onChange={(e) => set("origem_fixa", e.target.value)} /></div>
-        <div className="space-y-1"><Label>Destino fixo</Label><Input value={f.destino_fixo} onChange={(e) => set("destino_fixo", e.target.value)} /></div>
+        <div className="space-y-1"><Label>Origem fixa</Label>
+          <div className="flex gap-2"><Input value={f.origem_fixa} placeholder="Ex.: Residência — Alphaville" onChange={(e) => set("origem_fixa", e.target.value)} />
+            <BotaoSelecionarMapa valor={f.origem_fixa} onConfirmar={(v) => set("origem_fixa", v)} rotulo="origem" /></div></div>
+        <div className="space-y-2"><Label>Paradas da rota fixa (opcional)</Label>
+          {f.paradas_fixas.map((p, i) => (
+            <div key={i} className="flex gap-2">
+              <Input value={p} placeholder={`Parada ${i + 1}`} onChange={(e) => set("paradas_fixas", f.paradas_fixas.map((x, j) => (j === i ? e.target.value : x)))} />
+              <BotaoSelecionarMapa valor={p} rotulo={`parada ${i + 1}`} onConfirmar={(v) => set("paradas_fixas", f.paradas_fixas.map((x, j) => (j === i ? v : x)))} />
+              <Button type="button" size="icon" variant="ghost" aria-label="Remover parada" onClick={() => set("paradas_fixas", f.paradas_fixas.filter((_, j) => j !== i))}><X /></Button>
+            </div>
+          ))}
+          <Button type="button" size="sm" variant="secondary" onClick={() => set("paradas_fixas", [...f.paradas_fixas, ""])}><Plus /> Adicionar parada na rota</Button>
+        </div>
+        <div className="space-y-1"><Label>Destino fixo</Label>
+          <div className="flex gap-2"><Input value={f.destino_fixo} placeholder="Ex.: Sede corporativa" onChange={(e) => set("destino_fixo", e.target.value)} />
+            <BotaoSelecionarMapa valor={f.destino_fixo} onConfirmar={(v) => set("destino_fixo", v)} rotulo="destino" /></div></div>
+        <BotaoFinalizarRota rotulo="Finalizar rota e calcular km" pontos={[f.origem_fixa, ...f.paradas_fixas, f.destino_fixo]}
+          onCalculado={(r) => setF((x) => ({ ...x, km_rota: r.km, minutos_rota: r.minutos }))} />
+        {f.km_rota > 0 && (
+          <p className="rounded-md bg-primary/10 p-2 text-sm text-gold">
+            Rota calculada: {Number(f.km_rota).toLocaleString("pt-BR")} km · ~{f.minutos_rota} min · Referência: {formatarBRL(f.km_rota * TARIFA_PADRAO_POR_KM)} ({formatarBRL(TARIFA_PADRAO_POR_KM)}/km)
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1"><Label>Valor por trecho fixo</Label><CampoMoeda valor={f.valor_trecho_fixo} aoMudar={(v) => set("valor_trecho_fixo", v)} /></div>
           <div className="space-y-1"><Label>Viagens inclusas/mês</Label><Input type="number" min={0} value={f.viagens_inclusas} onChange={(e) => set("viagens_inclusas", Number(e.target.value))} /></div>
@@ -96,7 +121,7 @@ export function AdminRotaExclusiva() {
             <div className="text-sm space-y-1">
               <p className="font-medium text-gold">{p.nome} {!p.ativo && <span className="text-muted-foreground">(inativo)</span>}</p>
               <p className="text-muted-foreground">{p.cliente_email}</p>
-              <p>{p.origem_fixa} ⇄ {p.destino_fixo}: {formatarBRL(p.valor_trecho_fixo)}/trecho · {p.viagens_inclusas} viagens/mês</p>
+              <p>{[p.origem_fixa, ...(p.paradas_fixas ?? []), p.destino_fixo].join(" → ")}{p.km_rota > 0 ? ` (${Number(p.km_rota).toLocaleString("pt-BR")} km)` : ""}: {formatarBRL(p.valor_trecho_fixo)}/trecho · {p.viagens_inclusas} viagens/mês</p>
               <p>Variados: {formatarBRL(p.por_km_variado)}/km · {FORMAS[p.forma_pagamento] ?? p.forma_pagamento}</p>
             </div>
             <div className="flex gap-1">
@@ -121,7 +146,7 @@ export function RotaExclusivaCliente() {
       {planos.map((p) => (
         <Card key={p.id} className="surface-luxe glow-gold border-border/60 p-5 space-y-2">
           <p className="flex items-center gap-2 text-gold font-medium"><Crown className="h-4 w-4" /> Seu plano {p.nome}</p>
-          <p className="text-sm">Rota habitual: {p.origem_fixa} ⇄ {p.destino_fixo} — <strong>{formatarBRL(p.valor_trecho_fixo)}</strong> por trecho{p.viagens_inclusas > 0 ? ` · ${p.viagens_inclusas} viagens/mês` : ""}</p>
+          <p className="text-sm">Rota habitual: {[p.origem_fixa, ...(p.paradas_fixas ?? []), p.destino_fixo].join(" → ")}{p.km_rota > 0 ? ` · ${Number(p.km_rota).toLocaleString("pt-BR")} km` : ""} — <strong>{formatarBRL(p.valor_trecho_fixo)}</strong> por trecho{p.viagens_inclusas > 0 ? ` · ${p.viagens_inclusas} viagens/mês` : ""}</p>
           {p.valor_mensal > 0 && <p className="text-sm">Mensalidade: {formatarBRL(p.valor_mensal)}</p>}
           <p className="text-sm">Outros destinos: tarifa sob medida de <strong>{formatarBRL(p.por_km_variado)}/km</strong></p>
           <p className="text-xs text-muted-foreground">Pagamento: {FORMAS[p.forma_pagamento] ?? p.forma_pagamento}</p>

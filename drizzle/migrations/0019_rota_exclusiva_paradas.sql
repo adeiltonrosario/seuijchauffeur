@@ -1,0 +1,1 @@
+ALTER TABLE public.planos_rota_exclusiva ADD COLUMN IF NOT EXISTS paradas_fixas text[] NOT NULL DEFAULT '{}', ADD COLUMN IF NOT EXISTS km_rota numeric NOT NULL DEFAULT 0, ADD COLUMN IF NOT EXISTS minutos_rota integer NOT NULL DEFAULT 0;

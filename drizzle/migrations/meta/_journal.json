@@ -134,6 +134,13 @@
       "when": 1793331630488,
       "tag": "0018_planos_rota_exclusiva",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793332246297,
+      "tag": "0019_rota_exclusiva_paradas",
+      "breakpoints": true
     }
   ]
 }
