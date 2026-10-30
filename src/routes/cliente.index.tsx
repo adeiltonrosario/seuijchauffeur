@@ -137,6 +137,9 @@ function InicioCliente() {
                 ver todos
               </Link>
             </div>
+            {motoristas.filter((m) => m.favorito).length === 0 && (
+              <p className="mt-4 text-xs text-muted-foreground">Nenhum motorista favorito ainda.</p>
+            )}
             <ul className="mt-4 space-y-4">
               {motoristas
                 .filter((m) => m.favorito)
