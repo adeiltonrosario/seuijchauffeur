@@ -7,7 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { agendamentos, formatarBRL } from "@/lib/dados";
+import { formatarBRL } from "@/lib/dados";
+import { useCorridas } from "@/lib/corridas";
+import { useMotoristaLogado } from "@/lib/motorista-sessao";
 import { OportunidadesMotorista } from "@/components/agendamentos-abertos";
 import { MOTORISTA_ATUAL } from "@/lib/disponibilidade";
 import {
@@ -46,8 +48,10 @@ function AgendamentosMotorista() {
       ),
   ).sort((a, b) => (a.d + a.t.horario).localeCompare(b.d + b.t.horario));
 
-  const lista = agendamentos.filter(
-    (a) => a.status !== "cancelado" && (data === "" || a.ida.startsWith(formatarData(data))),
+  const { carregando, motorista } = useMotoristaLogado();
+  const corridas = useCorridas({ motorista: motorista?.nome ?? "" , cliente: motorista ? undefined : "" });
+  const lista = corridas.filter(
+    (a) => a.status !== "cancelado" && (data === "" || a.ida.includes(formatarData(data)) || a.ida.startsWith(data)),
   );
 
   return (
