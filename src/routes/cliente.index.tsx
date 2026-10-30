@@ -36,7 +36,6 @@ export const Route = createFileRoute("/cliente/")({
 });
 
 function InicioCliente() {
-  const proximos = agendamentos.filter((a) => a.status !== "concluido" && a.status !== "cancelado");
   const [lotes, setLotes] = useState<LoteCredito[]>([]);
   const [primeiroNome, setPrimeiroNome] = useState("");
 
@@ -79,28 +78,6 @@ function InicioCliente() {
           <ConsultorViagemIA />
           <BannerPublicidade publico="clientes" />
           <ClubeIndicacoes />
-          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            Próximos agendamentos
-          </h2>
-          {proximos.map((a) => (
-            <Link key={a.id} to="/cliente/agendamentos/$id" params={{ id: a.id }}>
-              <Card className="surface-luxe flex items-center justify-between gap-4 border-border/60 p-5 transition-transform hover:-translate-y-0.5">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-display text-base font-semibold">{a.ida}</span>
-                    <StatusBadge status={a.status} />
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {a.embarque} → {a.desembarque}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {a.motorista} · {a.modalidade} · {formatarBRL(a.valor)}
-                  </p>
-                </div>
-                <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
-              </Card>
-            </Link>
-          ))}
 
           <Card className="surface-luxe border-primary/30 p-5">
             <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
