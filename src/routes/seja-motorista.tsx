@@ -155,7 +155,7 @@ function SejaMotorista() {
               <CheckCircle2 className="mx-auto size-12 text-primary" />
               <p className="mt-4 font-display text-xl font-semibold text-gold">Solicitação recebida!</p>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                Nossa gerência corporativa analisará seus dados e entrará em contato via WhatsApp para ativar seu acesso.
+                Confirme seu e-mail pelo link que enviamos. Nossa gerência corporativa analisará seus documentos e entrará em contato via WhatsApp para ativar seu acesso.
               </p>
               <Button asChild className="mt-6"><Link to="/">Voltar ao início</Link></Button>
             </div>
@@ -169,8 +169,35 @@ function SejaMotorista() {
                 <div className="space-y-2"><Label htmlFor="sm-whats">Telefone (WhatsApp) *</Label>
                   <Input id="sm-whats" type="tel" value={whatsapp} onChange={(e) => setWhatsapp(formatarTelefone(e.target.value))} placeholder="(71) 99999-9999" /></div>
               </div>
-              <div className="space-y-2"><Label htmlFor="sm-cnh">Número da CNH *</Label>
-                <Input id="sm-cnh" inputMode="numeric" value={cnh} onChange={(e) => setCnh(e.target.value)} /></div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2"><Label htmlFor="sm-cpf">CPF *</Label>
+                  <Input id="sm-cpf" inputMode="numeric" value={cpf} onChange={(e) => setCpf(formatarCpf(e.target.value))} placeholder="000.000.000-00" /></div>
+                <div className="space-y-2"><Label htmlFor="sm-cnh">Número da CNH *</Label>
+                  <Input id="sm-cnh" inputMode="numeric" value={cnh} onChange={(e) => setCnh(e.target.value)} /></div>
+              </div>
+
+              <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 space-y-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-primary">Crie sua senha de acesso</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2"><Label htmlFor="sm-senha">Senha *</Label>
+                    <Input id="sm-senha" type="password" autoComplete="new-password" value={senha} onChange={(e) => setSenha(e.target.value)} placeholder="Mínimo 8 caracteres" /></div>
+                  <div className="space-y-2"><Label htmlFor="sm-senha2">Repetir senha *</Label>
+                    <Input id="sm-senha2" type="password" autoComplete="new-password" value={confirmar} onChange={(e) => setConfirmar(e.target.value)} /></div>
+                </div>
+                {confirmar && senha !== confirmar ? <p className="text-xs text-destructive">As senhas não coincidem.</p> : null}
+              </div>
+
+              <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 space-y-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-primary">Documentos para análise</p>
+                {DOCUMENTOS.map((d) => (
+                  <div key={d.chave} className="space-y-1">
+                    <Label htmlFor={`sm-doc-${d.chave}`}>{d.rotulo}</Label>
+                    <Input id={`sm-doc-${d.chave}`} type="file" accept={d.chave === "foto" ? "image/*" : "image/*,application/pdf"}
+                      onChange={(e) => setArquivos((a) => ({ ...a, [d.chave]: e.target.files?.[0] ?? null }))} />
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground">Arquivos de até 10 MB. Só a equipe de administração pode ver.</p>
+              </div>
 
               <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 space-y-3">
                 <p className="text-xs font-medium uppercase tracking-wide text-primary">Seu veículo</p>
