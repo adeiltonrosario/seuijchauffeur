@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, UserRound } from "lucide-react";
+import { CheckCircle2, Clock, MessageCircle, UserRound } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ChatCorrida } from "@/components/chat-corrida";
 import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -24,11 +26,22 @@ export const Route = createFileRoute("/cliente/corrida/$id")({
   component: CorridaCliente,
 });
 
+type Contato = { nome: string; veiculo: string; placa: string; categoria: string; whatsapp: string };
+
 function CorridaCliente() {
   const { id } = Route.useParams();
   const corrida = useCorridas({ id })[0];
   const candidaturas = useCandidaturas(id);
   const [enviando, setEnviando] = useState<string | null>(null);
+  const [contato, setContato] = useState<Contato | null>(null);
+  const vinculado = corrida?.motorista ?? "";
+
+  useEffect(() => {
+    if (!vinculado) { setContato(null); return; }
+    void supabase.rpc("contato_motorista_corrida", { _corrida: id }).then(({ data }) =>
+      setContato((data as Contato | null) ?? null),
+    );
+  }, [id, vinculado]);
 
   const vincular = async (candId: string, nome: string) => {
     setEnviando(candId);
@@ -63,12 +76,27 @@ function CorridaCliente() {
           </div>
 
           {!aberto && corrida.motorista ? (
-            <div className="mt-4 flex items-center gap-3 rounded-lg border border-primary/40 bg-primary/10 p-4">
-              <CheckCircle2 className="size-5 text-primary" />
-              <p className="text-sm">
-                Motorista vinculado: <span className="font-medium text-primary">{corrida.motorista}</span>
-                {corrida.veiculo ? ` · ${corrida.veiculo}` : ""}
+            <div className="mt-4 space-y-3 rounded-lg border border-primary/40 bg-primary/10 p-4">
+              <p className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="size-5 text-primary" />
+                Motorista vinculado: <span className="font-medium text-primary">{contato?.nome ?? corrida.motorista}</span>
               </p>
+              <p className="text-xs text-muted-foreground">
+                {contato?.veiculo ?? corrida.veiculo}
+                {contato?.placa ? ` · placa ${contato.placa}` : ""}
+                {contato?.categoria ? ` · ${contato.categoria}` : ""}
+              </p>
+              {contato?.whatsapp ? (
+                <Button size="sm" asChild>
+                  <a
+                    href={`https://wa.me/55${contato.whatsapp.replace(/\D/g, "").replace(/^55/, "")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <MessageCircle /> Falar com o motorista
+                  </a>
+                </Button>
+              ) : null}
             </div>
           ) : null}
 
