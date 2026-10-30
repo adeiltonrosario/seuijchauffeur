@@ -558,6 +558,24 @@ function Autenticacao() {
                   onChange={(e) => setSenhaConta(e.target.value)}
                 />
               </div>
+              {criandoConta ? (
+                <div className="space-y-2">
+                  <Label htmlFor="senha2">Repetir senha *</Label>
+                  <Input
+                    id="senha2"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    value={senhaConfirmar}
+                    onChange={(e) => setSenhaConfirmar(e.target.value)}
+                  />
+                  {senhaConfirmar && senhaConta !== senhaConfirmar ? (
+                    <p className="text-xs text-destructive">As senhas não coincidem.</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Mínimo de 8 caracteres.</p>
+                  )}
+                </div>
+              ) : null}
               {criandoConta && perfil === "motorista" ? (
                 <div className="rounded-lg border border-border/60 bg-secondary/30 p-4">
                   <p className="text-xs font-medium uppercase tracking-wide text-primary">
