@@ -22,6 +22,9 @@ export type MotoristaBanco = {
   valor: number;
   ajudantes: number;
   valorAjudante: number;
+  cpf?: string;
+  cnh?: string;
+  documentos?: Record<string, string>;
 };
 
 export type VeiculoFrota = {
@@ -58,6 +61,9 @@ export async function gravarMotorista(m: Partial<MotoristaBanco> & { nome: strin
   if (m.valor !== undefined) linha["valor"] = m.valor;
   if (m.ajudantes !== undefined) linha["ajudantes"] = m.ajudantes;
   if (m.valorAjudante !== undefined) linha["valor_ajudante"] = m.valorAjudante;
+  if (m.cpf !== undefined) linha["cpf"] = m.cpf;
+  if (m.cnh !== undefined) linha["cnh"] = m.cnh;
+  if (m.documentos !== undefined) linha["documentos"] = m.documentos;
   const { error } = await supabase.from("motoristas").upsert(linha as never, { onConflict: "nome" });
   avisar("gravar motorista", error);
 }

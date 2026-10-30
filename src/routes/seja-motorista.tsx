@@ -18,6 +18,7 @@ import {
 } from "@/lib/dados";
 import { formatarTelefone, validarContato } from "@/lib/contatos";
 import { registrarPendente } from "@/lib/status-motorista";
+import { cpfValido, criarAcesso, enviarDocumento, formatarCpf, validarSenhas } from "@/lib/cadastro-acesso";
 import { gravarMotorista, gravarVeiculoFrota } from "@/lib/banco";
 
 export const Route = createFileRoute("/seja-motorista")({
@@ -41,11 +42,22 @@ const REQUISITOS = [
   { icone: Clock, texto: "Pontualidade: chegada 10 minutos antes" },
 ];
 
+const DOCUMENTOS = [
+  { chave: "foto", rotulo: "Foto de perfil (rosto) *" },
+  { chave: "cnh", rotulo: "CNH com EAR (foto ou PDF) *" },
+  { chave: "crlv", rotulo: "CRLV do veículo (foto ou PDF) *" },
+  { chave: "antecedentes", rotulo: "Certidão de antecedentes criminais (opcional)" },
+] as const;
+
 function SejaMotorista() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [cpf, setCpf] = useState("");
   const [cnh, setCnh] = useState("");
+  const [senha, setSenha] = useState("");
+  const [confirmar, setConfirmar] = useState("");
+  const [arquivos, setArquivos] = useState<Record<string, File | null>>({});
   const [modelo, setModelo] = useState("");
   const [placa, setPlaca] = useState("");
   const [cor, setCor] = useState("");
@@ -64,37 +76,57 @@ function SejaMotorista() {
     if (!nome.trim()) return void toast.error("Informe seu nome completo.");
     const erro = validarContato(email, whatsapp);
     if (erro) return void toast.error(erro);
+    if (!cpfValido(cpf)) return void toast.error("Informe um CPF válido.");
     if (!cnh.trim()) return void toast.error("Informe o número da sua CNH.");
+    const erroSenha = validarSenhas(senha, confirmar);
+    if (erroSenha) return void toast.error(erroSenha);
     if (!modelo || !placa || !cor) return void toast.error("Informe modelo, placa e cor do veículo.");
     const faixa = faixaCapacidade(categoria);
     const informada = Number(capacidade);
     if (faixa.ajustavel && (!Number.isFinite(informada) || informada < faixa.min || informada > faixa.max)) {
       return void toast.error(`Informe a lotação entre ${faixa.min} e ${faixa.max} ocupantes conforme o CRLV.`);
     }
+    for (const d of DOCUMENTOS) {
+      if (d.chave !== "antecedentes" && !arquivos[d.chave]) return void toast.error(`Anexe: ${d.rotulo.replace(" *", "")}.`);
+    }
     setSalvando(true);
-    const nomeM = nome.trim();
-    await gravarMotorista({
-      nome: nomeM,
-      email: email.trim().toLowerCase(),
-      whatsapp: whatsapp.trim(),
-      status: "pendente",
-      veiculo: `${modelo} — ${categoria}`,
-      placa: placa.toUpperCase(),
-      categoria,
-    });
-    await gravarVeiculoFrota(
-      {
-        placa,
-        modelo,
-        cor,
+    try {
+      const documentos: Record<string, string> = {};
+      for (const d of DOCUMENTOS) {
+        const f = arquivos[d.chave];
+        if (f) documentos[d.chave] = await enviarDocumento(cpf, d.chave, f);
+      }
+      const erroAcesso = await criarAcesso(email, senha, "/");
+      if (erroAcesso) { setSalvando(false); return void toast.error(erroAcesso); }
+      const nomeM = nome.trim();
+      await gravarMotorista({
+        nome: nomeM,
+        email: email.trim().toLowerCase(),
+        whatsapp: whatsapp.trim(),
+        status: "pendente",
+        veiculo: `${modelo} — ${categoria}`,
+        placa: placa.toUpperCase(),
         categoria,
-        capacidade: faixa.ajustavel ? capacidadeValida(categoria, informada) : capacidadeDaCategoria(categoria),
-      },
-      nomeM,
-    );
-    registrarPendente(nomeM);
+        cpf: cpf.replace(/\D/g, ""),
+        cnh: cnh.trim(),
+        documentos,
+      });
+      await gravarVeiculoFrota(
+        {
+          placa,
+          modelo,
+          cor,
+          categoria,
+          capacidade: faixa.ajustavel ? capacidadeValida(categoria, informada) : capacidadeDaCategoria(categoria),
+        },
+        nomeM,
+      );
+      registrarPendente(nomeM);
+      setEnviado(true);
+    } catch (e) {
+      toast.error("Não foi possível enviar os documentos: " + (e as Error).message);
+    }
     setSalvando(false);
-    setEnviado(true);
   };
 
   return (
@@ -123,7 +155,7 @@ function SejaMotorista() {
               <CheckCircle2 className="mx-auto size-12 text-primary" />
               <p className="mt-4 font-display text-xl font-semibold text-gold">Solicitação recebida!</p>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                Nossa gerência corporativa analisará seus dados e entrará em contato via WhatsApp para ativar seu acesso.
+                Confirme seu e-mail pelo link que enviamos. Nossa gerência corporativa analisará seus documentos e entrará em contato via WhatsApp para ativar seu acesso.
               </p>
               <Button asChild className="mt-6"><Link to="/">Voltar ao início</Link></Button>
             </div>
@@ -137,8 +169,35 @@ function SejaMotorista() {
                 <div className="space-y-2"><Label htmlFor="sm-whats">Telefone (WhatsApp) *</Label>
                   <Input id="sm-whats" type="tel" value={whatsapp} onChange={(e) => setWhatsapp(formatarTelefone(e.target.value))} placeholder="(71) 99999-9999" /></div>
               </div>
-              <div className="space-y-2"><Label htmlFor="sm-cnh">Número da CNH *</Label>
-                <Input id="sm-cnh" inputMode="numeric" value={cnh} onChange={(e) => setCnh(e.target.value)} /></div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2"><Label htmlFor="sm-cpf">CPF *</Label>
+                  <Input id="sm-cpf" inputMode="numeric" value={cpf} onChange={(e) => setCpf(formatarCpf(e.target.value))} placeholder="000.000.000-00" /></div>
+                <div className="space-y-2"><Label htmlFor="sm-cnh">Número da CNH *</Label>
+                  <Input id="sm-cnh" inputMode="numeric" value={cnh} onChange={(e) => setCnh(e.target.value)} /></div>
+              </div>
+
+              <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 space-y-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-primary">Crie sua senha de acesso</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2"><Label htmlFor="sm-senha">Senha *</Label>
+                    <Input id="sm-senha" type="password" autoComplete="new-password" value={senha} onChange={(e) => setSenha(e.target.value)} placeholder="Mínimo 8 caracteres" /></div>
+                  <div className="space-y-2"><Label htmlFor="sm-senha2">Repetir senha *</Label>
+                    <Input id="sm-senha2" type="password" autoComplete="new-password" value={confirmar} onChange={(e) => setConfirmar(e.target.value)} /></div>
+                </div>
+                {confirmar && senha !== confirmar ? <p className="text-xs text-destructive">As senhas não coincidem.</p> : null}
+              </div>
+
+              <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 space-y-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-primary">Documentos para análise</p>
+                {DOCUMENTOS.map((d) => (
+                  <div key={d.chave} className="space-y-1">
+                    <Label htmlFor={`sm-doc-${d.chave}`}>{d.rotulo}</Label>
+                    <Input id={`sm-doc-${d.chave}`} type="file" accept={d.chave === "foto" ? "image/*" : "image/*,application/pdf"}
+                      onChange={(e) => setArquivos((a) => ({ ...a, [d.chave]: e.target.files?.[0] ?? null }))} />
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground">Arquivos de até 10 MB. Só a equipe de administração pode ver.</p>
+              </div>
 
               <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 space-y-3">
                 <p className="text-xs font-medium uppercase tracking-wide text-primary">Seu veículo</p>
