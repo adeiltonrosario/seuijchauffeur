@@ -126,7 +126,15 @@ function AgendamentosMotorista() {
           </Link>
         ))}
         {lista.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhuma corrida agendada nesta data.</p>
+          <p className="text-sm text-muted-foreground">
+            {carregando
+              ? "Carregando suas corridas…"
+              : !motorista
+                ? "Entre com sua conta de motorista para ver suas corridas."
+                : motorista.status !== "ativo"
+                  ? "Seu cadastro ainda não está ativo. Aguarde a aprovação da equipe."
+                  : "Nenhuma corrida vinculada a você nesta data."}
+          </p>
         ) : null}
       </div>
     </AppShell>

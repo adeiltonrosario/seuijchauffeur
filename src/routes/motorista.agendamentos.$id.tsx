@@ -1,6 +1,5 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
-import { useState } from "react";
-import { BellRing, CheckCircle2, Clock, Navigation, PlayCircle, XCircle } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { BellRing, CheckCircle2, Clock, Navigation, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { AvisoWhatsapp } from "@/components/aviso-whatsapp";
@@ -9,36 +8,47 @@ import { MapaLocal } from "@/components/mapa-local";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { agendamentos, caracteristicasDaModalidade, formatarBRL, type StatusAgendamento } from "@/lib/dados";
-
+import { caracteristicasDaModalidade, formatarBRL, type StatusAgendamento } from "@/lib/dados";
+import { atualizarStatusCorrida, useCorridas } from "@/lib/corridas";
+import { useMotoristaLogado } from "@/lib/motorista-sessao";
 
 export const Route = createFileRoute("/motorista/agendamentos/$id")({
-  loader: ({ params }) => {
-    const agendamento = agendamentos.find((a) => a.id === params.id);
-    if (!agendamento) throw notFound();
-    return { agendamento };
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) {
-      return { meta: [{ title: "Agendamento indisponível" }, { name: "robots", content: "noindex" }] };
-    }
-    const titulo = `Corrida ${loaderData.agendamento.id} — painel do motorista`;
-    return {
-      meta: [
-        { title: titulo },
-        { name: "description", content: "Confirme, recuse, inicie ou conclua a corrida agendada." },
-        { property: "og:title", content: titulo },
-        { property: "og:description", content: "Detalhes da corrida, chat com o cliente e lembretes automáticos." },
-      ],
-    };
-  },
+  head: ({ params }) => ({
+    meta: [
+      { title: `Corrida ${params.id} — painel do motorista` },
+      { name: "description", content: "Confirme, inicie ou conclua a corrida agendada." },
+      { property: "og:title", content: `Corrida ${params.id} — painel do motorista` },
+      { property: "og:description", content: "Detalhes da corrida, trajeto completo e chat mediado." },
+    ],
+  }),
   component: DetalhesMotorista,
 });
 
 function DetalhesMotorista() {
-  const { agendamento } = Route.useLoaderData();
-  const [status, setStatus] = useState<StatusAgendamento>(agendamento.status);
-  const [inicioRegistrado, setInicioRegistrado] = useState(status === "em-andamento");
+  const { id } = Route.useParams();
+  const { carregando, motorista } = useMotoristaLogado();
+  const corridas = useCorridas({ id, motorista: motorista?.nome ?? "", cliente: motorista ? undefined : "" });
+  const agendamento = corridas[0];
+
+  if (!agendamento) {
+    return (
+      <AppShell titulo={`Corrida ${id}`} descricao="Painel do motorista">
+        <p className="text-sm text-muted-foreground">
+          {carregando ? "Carregando…" : !motorista
+            ? "Entre com sua conta de motorista para ver esta corrida."
+            : "Corrida não encontrada ou não vinculada a você."}
+        </p>
+      </AppShell>
+    );
+  }
+
+  const status = agendamento.status;
+  const ativo = motorista?.status === "ativo";
+  const mudar = async (novo: StatusAgendamento, msg: string) => {
+    if (!ativo) { toast.error("Seu cadastro precisa estar ativo."); return; }
+    if (await atualizarStatusCorrida(agendamento.id, novo)) toast.success(msg);
+    else toast.error("Não foi possível salvar. Tente novamente.");
+  };
 
   return (
     <AppShell
@@ -51,11 +61,7 @@ function DetalhesMotorista() {
           <AvisoWhatsapp agendamento={agendamento} />
           <Card className="border-warning/30 bg-warning/10 p-4">
             <p className="flex items-center gap-2 text-sm text-warning">
-              <BellRing className="size-4" /> Lembrete enviado ao motorista e ao cliente: embarque em {agendamento.ida}.
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Se o início não for atualizado até 2 horas antes, o agendamento é liberado como prioridade para outro
-              motorista.
+              <BellRing className="size-4" /> Embarque em {agendamento.ida}.
             </p>
           </Card>
 
@@ -70,7 +76,6 @@ function DetalhesMotorista() {
                 ["Ida", agendamento.ida],
                 ["Retorno", agendamento.retorno ?? "Somente ida"],
                 ["Veículo agendado", agendamento.veiculo],
-                ["Ocupantes", String(agendamento.ocupantes.length)],
                 ["Pagamento", agendamento.pagamento],
                 ["Valor a receber", formatarBRL(agendamento.valor)],
               ].map(([rotulo, texto]) => (
@@ -80,18 +85,10 @@ function DetalhesMotorista() {
                 </div>
               ))}
             </dl>
-            <p className="mt-4 text-xs text-muted-foreground">
-              A troca de veículo depende da aceitação do cliente.
-            </p>
           </Card>
 
           <Card className="surface-luxe border-border/60 p-6">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              Pontos do trajeto
-            </h2>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Toque na imagem para abrir a navegação no GPS.
-            </p>
+            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Pontos do trajeto</h2>
             <Button asChild className="mt-4 w-full">
               <a
                 href={`https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=${encodeURIComponent(agendamento.embarque)}&destination=${encodeURIComponent(agendamento.desembarque)}${agendamento.parada ? `&waypoints=${encodeURIComponent(agendamento.parada)}` : ""}`}
@@ -102,26 +99,11 @@ function DetalhesMotorista() {
               </a>
             </Button>
             <div className="mt-4 space-y-3">
-              <MapaLocal
-                rotulo="Embarque"
-                endereco={agendamento.embarque}
-                destaque="embarque"
-                observacao={`Chegue 10 minutos antes de ${agendamento.ida}.`}
-              />
+              <MapaLocal rotulo="Embarque" endereco={agendamento.embarque} destaque="embarque" observacao={`Chegada no horário: ${agendamento.ida}.`} />
               {agendamento.parada ? (
-                <MapaLocal
-                  rotulo="Parada"
-                  endereco={agendamento.parada}
-                  destaque="parada"
-                  observacao="3 minutos de espera inclusos; o excedente é cobrado por minuto."
-                />
+                <MapaLocal rotulo="Parada" endereco={agendamento.parada} destaque="parada" observacao="3 minutos de espera inclusos." />
               ) : null}
-              <MapaLocal
-                rotulo="Desembarque"
-                endereco={agendamento.desembarque}
-                destaque="desembarque"
-                observacao="Apoio ao desembarque conforme a modalidade."
-              />
+              <MapaLocal rotulo="Desembarque" endereco={agendamento.desembarque} destaque="desembarque" observacao="Apoio ao desembarque conforme a modalidade." />
             </div>
           </Card>
 
@@ -146,46 +128,14 @@ function DetalhesMotorista() {
           />
         </div>
 
-
         <aside className="space-y-3">
-          <Button
-            className="w-full"
-            onClick={() => {
-              setStatus("confirmado");
-              toast.success("Interesse confirmado. Chat liberado com o cliente.");
-            }}
-          >
-            <CheckCircle2 /> Confirmar interesse
+          <Button className="w-full" disabled={status !== "pendente"} onClick={() => mudar("confirmado", "Corrida confirmada.")}>
+            <CheckCircle2 /> Confirmar corrida
           </Button>
-          <Button
-            className="w-full"
-            variant="secondary"
-            onClick={() => {
-              setStatus("pendente");
-              toast("Agendamento recusado e mantido disponível na lista.");
-            }}
-          >
-            <XCircle /> Recusar agendamento
+          <Button className="w-full" variant="secondary" disabled={status !== "confirmado"} onClick={() => mudar("em-andamento", "Início da corrida registrado.")}>
+            <PlayCircle /> Iniciar corrida
           </Button>
-          <Button
-            className="w-full"
-            variant="secondary"
-            disabled={inicioRegistrado}
-            onClick={() => {
-              setInicioRegistrado(true);
-              setStatus("em-andamento");
-              toast.success("Início da corrida registrado.");
-            }}
-          >
-            <PlayCircle /> {inicioRegistrado ? "Início registrado" : "Atualizar início da corrida"}
-          </Button>
-          <Button
-            className="w-full"
-            onClick={() => {
-              setStatus("concluido");
-              toast.success("Corrida concluída. Pagamento liberado para saque.");
-            }}
-          >
+          <Button className="w-full" disabled={status !== "em-andamento"} onClick={() => mudar("concluido", "Corrida concluída.")}>
             <Clock /> Concluir corrida
           </Button>
         </aside>
