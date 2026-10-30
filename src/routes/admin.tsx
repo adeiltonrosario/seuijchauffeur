@@ -559,7 +559,7 @@ function Admin() {
           <TabsTrigger value="modalidades">Modalidades </TabsTrigger>
           <TabsTrigger value="assinaturas">Assinaturas</TabsTrigger>
           <TabsTrigger value="propostas">Propostas e Rotas vip</TabsTrigger>
-          <TabsTrigger value="recebimento">Recebimento</TabsTrigger>
+          <TabsTrigger value="recebimento">Pagamentos</TabsTrigger>
           <TabsTrigger value="publicidades">Publicidades</TabsTrigger>
           <TabsTrigger value="casas-apoio">Casas de Apoio</TabsTrigger>
           <TabsTrigger value="creditos">Créditos vencidos</TabsTrigger>
