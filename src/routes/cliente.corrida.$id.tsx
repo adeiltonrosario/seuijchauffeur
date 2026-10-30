@@ -157,6 +157,20 @@ function CorridaCliente() {
           </div>
         </Card>
       </div>
+      {!aberto && corrida.motorista ? (
+        <div className="mt-6">
+          <ChatCorrida
+            agendamentoId={corrida.id}
+            origem="cliente"
+            cliente={corrida.cliente}
+            motorista={corrida.motorista}
+            veiculo={corrida.veiculo}
+            embarque={corrida.embarque}
+            desembarque={corrida.desembarque}
+            modalidade={corrida.modalidade}
+          />
+        </div>
+      ) : null}
     </AppShell>
   );
 }
