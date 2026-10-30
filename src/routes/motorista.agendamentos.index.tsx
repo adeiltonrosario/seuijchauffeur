@@ -49,7 +49,7 @@ function AgendamentosMotorista() {
   ).sort((a, b) => (a.d + a.t.horario).localeCompare(b.d + b.t.horario));
 
   const { carregando, motorista } = useMotoristaLogado();
-  const corridas = useCorridas({ motorista: motorista?.nome ?? "" , cliente: motorista ? undefined : "" });
+  const corridas = useCorridas({ motorista: motorista?.nome ?? "" , ...(motorista ? {} : { cliente: "" }) });
   const lista = corridas.filter(
     (a) => a.status !== "cancelado" && (data === "" || a.ida.includes(formatarData(data)) || a.ida.startsWith(data)),
   );

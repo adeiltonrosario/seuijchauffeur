@@ -27,7 +27,7 @@ export const Route = createFileRoute("/motorista/agendamentos/$id")({
 function DetalhesMotorista() {
   const { id } = Route.useParams();
   const { carregando, motorista } = useMotoristaLogado();
-  const corridas = useCorridas({ id, motorista: motorista?.nome ?? "", cliente: motorista ? undefined : "" });
+  const corridas = useCorridas({ id, motorista: motorista?.nome ?? "", ...(motorista ? {} : { cliente: "" }) });
   const agendamento = corridas[0];
 
   if (!agendamento) {
