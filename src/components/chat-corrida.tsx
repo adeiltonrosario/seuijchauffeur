@@ -5,15 +5,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
 import { mediarMensagem } from "@/lib/mediacao.functions";
-import {
-  ATALHOS,
-  carregarConversa,
-  novaMensagem,
-  salvarConversa,
-  type MensagemMediada,
-  type OrigemMensagem,
-} from "@/lib/chat-mediado";
+import { ATALHOS, type OrigemMensagem } from "@/lib/chat-mediado";
 
 type Props = {
   agendamentoId: string;
@@ -26,16 +20,46 @@ type Props = {
   modalidade: string;
 };
 
+type Mensagem = { id: string; mediado: string; hora: string };
+
 export function ChatCorrida(props: Props) {
   const { agendamentoId, origem } = props;
-  const [mensagens, setMensagens] = useState<MensagemMediada[]>([]);
+  const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [texto, setTexto] = useState("");
   const [mediando, setMediando] = useState(false);
   const fim = useRef<HTMLDivElement | null>(null);
   const mediar = useServerFn(mediarMensagem);
 
   useEffect(() => {
-    setMensagens(carregarConversa(agendamentoId));
+    let ativo = true;
+    const carregar = async () => {
+      const { data } = await supabase
+        .from("mensagens_corrida")
+        .select("id, texto_mediado, criado_em")
+        .eq("corrida_id", agendamentoId)
+        .order("criado_em", { ascending: true });
+      if (!ativo) return;
+      setMensagens(
+        (data ?? []).map((m) => ({
+          id: m.id,
+          mediado: m.texto_mediado,
+          hora: new Date(m.criado_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        })),
+      );
+    };
+    void carregar();
+    const canal = supabase
+      .channel(`chat-${agendamentoId}-${Math.random().toString(36).slice(2)}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "mensagens_corrida", filter: `corrida_id=eq.${agendamentoId}` },
+        () => void carregar(),
+      )
+      .subscribe();
+    return () => {
+      ativo = false;
+      void supabase.removeChannel(canal);
+    };
   }, [agendamentoId]);
 
   useEffect(() => {
@@ -48,23 +72,9 @@ export function ChatCorrida(props: Props) {
     setMediando(true);
     setTexto("");
     try {
-      const resposta = await mediar({
-        data: {
-          origem,
-          texto: bruto,
-          cliente: props.cliente,
-          motorista: props.motorista,
-          veiculo: props.veiculo,
-          embarque: props.embarque,
-          desembarque: props.desembarque,
-          modalidade: props.modalidade,
-        },
-      });
-      const atualizadas = [...carregarConversa(agendamentoId), novaMensagem(origem, bruto, resposta.mediado)];
-      salvarConversa(agendamentoId, atualizadas);
-      setMensagens(atualizadas);
+      await mediar({ data: { corridaId: agendamentoId, texto: bruto } });
     } catch {
-      toast.error("Não foi possível repassar a mensagem agora. Tente novamente.");
+      toast.error("Não foi possível repassar a mensagem agora. Verifique se você está conectado e tente novamente.");
       setTexto(bruto);
     } finally {
       setMediando(false);
