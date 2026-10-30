@@ -136,6 +136,7 @@ function Admin() {
 
   // Autorização de veículos solicitados pelos motoristas
   const [veiculosSolicitados, setVeiculosSolicitados] = useState<VeiculoMotorista[]>([]);
+  const [categoriaOficial, setCategoriaOficial] = useState<Record<string, CategoriaVeiculo>>({});
   const decidir = (v: VeiculoMotorista, status: StatusVeiculo) => {
     let motivo: string | undefined;
     if (status === "rejeitado" || status === "suspenso") {
@@ -146,8 +147,9 @@ function Admin() {
         return;
       }
     }
-    setVeiculosSolicitados(decidirVeiculo(veiculosSolicitados, v.id, status, aprovador, motivo));
-    toast.success(`${v.placa}: ${ROTULO_STATUS_VEICULO[status]} por ${aprovador}.`);
+    const catOficial = status === "aprovado" ? categoriaOficial[v.id] : undefined;
+    setVeiculosSolicitados(decidirVeiculo(veiculosSolicitados, v.id, status, aprovador, motivo, catOficial));
+    toast.success(`${v.placa}: ${ROTULO_STATUS_VEICULO[status]} por ${aprovador}${catOficial ? ` · categoria ${catOficial}` : ""}.`);
   };
   const removerSolicitacao = (v: VeiculoMotorista) => {
     setVeiculosSolicitados(excluirVeiculoMotorista(veiculosSolicitados, v.id));
@@ -862,6 +864,21 @@ function Admin() {
                         {ROTULO_STATUS_VEICULO[v.status]}
                       </span>
                     </div>
+                    {v.status !== "aprovado" ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <Label htmlFor={`cat-${v.id}`} className="text-xs">Categoria oficial (definida pela equipe)</Label>
+                        <select
+                          id={`cat-${v.id}`}
+                          value={categoriaOficial[v.id] ?? v.categoria}
+                          onChange={(e) => setCategoriaOficial((a) => ({ ...a, [v.id]: e.target.value as CategoriaVeiculo }))}
+                          className="rounded-md border border-border bg-background px-2 py-1 text-sm"
+                        >
+                          {[...CATEGORIAS_PASSAGEIROS, ...CATEGORIAS_CARGA].map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : null}
                     <div className="mt-3 flex flex-wrap gap-2">
                       {v.status !== "aprovado" ? (
                         <Button size="sm" onClick={() => decidir(v, "aprovado")}>
