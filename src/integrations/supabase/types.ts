@@ -766,9 +766,12 @@ export type Database = {
           destino_fixo: string
           forma_pagamento: string
           id: string
+          km_rota: number
+          minutos_rota: number
           nome: string
           observacao: string | null
           origem_fixa: string
+          paradas_fixas: string[]
           por_km_variado: number
           valor_mensal: number
           valor_trecho_fixo: number
@@ -783,9 +786,12 @@ export type Database = {
           destino_fixo: string
           forma_pagamento?: string
           id?: string
+          km_rota?: number
+          minutos_rota?: number
           nome?: string
           observacao?: string | null
           origem_fixa: string
+          paradas_fixas?: string[]
           por_km_variado?: number
           valor_mensal?: number
           valor_trecho_fixo?: number
@@ -800,9 +806,12 @@ export type Database = {
           destino_fixo?: string
           forma_pagamento?: string
           id?: string
+          km_rota?: number
+          minutos_rota?: number
           nome?: string
           observacao?: string | null
           origem_fixa?: string
+          paradas_fixas?: string[]
           por_km_variado?: number
           valor_mensal?: number
           valor_trecho_fixo?: number
