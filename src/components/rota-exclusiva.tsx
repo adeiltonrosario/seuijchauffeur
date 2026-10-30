@@ -35,6 +35,7 @@ export function AdminRotaExclusiva() {
   const [lista, setLista] = useState<Plano[]>([]);
   const [f, setF] = useState({ ...VAZIO });
   const [editando, setEditando] = useState<string | null>(null);
+  const paradasForm: string[] = f.paradas_fixas ?? [];
   const set = (k: keyof typeof VAZIO, v: unknown) => setF((p) => ({ ...p, [k]: v }));
 
   const carregar = async () => {
@@ -76,19 +77,19 @@ export function AdminRotaExclusiva() {
           <div className="flex gap-2"><Input value={f.origem_fixa} placeholder="Ex.: Residência — Alphaville" onChange={(e) => set("origem_fixa", e.target.value)} />
             <BotaoSelecionarMapa valor={f.origem_fixa} onConfirmar={(v) => set("origem_fixa", v)} rotulo="origem" /></div></div>
         <div className="space-y-2"><Label>Paradas da rota fixa (opcional)</Label>
-          {f.paradas_fixas.map((p, i) => (
+          {paradasForm.map((p, i) => (
             <div key={i} className="flex gap-2">
-              <Input value={p} placeholder={`Parada ${i + 1}`} onChange={(e) => set("paradas_fixas", f.paradas_fixas.map((x, j) => (j === i ? e.target.value : x)))} />
-              <BotaoSelecionarMapa valor={p} rotulo={`parada ${i + 1}`} onConfirmar={(v) => set("paradas_fixas", f.paradas_fixas.map((x, j) => (j === i ? v : x)))} />
-              <Button type="button" size="icon" variant="ghost" aria-label="Remover parada" onClick={() => set("paradas_fixas", f.paradas_fixas.filter((_, j) => j !== i))}><X /></Button>
+              <Input value={p} placeholder={`Parada ${i + 1}`} onChange={(e) => set("paradas_fixas", paradasForm.map((x, j) => (j === i ? e.target.value : x)))} />
+              <BotaoSelecionarMapa valor={p} rotulo={`parada ${i + 1}`} onConfirmar={(v) => set("paradas_fixas", paradasForm.map((x, j) => (j === i ? v : x)))} />
+              <Button type="button" size="icon" variant="ghost" aria-label="Remover parada" onClick={() => set("paradas_fixas", paradasForm.filter((_, j) => j !== i))}><X /></Button>
             </div>
           ))}
-          <Button type="button" size="sm" variant="secondary" onClick={() => set("paradas_fixas", [...f.paradas_fixas, ""])}><Plus /> Adicionar parada na rota</Button>
+          <Button type="button" size="sm" variant="secondary" onClick={() => set("paradas_fixas", [...paradasForm, ""])}><Plus /> Adicionar parada na rota</Button>
         </div>
         <div className="space-y-1"><Label>Destino fixo</Label>
           <div className="flex gap-2"><Input value={f.destino_fixo} placeholder="Ex.: Sede corporativa" onChange={(e) => set("destino_fixo", e.target.value)} />
             <BotaoSelecionarMapa valor={f.destino_fixo} onConfirmar={(v) => set("destino_fixo", v)} rotulo="destino" /></div></div>
-        <BotaoFinalizarRota rotulo="Finalizar rota e calcular km" pontos={[f.origem_fixa, ...f.paradas_fixas, f.destino_fixo]}
+        <BotaoFinalizarRota rotulo="Finalizar rota e calcular km" pontos={[f.origem_fixa, ...paradasForm, f.destino_fixo]}
           onCalculado={(r) => setF((x) => ({ ...x, km_rota: r.km, minutos_rota: r.minutos }))} />
         {f.km_rota > 0 && (
           <p className="rounded-md bg-primary/10 p-2 text-sm text-gold">
@@ -125,7 +126,7 @@ export function AdminRotaExclusiva() {
               <p>Variados: {formatarBRL(p.por_km_variado)}/km · {FORMAS[p.forma_pagamento] ?? p.forma_pagamento}</p>
             </div>
             <div className="flex gap-1">
-              <Button size="icon" variant="ghost" onClick={() => { setEditando(p.id); setF({ ...VAZIO, ...p, observacao: p.observacao ?? "" }); }}><Pencil /></Button>
+              <Button size="icon" variant="ghost" onClick={() => { setEditando(p.id); setF({ ...VAZIO, ...p, paradas_fixas: p.paradas_fixas ?? [], km_rota: Number(p.km_rota ?? 0), minutos_rota: p.minutos_rota ?? 0, observacao: p.observacao ?? "" }); }}><Pencil /></Button>
               <Button size="icon" variant="ghost" onClick={() => excluir(p.id)}><Trash2 /></Button>
             </div>
           </Card>
