@@ -532,7 +532,10 @@ export type Database = {
           alterado_por: string | null
           atualizado_em: string
           categoria: string
+          cnh: string
+          cpf: string
           criado_em: string
+          documentos: Json
           email: string
           id: string
           motivo_status: string | null
@@ -549,7 +552,10 @@ export type Database = {
           alterado_por?: string | null
           atualizado_em?: string
           categoria?: string
+          cnh?: string
+          cpf?: string
           criado_em?: string
+          documentos?: Json
           email?: string
           id?: string
           motivo_status?: string | null
@@ -566,7 +572,10 @@ export type Database = {
           alterado_por?: string | null
           atualizado_em?: string
           categoria?: string
+          cnh?: string
+          cpf?: string
           criado_em?: string
+          documentos?: Json
           email?: string
           id?: string
           motivo_status?: string | null

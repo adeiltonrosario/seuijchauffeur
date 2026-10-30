@@ -141,6 +141,13 @@
       "when": 1793332246297,
       "tag": "0019_rota_exclusiva_paradas",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793391035562,
+      "tag": "0020_motoristas_cpf_documentos",
+      "breakpoints": true
     }
   ]
 }
