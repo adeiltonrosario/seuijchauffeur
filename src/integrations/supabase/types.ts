@@ -493,6 +493,38 @@ export type Database = {
           },
         ]
       }
+      mensagens_corrida: {
+        Row: {
+          corrida_id: string
+          criado_em: string
+          id: string
+          origem: string
+          texto_mediado: string
+        }
+        Insert: {
+          corrida_id: string
+          criado_em?: string
+          id?: string
+          origem: string
+          texto_mediado: string
+        }
+        Update: {
+          corrida_id?: string
+          criado_em?: string
+          id?: string
+          origem?: string
+          texto_mediado?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_corrida_corrida_id_fkey"
+            columns: ["corrida_id"]
+            isOneToOne: false
+            referencedRelation: "corridas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       modalidades: {
         Row: {
           caracteristicas: string
@@ -1160,6 +1192,7 @@ export type Database = {
       pagar_proposta: { Args: { _proposta: string }; Returns: string }
       painel_carteira_admin: { Args: never; Returns: Json }
       painel_saldao_admin: { Args: never; Returns: Json }
+      papel_na_corrida: { Args: { _corrida: string }; Returns: string }
       reivindicar_primeiro_admin: { Args: never; Returns: boolean }
       reservar_compra_saldao: {
         Args: { _oferta: string; _quantidade: number }
