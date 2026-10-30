@@ -8,17 +8,19 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatarBRL } from "@/lib/dados";
-import { DESCONTOS, MESES_DO_CICLO, VIAGENS_POR_MES_PADRAO, rotuloPeriodicidade, type Periodicidade } from "@/lib/assinaturas";
+import { DESCONTOS, MESES_DO_CICLO, rotuloPeriodicidade, type Periodicidade } from "@/lib/assinaturas";
 
 export type PlanoModalidade = {
   id: string;
   nome: string;
   periodicidade: Periodicidade;
-  viagensMes: number;
-  precoViagem: number;
+  kmMes: number; // créditos = km liberados por mês
+  precoKm: number;
+  excedenteKm: number;
   desconto: number; // %
 };
 
+const KM_PADRAO = 120;
 const CHAVE = "seuchauffeur:planos-modalidade";
 const PERIODOS: Periodicidade[] = ["mensal", "trimestral", "anual"];
 
@@ -27,16 +29,17 @@ const planosPadrao = (modalidade: string, preco: number): PlanoModalidade[] =>
     id: `${modalidade}-${p}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     nome: `${modalidade} ${rotuloPeriodicidade[p]}`,
     periodicidade: p,
-    viagensMes: VIAGENS_POR_MES_PADRAO,
-    precoViagem: preco,
+    kmMes: KM_PADRAO,
+    precoKm: preco,
+    excedenteKm: preco,
     desconto: DESCONTOS[p] * 100,
   }));
 
 const calcular = (p: PlanoModalidade) => {
   const meses = MESES_DO_CICLO[p.periodicidade];
-  const bruto = p.viagensMes * p.precoViagem * meses;
+  const bruto = p.kmMes * p.precoKm * meses;
   const total = Math.round(bruto * (1 - p.desconto / 100) * 100) / 100;
-  return { meses, total, mensal: Math.round((total / meses) * 100) / 100, economia: Math.round((bruto - total) * 100) / 100 };
+  return { meses, km: p.kmMes * meses, total, mensal: Math.round((total / meses) * 100) / 100, economia: Math.round((bruto - total) * 100) / 100 };
 };
 
 export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: string; valorBase: number }[] }) {
@@ -64,8 +67,9 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
             id: r.id,
             nome: r.nome,
             periodicidade: r.periodicidade as Periodicidade,
-            viagensMes: r.viagens_mes,
-            precoViagem: Number(r.preco_viagem),
+            kmMes: Number(r.km_mes),
+            precoKm: Number(r.preco_km),
+            excedenteKm: Number(r.excedente_km),
             desconto: Number(r.desconto),
           });
           idsSalvos.current.add(r.id);
@@ -101,8 +105,9 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
         modalidade,
         nome: p.nome,
         periodicidade: p.periodicidade,
-        viagens_mes: p.viagensMes,
-        preco_viagem: p.precoViagem,
+        km_mes: p.kmMes,
+        preco_km: p.precoKm,
+        excedente_km: p.excedenteKm,
         desconto: p.desconto,
       })),
     );
@@ -128,8 +133,8 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
 
   const salvar = (modalidade: string) => {
     if (!rascunho) return;
-    if (!rascunho.nome.trim() || rascunho.viagensMes < 1 || rascunho.precoViagem <= 0 || rascunho.desconto < 0 || rascunho.desconto > 100) {
-      toast.error("Preencha nome, viagens (mín. 1), preço e desconto entre 0 e 100%.");
+    if (!rascunho.nome.trim() || rascunho.kmMes < 1 || rascunho.precoKm <= 0 || rascunho.desconto < 0 || rascunho.desconto > 100) {
+      toast.error("Preencha nome, km (mín. 1), preço e desconto entre 0 e 100%.");
       return;
     }
     setPlanos((a) => ({ ...a, [modalidade]: (a[modalidade] ?? []).map((p) => (p.id === rascunho.id ? rascunho : p)) }));
@@ -149,8 +154,9 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
       id: `${modalidade}-novo-${Date.now()}`,
       nome: `${modalidade} novo plano`,
       periodicidade: "mensal",
-      viagensMes: VIAGENS_POR_MES_PADRAO,
-      precoViagem: preco,
+      kmMes: KM_PADRAO,
+      precoKm: preco,
+      excedenteKm: preco,
       desconto: 0,
     };
     setPlanos((a) => ({ ...a, [modalidade]: [...(a[modalidade] ?? []), novo] }));
@@ -207,8 +213,8 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <Label className="text-xs">Viagens/mês</Label>
-                          <Input type="number" min={1} value={rascunho.viagensMes} onChange={(e) => setRascunho({ ...rascunho, viagensMes: Number(e.target.value) })} />
+                          <Label className="text-xs">Km (créditos)/mês</Label>
+                          <Input type="number" min={1} value={rascunho.kmMes} onChange={(e) => setRascunho({ ...rascunho, kmMes: Number(e.target.value) })} />
                         </div>
                         <div>
                           <Label className="text-xs">Desconto (%)</Label>
@@ -216,8 +222,12 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
                         </div>
                       </div>
                       <div>
-                        <Label className="text-xs">Preço por viagem (R$)</Label>
-                        <CampoMoeda valor={rascunho.precoViagem} aoMudar={(n) => setRascunho({ ...rascunho, precoViagem: n })} />
+                        <Label className="text-xs">Preço por km (R$)</Label>
+                        <CampoMoeda valor={rascunho.precoKm} aoMudar={(n) => setRascunho({ ...rascunho, precoKm: n })} />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Excedente por km (R$)</Label>
+                        <CampoMoeda valor={rascunho.excedenteKm} aoMudar={(n) => setRascunho({ ...rascunho, excedenteKm: n })} />
                       </div>
                     </div>
                   ) : (
@@ -228,7 +238,9 @@ export function PlanosPorModalidade({ modalidades }: { modalidades: { nome: stri
                   )}
                   <p className="mt-3 font-display text-xl text-gold">{formatarBRL(c.mensal)} /mês</p>
                   <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-                    <li>{r.viagensMes} viagens/mês · {formatarBRL(r.precoViagem)} cada</li>
+                    <li>{r.kmMes} km/mês = {r.kmMes} créditos · {formatarBRL(r.precoKm)}/km</li>
+                    <li className="text-primary">Libera {c.km} créditos (km) no ciclo, após pagamento aprovado</li>
+                    <li>Excedente: {formatarBRL(r.excedenteKm)}/km</li>
                     <li>Desconto: {r.desconto}%</li>
                     <li>Total do ciclo ({c.meses} mês/es): {formatarBRL(c.total)}</li>
                     <li>Economia: {formatarBRL(c.economia)}</li>
