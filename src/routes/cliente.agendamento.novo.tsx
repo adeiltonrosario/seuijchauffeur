@@ -264,7 +264,7 @@ function NovoAgendamento() {
   const [dataRetorno, setDataRetorno] = useState<Date | undefined>(undefined);
   const [horaRetorno, setHoraRetorno] = useState("21:00");
   const [modalidade, setModalidade] = useState(modalidades[0]!);
-  const [motorista, setMotorista] = useState(motoristas[0]!.nome);
+  const [motorista, setMotorista] = useState(motoristas[0]?.nome ?? "");
   const [turnoId, setTurnoId] = useState<(typeof TURNOS_COMPRAS)[number]["id"]>("manha");
 
   // Etapa 2 — ida
@@ -337,10 +337,10 @@ function NovoAgendamento() {
     [agenda, dataIda, horaIda, categoriasAceitas, veiculosExtras],
   );
   const escolhido =
-    motoristasDisponiveis.find((m) => m.nome === motorista) ?? motoristasDisponiveis[0] ?? motoristas[0]!;
-  const maxAjudantes = Math.min(escolhido.ajudantes, MAX_AJUDANTES);
+    motoristasDisponiveis.find((m) => m.nome === motorista) ?? motoristasDisponiveis[0] ?? motoristas[0];
+  const maxAjudantes = Math.min(escolhido?.ajudantes ?? 0, MAX_AJUDANTES);
   const ajudantesEfetivos = cargaSelecionada ? Math.min(ajudantes, maxAjudantes) : 0;
-  const valorAjudantes = Math.round(ajudantesEfetivos * escolhido.valorAjudante * 100) / 100;
+  const valorAjudantes = Math.round(ajudantesEfetivos * (escolhido?.valorAjudante ?? 0) * 100) / 100;
   // Cálculo automático da distância (ida e volta) a partir dos endereços, sem digitação.
   const [rotaAuto, setRotaAuto] = useState({ calculando: false, falha: false });
   const chaveIda = [embarque, ...paradas.map((p) => p.endereco), desembarque].join("|");
@@ -847,7 +847,7 @@ function NovoAgendamento() {
                         onClick={() => setMotorista(m.nome)}
                         className={cn(
                           "w-full rounded-lg border p-4 text-left transition-colors",
-                          escolhido.nome === m.nome ? "border-primary/50 bg-primary/10" : "border-border/70",
+                          escolhido?.nome === m.nome ? "border-primary/50 bg-primary/10" : "border-border/70",
                         )}
                       >
                         <div className="flex items-center justify-between">
@@ -922,7 +922,9 @@ function NovoAgendamento() {
                       placeholder="Ex.: 1 geladeira frost free, 1 fogão 4 bocas, 1 TV 65 polegadas e 6 caixas."
                     />
                     <p className="text-xs text-muted-foreground">
-                      Veículo do motorista: {escolhido.veiculo} — {cargaDaCategoria(escolhido.categoria)}
+                      {escolhido
+                        ? `Veículo do motorista: ${escolhido.veiculo} — ${cargaDaCategoria(escolhido.categoria)}`
+                        : "O veículo será definido quando um motorista aceitar o agendamento."}
                     </p>
                   </div>
 
@@ -982,7 +984,7 @@ function NovoAgendamento() {
                         <p className="mt-3 text-xs text-muted-foreground">
                           {ajudantesEfetivos === 0
                             ? "Sem ajudante o motorista apenas dirige e acomoda a carga no veículo; o carregamento pesado fica com você."
-                            : `${ajudantesEfetivos} ajudante(s) × ${formatarBRL(escolhido.valorAjudante)} = ${formatarBRL(valorAjudantes)} — carregam e descarregam móveis e eletrodomésticos.`}
+                            : `${ajudantesEfetivos} ajudante(s) × ${formatarBRL(escolhido?.valorAjudante ?? 0)} = ${formatarBRL(valorAjudantes)} — carregam e descarregam móveis e eletrodomésticos.`}
                         </p>
                       </>
                     ) : (
@@ -1461,7 +1463,7 @@ function NovoAgendamento() {
               {ajudantesEfetivos > 0 && (
                 <p className="flex justify-between text-muted-foreground">
                   <span>
-                    Ajudantes ({ajudantesEfetivos} × {formatarBRL(escolhido.valorAjudante)})
+                    Ajudantes ({ajudantesEfetivos} × {formatarBRL(escolhido?.valorAjudante ?? 0)})
                   </span>
                   <span className="text-foreground">{formatarBRL(valorAjudantes)}</span>
                 </p>
