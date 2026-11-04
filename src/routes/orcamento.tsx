@@ -81,14 +81,14 @@ function Orcamento() {
 
   const selecionada = cotacoes.find((c) => c.nome === escolhida);
 
-  const concluir = async (): Promise<unknown> => {
-    if (nome.trim().length < 3) return toast.error("Informe seu nome completo.");
-    if (digitos.length < 10) return toast.error("Informe o WhatsApp com DDD.");
-    if (!ida) return toast.error("Escolha a data e o horário.");
-    if (new Date(`${data}T${hora}`) < new Date()) return toast.error("Escolha um horário futuro.");
-    if (agenda === "conflito") return toast.error("Horário ocupado. Escolha outro horário.");
-    if (!origem.trim()) return toast.error("Informe o endereço de embarque.");
-    if (!rota || !selecionada) return toast.error("Toque em “Finalizar rota e calcular km”.");
+  const concluir = async (): Promise<void> => {
+    if (nome.trim().length < 3) return void toast.error("Informe seu nome completo.");
+    if (digitos.length < 10) return void toast.error("Informe o WhatsApp com DDD.");
+    if (!ida) return void toast.error("Escolha a data e o horário.");
+    if (new Date(`${data}T${hora}`) < new Date()) return void toast.error("Escolha um horário futuro.");
+    if (agenda === "conflito") return void toast.error("Horário ocupado. Escolha outro horário.");
+    if (!origem.trim()) return void toast.error("Informe o endereço de embarque.");
+    if (!rota || !selecionada) return void toast.error("Toque em “Finalizar rota e calcular km”.");
     setEnviando(true);
     try {
       const r = await agendar({ data: {
