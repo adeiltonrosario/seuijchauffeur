@@ -5,7 +5,7 @@ export const MINIMO_POR_KM = 1.85;
 export const JANELA_CONFLITO_MIN = 90;
 export const STATUS_INATIVOS = ["cancelada", "cancelado", "concluida", "concluido", "concluída", "recusada"];
 
-const BLOQUEADAS = /casa(s)? de apoio|esportivo|clube|plantonista|teste/i;
+const BLOQUEADAS = /casa(s)? de apoio|esportivo|clube|plantonista|teste|carreto|mudan[cç]a|escolar/i;
 
 export type ModalidadeBanco = {
   nome: string; caracteristicas: string; por_km: number; por_turno: boolean;

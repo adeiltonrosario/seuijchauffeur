@@ -149,10 +149,10 @@ function Orcamento() {
             <Input id="o-whats" className="h-12 text-base" type="tel" inputMode="numeric" autoComplete="tel" value={whats} onChange={(e) => setWhats(mascara(e.target.value))} placeholder="(71) 98765-4321" />
           </Campo>
           <Campo id="o-data" rotulo="Data da viagem *">
-            <Input id="o-data" className="h-12 text-base" type="date" min={new Date().toISOString().slice(0, 10)} value={data} onChange={(e) => setData(e.target.value)} />
+            <Input id="o-data" className="h-12 text-base [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:scale-125" type="date" min={new Date().toISOString().slice(0, 10)} value={data} onChange={(e) => setData(e.target.value)} />
           </Campo>
           <Campo id="o-hora" rotulo="Horário de embarque *">
-            <Input id="o-hora" className="h-12 text-base" type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
+            <Input id="o-hora" className="h-12 text-base [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:scale-125" type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
           </Campo>
           {agenda === "checando" && <p className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" /> Verificando a agenda…</p>}
           {agenda === "livre" && <p className="flex items-center gap-2 text-sm text-gold"><CheckCircle2 className="size-4" /> Horário livre na frota</p>}
@@ -191,9 +191,15 @@ function Orcamento() {
           </Button>
           <BotaoFinalizarRota rotulo="Finalizar rota e calcular km" pontos={[origem, ...paradas, destino]} onCalculado={(r) => void aoCalcular(r)} />
           {rota && (
-            <p className="rounded-md bg-primary/10 p-3 text-sm text-gold">
-              Trajeto contratado: <b>{rota.km.toLocaleString("pt-BR")} km</b> (~{rota.minutos} min)
-            </p>
+            <div className="glow-gold rounded-lg border border-primary/50 bg-primary/10 p-4 text-center">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Valor da sua corrida</p>
+              <p className="font-display text-gold mt-1 text-3xl font-semibold">
+                {selecionada ? formatarBRL(selecionada.valor) : <Loader2 className="mx-auto size-6 animate-spin" />}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {selecionada?.nome ? `${selecionada.nome} · ` : ""}{rota.km.toLocaleString("pt-BR")} km contratados (~{rota.minutos} min)
+              </p>
+            </div>
           )}
         </Secao>
 
