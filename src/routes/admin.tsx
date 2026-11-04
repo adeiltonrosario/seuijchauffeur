@@ -7,6 +7,7 @@ import { AcessoEquipe } from "@/components/acesso-equipe";
 import { PlanosPorModalidade } from "@/components/planos-por-modalidade";
 import { AdminCasasApoio } from "@/components/admin-casas-apoio";
 import { TabelaIndicacoes } from "@/components/tabela-indicacoes";
+import { LinkOrcamentoAdmin } from "@/components/link-orcamento-admin";
 import { AdminPrecosEsportivo } from "@/components/admin-precos-esportivo";
 import { AdminPropostas } from "@/components/admin-propostas";
 import { AdminRotaExclusiva } from "@/components/rota-exclusiva";
@@ -552,6 +553,8 @@ function Admin() {
     >
       <AcessoEquipe onPapel={setPapelEquipe} />
       {papelEquipe === "admin" || papelEquipe === "gerente" ? (
+      <>
+      <LinkOrcamentoAdmin />
       <Tabs defaultValue="motoristas">
         <TabsList>
           <TabsTrigger value="motoristas">Motoristas</TabsTrigger>
@@ -1615,6 +1618,7 @@ function Admin() {
           </div>
         </TabsContent>
       </Tabs>
+      </>
       ) : (
         <Card className="border-border/60 p-8 text-center text-sm text-muted-foreground">
           Acesso restrito. Entre com uma conta de Administrador ou Gerente corporativo para ver e editar viagens, planos e configurações.
