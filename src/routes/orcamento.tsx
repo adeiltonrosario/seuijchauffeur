@@ -81,7 +81,7 @@ function Orcamento() {
 
   const selecionada = cotacoes.find((c) => c.nome === escolhida);
 
-  const concluir = async () => {
+  const concluir = async (): Promise<unknown> => {
     if (nome.trim().length < 3) return toast.error("Informe seu nome completo.");
     if (digitos.length < 10) return toast.error("Informe o WhatsApp com DDD.");
     if (!ida) return toast.error("Escolha a data e o horário.");
