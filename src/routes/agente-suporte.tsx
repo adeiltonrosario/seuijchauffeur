@@ -40,18 +40,18 @@ const rotuloAutor: Record<Mensagem["autor"], string> = {
 };
 
 function AgenteSuporte() {
-  const [ativa, setAtiva] = useState(conversas[0]!.id);
+  const [ativa, setAtiva] = useState(conversas[0]?.id ?? "");
   const [mensagens, setMensagens] = useState<Mensagem[]>(mensagensMediadas);
   const [rascunho, setRascunho] = useState("A IA sugere: seu motorista chega em 12 minutos.");
   const [verPadroes, setVerPadroes] = useState(false);
   const [auditoria, setAuditoria] = useState<MensagemMediada[]>([]);
 
-  const conversa = conversas.find((c) => c.id === ativa)!;
-  const agendamento = agendamentos.find((a) => a.id === conversa.agendamento)!;
+  const conversa = conversas.find((c) => c.id === ativa);
+  const agendamento = conversa ? agendamentos.find((a) => a.id === conversa.agendamento) : undefined;
 
   useEffect(() => {
-    setAuditoria(carregarConversa(agendamento.id));
-  }, [agendamento.id]);
+    setAuditoria(agendamento ? carregarConversa(agendamento.id) : []);
+  }, [agendamento]);
 
   const hora = () =>
     new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
@@ -61,6 +61,19 @@ function AgenteSuporte() {
     if (!texto.trim()) return;
     setMensagens((atual) => [...atual, { autor, texto: texto.trim(), hora: hora() }]);
   };
+
+  if (!agendamento) {
+    return (
+      <AppShell
+        titulo="Agente de suporte IA"
+        descricao="A IA repassa mensagens entre cliente e motorista; o operador pode revisar antes do envio."
+      >
+        <Card className="border-border/60 p-6 text-sm text-muted-foreground">
+          Nenhuma conversa ativa no momento. As conversas aparecem aqui quando houver corridas em andamento.
+        </Card>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell
