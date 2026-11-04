@@ -207,7 +207,6 @@ function Orcamento() {
                   <div>
                     <p className="font-semibold">{c.nome}</p>
                     <p className="text-xs text-muted-foreground">{rota.km.toLocaleString("pt-BR")} km contratados</p>
-                    {c.descricao && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{c.descricao}</p>}
                   </div>
                   <p className="text-gold shrink-0 text-lg font-semibold">{formatarBRL(c.valor)}</p>
                 </div>
