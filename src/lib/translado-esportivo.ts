@@ -10,7 +10,7 @@ export const VEICULOS: Record<Veiculo, { nome: string; min: number; max: number;
   van: { nome: "Van executiva", min: 10, max: 15, bagagens: 15, valorEvento: 650 },
 };
 
-export const TARIFA_KM = 3.0;
+export const TARIFA_KM = 2.2;
 export const TARIFA_KM_MINIMA = 1.85;
 
 const centavos = (v: number) => Math.round(v * 100) / 100;
