@@ -62,6 +62,19 @@ function AgenteSuporte() {
     setMensagens((atual) => [...atual, { autor, texto: texto.trim(), hora: hora() }]);
   };
 
+  if (!agendamento) {
+    return (
+      <AppShell
+        titulo="Agente de suporte IA"
+        descricao="A IA repassa mensagens entre cliente e motorista; o operador pode revisar antes do envio."
+      >
+        <Card className="border-border/60 p-6 text-sm text-muted-foreground">
+          Nenhuma conversa ativa no momento. As conversas aparecem aqui quando houver corridas em andamento.
+        </Card>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell
       titulo="Agente de suporte IA"
