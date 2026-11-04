@@ -1617,6 +1617,7 @@ function Admin() {
           </div>
         </TabsContent>
       </Tabs>
+      </>
       ) : (
         <Card className="border-border/60 p-8 text-center text-sm text-muted-foreground">
           Acesso restrito. Entre com uma conta de Administrador ou Gerente corporativo para ver e editar viagens, planos e configurações.
