@@ -1,0 +1,70 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import {
+  STATUS_INATIVOS, haConflito, modalidadeLivre, valorModalidade, type ModalidadeBanco,
+} from "@/lib/orcamento-livre";
+
+async function admin() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
+
+async function verificarAgenda(ida: string) {
+  const db = await admin();
+  const data = ida.slice(0, 10);
+  const [{ data: corridas }, { count }] = await Promise.all([
+    db.from("corridas").select("ida,status").like("ida", `${data}%`),
+    db.from("motoristas").select("id", { count: "exact", head: true }).eq("status", "ativo"),
+  ]);
+  const ativas = (corridas ?? []).filter((c) => !STATUS_INATIVOS.includes(String(c.status))).map((c) => c.ida);
+  return { conflito: haConflito(ida, ativas, count ?? 0) };
+}
+
+const idaSchema = z.string().regex(/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/);
+
+export const checarHorario = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) => z.object({ ida: idaSchema }).parse(i))
+  .handler(async ({ data }) => verificarAgenda(data.ida));
+
+export const cotarModalidades = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) => z.object({ km: z.number().positive().max(2000) }).parse(i))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const { data: lista } = await db.from("modalidades").select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km");
+    return ((lista ?? []) as ModalidadeBanco[])
+      .filter((m) => modalidadeLivre(m.nome))
+      .map((m) => ({ nome: m.nome, descricao: m.caracteristicas.split("\n")[0]!.slice(0, 120), valor: valorModalidade(m, data.km) }));
+  });
+
+export const agendarOrcamento = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) =>
+    z.object({
+      nome: z.string().trim().min(3).max(120),
+      whatsapp: z.string().regex(/^\d{10,11}$/),
+      ida: idaSchema,
+      embarque: z.string().trim().min(3).max(300),
+      paradas: z.array(z.string().trim().max(300)).max(8),
+      desembarque: z.string().trim().min(3).max(300),
+      km: z.number().positive().max(2000),
+      modalidade: z.string().min(1).max(120),
+      pagamento: z.enum(["Pix", "Cartão"]),
+    }).parse(i))
+  .handler(async ({ data }) => {
+    if (!modalidadeLivre(data.modalidade)) return { ok: false as const, erro: "Modalidade não disponível." };
+    const db = await admin();
+    const { data: m } = await db.from("modalidades")
+      .select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km").eq("nome", data.modalidade).maybeSingle();
+    if (!m) return { ok: false as const, erro: "Modalidade não encontrada." };
+    if ((await verificarAgenda(data.ida)).conflito)
+      return { ok: false as const, erro: "Este horário acabou de ser ocupado. Escolha outro horário." };
+    const valor = valorModalidade(m as ModalidadeBanco, data.km); // valor sempre recalculado no servidor
+    const id = `AG-${Date.now().toString().slice(-6)}`;
+    const { error } = await db.from("corridas").insert({
+      id, cliente: data.nome, cliente_email: "", cliente_whatsapp: data.whatsapp, motorista: "",
+      embarque: data.embarque, parada: data.paradas.filter(Boolean).join(" → ") || null,
+      desembarque: data.desembarque, ida: data.ida, retorno: null, modalidade: data.modalidade,
+      pagamento: data.pagamento, valor, status: "aguardando_motorista", veiculo: "", categoria: "Sedan", capacidade: 4,
+    });
+    if (error) { console.error("[orcamento] agendar", error.message); return { ok: false as const, erro: "Não foi possível agendar agora." }; }
+    return { ok: true as const, id, valor };
+  });
