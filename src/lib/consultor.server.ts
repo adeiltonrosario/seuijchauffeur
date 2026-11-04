@@ -47,7 +47,7 @@ const catalogo = () => {
 
   const linhasZonas = ZONAS.map((z) => `- ${z.nome}: ${formatarBRL(z.valor)} por trecho (${z.bairros.slice(0, 4).join(", ")})`).join("\n");
 
-  return `MODALIDADES DISPONÍVEIS:\n${linhasModalidades}\n\nPLANOS DE ASSINATURA:\n${linhasPlanos}\nCréditos de viagem valem ${VALIDADE_CREDITOS_DIAS} dias e são consumidos do mais antigo para o mais novo.\n\nZONAS DE TRANSFER (preço fixo por trecho):\n${linhasZonas}\nEstacionamento de aeroporto custa ${formatarBRL(DIARIA_ESTACIONAMENTO)} por dia.\n\nREGRAS DE TARIFA:\n- Tarifa padrão R$ 3,00/km, piso mínimo ${formatarBRL(VALOR_MINIMO_POR_KM)}/km.\n- Taxa de serviço fixa de ${formatarBRL(TAXA_SERVICO)} por reserva.\n- Ida e volta recebe 15% de desconto de pacote.\n- Paradas intermediárias: 3 minutos de cortesia e R$ 0,50 por minuto adicional.\n- Trechos entre 23h e 05h recebem adicional noturno de 15%.`;
+  return `MODALIDADES DISPONÍVEIS:\n${linhasModalidades}\n\nPLANOS DE ASSINATURA:\n${linhasPlanos}\nCréditos de viagem valem ${VALIDADE_CREDITOS_DIAS} dias e são consumidos do mais antigo para o mais novo.\n\nZONAS DE TRANSFER (preço fixo por trecho):\n${linhasZonas}\nEstacionamento de aeroporto custa ${formatarBRL(DIARIA_ESTACIONAMENTO)} por dia.\n\nREGRAS DE TARIFA:\n- Tarifa padrão R$ 2,20/km, piso mínimo ${formatarBRL(VALOR_MINIMO_POR_KM)}/km.\n- Taxa de serviço fixa de ${formatarBRL(TAXA_SERVICO)} por reserva.\n- Ida e volta recebe 15% de desconto de pacote.\n- Paradas intermediárias: 3 minutos de cortesia e R$ 0,50 por minuto adicional.\n- Trechos entre 23h e 05h recebem adicional noturno de 15%.`;
 };
 
 export async function recomendar(entrada: EntradaConsultor): Promise<Recomendacao> {

@@ -1,5 +1,5 @@
 // Cálculo da cobertura de uma corrida pela carteira de km (sem expiração).
-export const TARIFA_EXCEDENTE_KM = 3;
+export const TARIFA_EXCEDENTE_KM = 2.2;
 export const TAXA_SERVICO = 8;
 
 export type Cobertura = { coberto: number; excedente: number; valorExcedente: number; total: number; saldoApos: number };

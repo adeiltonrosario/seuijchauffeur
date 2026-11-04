@@ -157,7 +157,7 @@ export const motoristas: Motorista[] = [];
 
 
 export const VALOR_MINIMO_POR_KM = 1.85;
-export const TARIFA_PADRAO_POR_KM = 3;
+export const TARIFA_PADRAO_POR_KM = 2.2;
 export const TOLERANCIA_ESPERA_MIN = 3;
 export const VALOR_ESPERA_POR_MINUTO = 0.5;
 
