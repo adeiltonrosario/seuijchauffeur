@@ -552,6 +552,8 @@ function Admin() {
     >
       <AcessoEquipe onPapel={setPapelEquipe} />
       {papelEquipe === "admin" || papelEquipe === "gerente" ? (
+      <>
+      <LinkOrcamentoAdmin />
       <Tabs defaultValue="motoristas">
         <TabsList>
           <TabsTrigger value="motoristas">Motoristas</TabsTrigger>
