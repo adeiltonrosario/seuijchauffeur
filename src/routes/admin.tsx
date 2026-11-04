@@ -7,6 +7,7 @@ import { AcessoEquipe } from "@/components/acesso-equipe";
 import { PlanosPorModalidade } from "@/components/planos-por-modalidade";
 import { AdminCasasApoio } from "@/components/admin-casas-apoio";
 import { TabelaIndicacoes } from "@/components/tabela-indicacoes";
+import { LinkOrcamentoAdmin } from "@/components/link-orcamento-admin";
 import { AdminPrecosEsportivo } from "@/components/admin-precos-esportivo";
 import { AdminPropostas } from "@/components/admin-propostas";
 import { AdminRotaExclusiva } from "@/components/rota-exclusiva";
