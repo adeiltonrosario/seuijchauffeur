@@ -63,7 +63,7 @@ export function PacotesCreditosAdmin() {
             <div key={c.ciclo} className="space-y-2 rounded-lg border border-border/60 p-3">
               <p className="font-medium text-gold">{rotuloCiclo[c.ciclo]} <span className="text-xs text-muted-foreground">({validadeCiclo[c.ciclo]})</span></p>
               <Label>Preço por km</Label>
-              <CampoMoeda valor={c.preco_km} onChange={(v) => setCiclos((l) => l.map((x, j) => (j === i ? { ...x, preco_km: v } : x)))} />
+              <CampoMoeda valor={c.preco_km} aoMudar={(v) => setCiclos((l) => l.map((x, j) => (j === i ? { ...x, preco_km: v } : x)))} />
               <Label>Mínimo de km</Label>
               <Input type="number" value={c.km_minimo} onChange={(e) => setCiclos((l) => l.map((x, j) => (j === i ? { ...x, km_minimo: Number(e.target.value) } : x)))} />
               <Button size="sm" className="w-full" onClick={() => salvarCiclo(c)}><Save className="size-4" /> Salvar</Button>
@@ -87,7 +87,7 @@ export function PacotesCreditosAdmin() {
                 </select>
               </div>
               <div className="space-y-1"><Label>Km (créditos)</Label><Input type="number" value={p.km} onChange={(e) => muda(i, { km: Number(e.target.value) })} /></div>
-              <div className="space-y-1"><Label>Valor</Label><CampoMoeda valor={p.valor} onChange={(v) => muda(i, { valor: v })} /></div>
+              <div className="space-y-1"><Label>Valor</Label><CampoMoeda valor={p.valor} aoMudar={(v) => muda(i, { valor: v })} /></div>
               <label className="flex items-center gap-2 pb-2 text-sm"><input type="checkbox" checked={p.ativo} onChange={(e) => muda(i, { ativo: e.target.checked })} /> Ativo</label>
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => salvar(p)}><Save className="size-4" /></Button>
