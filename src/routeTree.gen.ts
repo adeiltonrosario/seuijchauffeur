@@ -22,6 +22,7 @@ import { Route as ClienteAssinaturaRouteImport } from './routes/cliente.assinatu
 import { Route as ClienteCarteiraRouteImport } from './routes/cliente.carteira'
 import { Route as ClienteCasaApoioRouteImport } from './routes/cliente.casa-apoio'
 import { Route as ClienteCofreDeCreditosRouteImport } from './routes/cliente.cofre-de-creditos'
+import { Route as ClientePacotesRouteImport } from './routes/cliente.pacotes'
 import { Route as ClientePagamentoRouteImport } from './routes/cliente.pagamento'
 import { Route as ClientePlantaoRouteImport } from './routes/cliente.plantao'
 import { Route as ClienteSaldaoRouteImport } from './routes/cliente.saldao'
@@ -99,6 +100,11 @@ const ClienteCasaApoioRoute = ClienteCasaApoioRouteImport.update({
 const ClienteCofreDeCreditosRoute = ClienteCofreDeCreditosRouteImport.update({
   id: '/cliente/cofre-de-creditos',
   path: '/cliente/cofre-de-creditos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientePacotesRoute = ClientePacotesRouteImport.update({
+  id: '/cliente/pacotes',
+  path: '/cliente/pacotes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClientePagamentoRoute = ClientePagamentoRouteImport.update({
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/cliente/carteira': typeof ClienteCarteiraRoute
   '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/cofre-de-creditos': typeof ClienteCofreDeCreditosRoute
+  '/cliente/pacotes': typeof ClientePacotesRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/cliente/saldao': typeof ClienteSaldaoRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/cliente/carteira': typeof ClienteCarteiraRoute
   '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/cofre-de-creditos': typeof ClienteCofreDeCreditosRoute
+  '/cliente/pacotes': typeof ClientePacotesRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/cliente/saldao': typeof ClienteSaldaoRoute
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/cliente/carteira': typeof ClienteCarteiraRoute
   '/cliente/casa-apoio': typeof ClienteCasaApoioRoute
   '/cliente/cofre-de-creditos': typeof ClienteCofreDeCreditosRoute
+  '/cliente/pacotes': typeof ClientePacotesRoute
   '/cliente/pagamento': typeof ClientePagamentoRoute
   '/cliente/plantao': typeof ClientePlantaoRoute
   '/cliente/saldao': typeof ClienteSaldaoRoute
@@ -271,6 +280,7 @@ export interface FileRouteTypes {
     | '/cliente/carteira'
     | '/cliente/casa-apoio'
     | '/cliente/cofre-de-creditos'
+    | '/cliente/pacotes'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/cliente/saldao'
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/cliente/carteira'
     | '/cliente/casa-apoio'
     | '/cliente/cofre-de-creditos'
+    | '/cliente/pacotes'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/cliente/saldao'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
     | '/cliente/carteira'
     | '/cliente/casa-apoio'
     | '/cliente/cofre-de-creditos'
+    | '/cliente/pacotes'
     | '/cliente/pagamento'
     | '/cliente/plantao'
     | '/cliente/saldao'
@@ -356,6 +368,7 @@ export interface RootRouteChildren {
   ClienteCarteiraRoute: typeof ClienteCarteiraRoute
   ClienteCasaApoioRoute: typeof ClienteCasaApoioRoute
   ClienteCofreDeCreditosRoute: typeof ClienteCofreDeCreditosRoute
+  ClientePacotesRoute: typeof ClientePacotesRoute
   ClientePagamentoRoute: typeof ClientePagamentoRoute
   ClientePlantaoRoute: typeof ClientePlantaoRoute
   ClienteSaldaoRoute: typeof ClienteSaldaoRoute
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClienteCofreDeCreditosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cliente/pacotes': {
+      id: '/cliente/pacotes'
+      path: '/cliente/pacotes'
+      fullPath: '/cliente/pacotes'
+      preLoaderRoute: typeof ClientePacotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cliente/pagamento': {
       id: '/cliente/pagamento'
       path: '/cliente/pagamento'
@@ -572,6 +592,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClienteCarteiraRoute: ClienteCarteiraRoute,
   ClienteCasaApoioRoute: ClienteCasaApoioRoute,
   ClienteCofreDeCreditosRoute: ClienteCofreDeCreditosRoute,
+  ClientePacotesRoute: ClientePacotesRoute,
   ClientePagamentoRoute: ClientePagamentoRoute,
   ClientePlantaoRoute: ClientePlantaoRoute,
   ClienteSaldaoRoute: ClienteSaldaoRoute,
