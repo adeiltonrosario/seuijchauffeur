@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 const menuCliente = [
   { para: "/cliente", texto: "Início" },
   { para: "/cliente/agendamento/novo", texto: "Agendar" },
+  { para: "/cliente/pacotes", texto: "Pacotes" },
   { para: "/cliente/carteira", texto: "Carteira" },
   { para: "/cliente/cofre-de-creditos", texto: "Cofre" },
   { para: "/cliente/saldao", texto: "Saldão" },

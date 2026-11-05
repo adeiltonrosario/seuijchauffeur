@@ -198,6 +198,27 @@ export type Database = {
         }
         Relationships: []
       }
+      ciclos_credito: {
+        Row: {
+          atualizado_em: string
+          ciclo: string
+          km_minimo: number
+          preco_km: number
+        }
+        Insert: {
+          atualizado_em?: string
+          ciclo: string
+          km_minimo?: number
+          preco_km?: number
+        }
+        Update: {
+          atualizado_em?: string
+          ciclo?: string
+          km_minimo?: number
+          preco_km?: number
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           criado_em: string
@@ -657,6 +678,36 @@ export type Database = {
           termina_em?: string | null
           titulo?: string
           validade_dias?: number
+        }
+        Relationships: []
+      }
+      pacotes_creditos: {
+        Row: {
+          ativo: boolean
+          ciclo: string
+          criado_em: string
+          id: string
+          km: number
+          nome: string
+          valor: number
+        }
+        Insert: {
+          ativo?: boolean
+          ciclo: string
+          criado_em?: string
+          id?: string
+          km: number
+          nome: string
+          valor: number
+        }
+        Update: {
+          ativo?: boolean
+          ciclo?: string
+          criado_em?: string
+          id?: string
+          km?: number
+          nome?: string
+          valor?: number
         }
         Relationships: []
       }
@@ -1178,6 +1229,10 @@ export type Database = {
           _valor: number
         }
         Returns: string
+      }
+      criar_pedido_pacote: {
+        Args: { _ciclo: string; _email: string; _km: number; _pacote: string }
+        Returns: Json
       }
       email_logado: { Args: never; Returns: string }
       encerrar_oferta_saldao: { Args: { _oferta: string }; Returns: Json }
