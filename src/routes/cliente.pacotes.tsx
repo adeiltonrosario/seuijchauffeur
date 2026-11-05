@@ -55,10 +55,10 @@ function Pacotes() {
   const lista = pacotes.filter((p) => p.ciclo === ciclo);
 
   const comprar = async (pacoteId: string | null) => {
-    if (!email.includes("@")) return toast.error("Informe seu e-mail de cadastro.");
+    if (!email.includes("@")) { toast.error("Informe seu e-mail de cadastro."); return; }
     setOcupado(true);
     const { data, error } = await supabase.rpc("criar_pedido_pacote", { _email: email, _pacote: pacoteId as string, _ciclo: ciclo, _km: kmLivre });
-    if (error) { setOcupado(false); return toast.error(error.message); }
+    if (error) { setOcupado(false); toast.error(error.message); return; }
     const d = data as { id: string; km: number; valor: number };
     setPedido(d);
     try {

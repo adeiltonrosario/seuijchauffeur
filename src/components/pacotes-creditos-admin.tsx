@@ -30,25 +30,25 @@ export function PacotesCreditosAdmin() {
   useEffect(() => { void carregar(); }, []);
 
   const salvar = async (p: Pacote) => {
-    if (!p.nome.trim() || p.km <= 0 || p.valor <= 0) return toast.error("Preencha nome, km e valor.");
+    if (!p.nome.trim() || p.km <= 0 || p.valor <= 0) { toast.error("Preencha nome, km e valor."); return; }
     const dados = { nome: p.nome, ciclo: p.ciclo, km: p.km, valor: p.valor, ativo: p.ativo };
     const { error } = p.id
       ? await supabase.from("pacotes_creditos").update(dados).eq("id", p.id)
       : await supabase.from("pacotes_creditos").insert(dados);
-    if (error) return toast.error("Não foi possível salvar: " + error.message);
+    if (error) { toast.error("Não foi possível salvar: " + error.message); return; }
     toast.success("Pacote salvo.");
     void carregar();
   };
   const excluir = async (p: Pacote) => {
-    if (!p.id) return setPacotes((l) => l.filter((x) => x !== p));
+    if (!p.id) { setPacotes((l) => l.filter((x) => x !== p)); return; }
     const { error } = await supabase.from("pacotes_creditos").delete().eq("id", p.id);
-    if (error) return toast.error("Não foi possível excluir.");
+    if (error) { toast.error("Não foi possível excluir."); return; }
     toast.success("Pacote excluído.");
     void carregar();
   };
   const salvarCiclo = async (c: CicloCfg) => {
     const { error } = await supabase.from("ciclos_credito").upsert({ ...c, atualizado_em: new Date().toISOString() });
-    if (error) return toast.error("Não foi possível salvar.");
+    if (error) { toast.error("Não foi possível salvar."); return; }
     toast.success(`Ciclo ${rotuloCiclo[c.ciclo]} salvo.`);
   };
   const muda = (i: number, d: Partial<Pacote>) => setPacotes((l) => l.map((x, j) => (j === i ? { ...x, ...d } : x)));
