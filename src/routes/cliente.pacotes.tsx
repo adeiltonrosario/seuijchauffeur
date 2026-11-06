@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { emailCliente } from "@/lib/carteira-km";
 import { formatarBRL } from "@/lib/dados";
 import { gerarPixMercadoPago, verificarPixMercadoPago } from "@/lib/mercadopago.functions";
-import { CICLOS, rotuloCiclo, validadeCiclo, valorPersonalizado, type Ciclo } from "@/lib/pacotes";
+import { CICLOS, bonusPercentual, rotuloCiclo, validadeCiclo, type Ciclo } from "@/lib/pacotes";
 
 export const Route = createFileRoute("/cliente/pacotes")({
   head: () => ({
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/cliente/pacotes")({
   component: Pacotes,
 });
 
-type Pacote = { id: string; nome: string; ciclo: Ciclo; km: number; valor: number };
+type Pacote = { id: string; nome: string; ciclo: Ciclo; saldo: number; valor: number };
 type CicloCfg = { ciclo: Ciclo; preco_km: number; km_minimo: number };
 
 function Pacotes() {
@@ -34,8 +34,8 @@ function Pacotes() {
   const [ciclo, setCiclo] = useState<Ciclo>("semanal");
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [cfg, setCfg] = useState<CicloCfg[]>([]);
-  const [kmLivre, setKmLivre] = useState(50);
-  const [pedido, setPedido] = useState<{ id: string; km: number; valor: number } | null>(null);
+  const [valorLivre, setValorLivre] = useState(100);
+  const [pedido, setPedido] = useState<{ id: string; saldo: number; valor: number } | null>(null);
   const [pix, setPix] = useState<{ pagamentoId: string; copiaECola: string; qrBase64: string } | null>(null);
   const [ocupado, setOcupado] = useState(false);
 
@@ -43,23 +43,24 @@ function Pacotes() {
     setEmail(emailCliente());
     void (async () => {
       const [p, c] = await Promise.all([
-        supabase.from("pacotes_creditos").select("*").eq("ativo", true).order("km"),
+        supabase.from("pacotes_creditos").select("*").eq("ativo", true).order("valor"),
         supabase.from("ciclos_credito").select("*"),
       ]);
-      setPacotes((p.data ?? []).map((x) => ({ ...x, ciclo: x.ciclo as Ciclo, km: Number(x.km), valor: Number(x.valor) })));
+      setPacotes((p.data ?? []).map((x) => ({ id: x.id, nome: x.nome, ciclo: x.ciclo as Ciclo, saldo: Math.max(Number(x.saldo_credito), Number(x.valor)), valor: Number(x.valor) })));
       setCfg((c.data ?? []).map((x) => ({ ciclo: x.ciclo as Ciclo, preco_km: Number(x.preco_km), km_minimo: Number(x.km_minimo) })));
     })();
   }, []);
 
   const atual = cfg.find((c) => c.ciclo === ciclo);
   const lista = pacotes.filter((p) => p.ciclo === ciclo);
+  const minimo = atual ? Math.round(atual.km_minimo * atual.preco_km * 100) / 100 : 0;
 
   const comprar = async (pacoteId: string | null) => {
     if (!email.includes("@")) { toast.error("Informe seu e-mail de cadastro."); return; }
     setOcupado(true);
-    const { data, error } = await supabase.rpc("criar_pedido_pacote", { _email: email, _pacote: pacoteId as string, _ciclo: ciclo, _km: kmLivre });
+    const { data, error } = await supabase.rpc("criar_pedido_pacote", { _email: email, _pacote: pacoteId as string, _ciclo: ciclo, _km: valorLivre });
     if (error) { setOcupado(false); toast.error(error.message); return; }
-    const d = data as { id: string; km: number; valor: number };
+    const d = data as { id: string; saldo: number; valor: number };
     setPedido(d);
     try {
       setPix(await gerarPixMercadoPago({ data: { tipo: "assinatura", id: d.id } }));
@@ -80,7 +81,7 @@ function Pacotes() {
     return (
       <AppShell titulo="Pagamento do pacote" descricao="Os créditos só são liberados depois do pagamento aprovado.">
         <Card className="surface-luxe mx-auto max-w-md space-y-4 border-border/60 p-6 text-center">
-          <p className="text-sm text-muted-foreground">{rotuloCiclo[ciclo]} · {pedido.km} créditos (km)</p>
+          <p className="text-sm text-muted-foreground">{rotuloCiclo[ciclo]} · {formatarBRL(pedido.saldo)} em créditos</p>
           <p className="font-display text-3xl text-gold">{formatarBRL(pedido.valor)}</p>
           {pix ? (
             <>
@@ -96,7 +97,7 @@ function Pacotes() {
   }
 
   return (
-    <AppShell titulo="Pacotes de créditos" descricao="1 km = 1 crédito. Escolha como pagar; os créditos valem até o fim do ciclo.">
+    <AppShell titulo="Pacotes de créditos" descricao="Pague o pacote e ganhe saldo extra em créditos. Cada corrida desconta o valor da modalidade escolhida.">
       <Card className="mb-6 border-border/60 p-5">
         <Label htmlFor="email-pac">Seu e-mail de cadastro</Label>
         <Input id="email-pac" type="email" className="mt-2" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -115,8 +116,10 @@ function Pacotes() {
         {lista.map((p) => (
           <Card key={p.id} className="surface-luxe flex flex-col gap-3 border-border/60 p-5">
             <p className="font-display text-lg">{p.nome}</p>
-            <p className="text-sm text-muted-foreground">{p.km} créditos (km) · vale {validadeCiclo[p.ciclo]}</p>
-            <p className="font-display text-2xl text-gold">{formatarBRL(p.valor)}</p>
+            <p className="text-sm text-muted-foreground">Pague</p>
+            <p className="font-display text-2xl">{formatarBRL(p.valor)}</p>
+            <p className="text-sm text-muted-foreground">e ganhe <span className="font-display text-xl text-gold">{formatarBRL(p.saldo)}</span> em créditos</p>
+            {bonusPercentual(p.valor, p.saldo) > 0 && <p className="text-xs font-medium text-gold">+{bonusPercentual(p.valor, p.saldo)}% de bônus · vale {validadeCiclo[p.ciclo]}</p>}
             <Button disabled={ocupado} onClick={() => comprar(p.id)}>Comprar pacote</Button>
           </Card>
         ))}
@@ -124,11 +127,10 @@ function Pacotes() {
         {atual && (
           <Card className="flex flex-col gap-3 border-primary/40 p-5">
             <p className="font-display text-lg">Personalizado {rotuloCiclo[ciclo]}</p>
-            <Label htmlFor="km-livre">Quantos km você precisa?</Label>
-            <Input id="km-livre" type="number" min={atual.km_minimo} value={kmLivre} onChange={(e) => setKmLivre(Number(e.target.value))} />
-            <p className="text-xs text-muted-foreground">Mínimo {atual.km_minimo} km · vale {validadeCiclo[ciclo]}</p>
-            <p className="font-display text-2xl text-gold">{formatarBRL(valorPersonalizado(kmLivre, atual.preco_km))}</p>
-            <Button disabled={ocupado || kmLivre < atual.km_minimo} onClick={() => comprar(null)}>Comprar {Math.round(kmLivre)} km</Button>
+            <Label htmlFor="valor-livre">Quanto quer carregar (R$)?</Label>
+            <Input id="valor-livre" type="number" min={minimo} step="0.01" value={valorLivre} onChange={(e) => setValorLivre(Number(e.target.value))} />
+            <p className="text-xs text-muted-foreground">Mínimo {formatarBRL(minimo)} · sem bônus · vale {validadeCiclo[ciclo]}</p>
+            <Button disabled={ocupado || valorLivre < minimo} onClick={() => comprar(null)}>Carregar {formatarBRL(valorLivre)}</Button>
           </Card>
         )}
       </div>
