@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, Plus, Sparkles, X } from "lucide-react";
+import { AlertTriangle, Briefcase, Car, CheckCircle2, Landmark, Loader2, Package, Plane, Plus, ShoppingCart, Sparkles, X, type LucideIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { DESCONTO_PIX } from "@/lib/orcamento-livre";
+import { rotuloCiclo, type Ciclo } from "@/lib/pacotes";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,6 +31,16 @@ export const Route = createFileRoute("/orcamento")({
 });
 
 type Cotacao = { nome: string; descricao: string; valor: number };
+type Pacote = { id: string; nome: string; ciclo: Ciclo; km: number; valor: number };
+
+function iconeModalidade(nome: string): LucideIcon {
+  const n = nome.toLowerCase();
+  if (/aeroporto|voo/.test(n)) return Plane;
+  if (/corporativ|executiv/.test(n)) return Briefcase;
+  if (/tour|turis/.test(n)) return Landmark;
+  if (/compra|mercado/.test(n)) return ShoppingCart;
+  return Car;
+}
 
 const mascara = (v: string) => {
   const d = v.replace(/\D/g, "").slice(0, 11);
@@ -55,9 +68,29 @@ function Orcamento() {
   const [agenda, setAgenda] = useState<"livre" | "conflito" | "checando" | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [feito, setFeito] = useState<{ id: string; valor: number } | null>(null);
+  const [idaVolta, setIdaVolta] = useState(false);
+  const [dataVolta, setDataVolta] = useState("");
+  const [horaVolta, setHoraVolta] = useState("");
+  const [agendaVolta, setAgendaVolta] = useState<"livre" | "conflito" | "checando" | null>(null);
+  const [pacotes, setPacotes] = useState<Pacote[]>([]);
+
+  useEffect(() => {
+    void supabase.from("pacotes_creditos").select("id,nome,ciclo,km,valor").eq("ativo", true).order("km")
+      .then(({ data }) => setPacotes((data ?? []) as Pacote[]));
+  }, []);
 
   const ida = data && hora ? `${data.split("-").reverse().join("/")} ${hora}` : "";
   const digitos = whats.replace(/\D/g, "");
+  const retorno = idaVolta && dataVolta && horaVolta ? `${dataVolta.split("-").reverse().join("/")} ${horaVolta}` : "";
+
+  useEffect(() => {
+    if (!retorno) { setAgendaVolta(null); return; }
+    setAgendaVolta("checando");
+    let vivo = true;
+    checar({ data: { ida: retorno } }).then((r) => vivo && setAgendaVolta(r.conflito ? "conflito" : "livre")).catch(() => vivo && setAgendaVolta(null));
+    return () => { vivo = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retorno]);
 
   useEffect(() => {
     if (!ida) { setAgenda(null); return; }
@@ -74,12 +107,16 @@ function Orcamento() {
 
   const aoCalcular = async (r: ResultadoRota) => {
     setRota(r);
-    const lista = await cotar({ data: { km: r.km } });
+    const lista = await cotar({ data: { km: idaVolta ? r.km * 2 : r.km } });
     setCotacoes(lista);
-    setEscolhida(lista[0]?.nome ?? "");
+    setEscolhida((e) => (lista.some((c) => c.nome === e) ? e : lista[0]?.nome ?? ""));
   };
+  // Trocou ida/volta: recota com os km totais.
+  useEffect(() => { if (rota) void aoCalcular(rota); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [idaVolta]);
+  const kmTotal = rota ? Math.round((idaVolta ? rota.km * 2 : rota.km) * 100) / 100 : 0;
 
   const selecionada = cotacoes.find((c) => c.nome === escolhida);
+  const valorPagar = selecionada ? (pagamento === "Pix" ? Math.round(selecionada.valor * (1 - DESCONTO_PIX) * 100) / 100 : selecionada.valor) : 0;
 
   const concluir = async (): Promise<void> => {
     if (nome.trim().length < 3) return void toast.error("Informe seu nome completo.");
@@ -87,13 +124,16 @@ function Orcamento() {
     if (!ida) return void toast.error("Escolha a data e o horário.");
     if (new Date(`${data}T${hora}`) < new Date()) return void toast.error("Escolha um horário futuro.");
     if (agenda === "conflito") return void toast.error("Horário ocupado. Escolha outro horário.");
+    if (idaVolta && !retorno) return void toast.error("Escolha a data e o horário da volta.");
+    if (idaVolta && new Date(`${dataVolta}T${horaVolta}`) <= new Date(`${data}T${hora}`)) return void toast.error("A volta precisa ser depois da ida.");
+    if (agendaVolta === "conflito") return void toast.error("Horário de volta ocupado. Escolha outro.");
     if (!origem.trim()) return void toast.error("Informe o endereço de embarque.");
     if (!rota || !selecionada) return void toast.error("Toque em “Finalizar rota e calcular km”.");
     setEnviando(true);
     try {
       const r = await agendar({ data: {
         nome: nome.trim(), whatsapp: digitos, ida, embarque: origem, paradas, desembarque: destino,
-        km: rota.km, modalidade: selecionada.nome, pagamento,
+        km: rota.km, modalidade: selecionada.nome, pagamento, retorno: retorno || null,
       } });
       if (!r.ok) { toast.error(r.erro); if (r.erro.includes("horário")) setAgenda("conflito"); return; }
       setFeito({ id: r.id, valor: r.valor });
@@ -104,7 +144,7 @@ function Orcamento() {
 
   if (feito) {
     const msg = encodeURIComponent(
-      `Olá! Sou ${nome}. Agendamento ${feito.id}: ${selecionada?.nome}, ${ida}. ${origem} → ${destino}. ${rota?.km.toLocaleString("pt-BR")} km · ${formatarBRL(feito.valor)} (${pagamento}).`,
+      `Olá! Sou ${nome}. Agendamento ${feito.id}: ${selecionada?.nome}, ida ${ida}${retorno ? `, volta ${retorno}` : ""}. ${origem} → ${destino}. ${kmTotal.toLocaleString("pt-BR")} km · ${formatarBRL(feito.valor)} (${pagamento}).`,
     );
     return (
       <main className="mx-auto min-h-screen max-w-lg px-4 py-10">
@@ -113,9 +153,9 @@ function Orcamento() {
           <h1 className="font-display mt-3 text-2xl font-semibold">Agendamento recebido!</h1>
           <p className="mt-1 text-sm text-muted-foreground">Nº {feito.id}</p>
           <div className="mt-5 space-y-1 text-left text-sm">
-            <p><b>{selecionada?.nome}</b> · {ida}</p>
+            <p><b>{selecionada?.nome}</b> · ida {ida}{retorno ? ` · volta ${retorno}` : ""}</p>
             <p className="text-muted-foreground">{origem} → {destino}</p>
-            <p>{rota?.km.toLocaleString("pt-BR")} km contratados</p>
+            <p>{kmTotal.toLocaleString("pt-BR")} km contratados{retorno ? " (ida e volta)" : ""}</p>
             <p className="text-gold text-2xl font-semibold">{formatarBRL(feito.valor)}</p>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">Seu horário está reservado. Avisaremos pelo WhatsApp quando o motorista confirmar.</p>
@@ -162,6 +202,25 @@ function Orcamento() {
               Este horário já tem agendamento na frota. Escolha um horário com pelo menos 1h30 de diferença.
             </p>
           )}
+          <div className="grid grid-cols-2 gap-2">
+            {([false, true] as const).map((v) => (
+              <Button key={String(v)} type="button" className="h-11" variant={idaVolta === v ? "default" : "secondary"} onClick={() => setIdaVolta(v)}>
+                {v ? "Ida e volta" : "Somente ida"}
+              </Button>
+            ))}
+          </div>
+          {idaVolta && (
+            <>
+              <Campo id="o-data-volta" rotulo="Data da volta *">
+                <Input id="o-data-volta" className="h-12 text-base [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:scale-125" type="date" min={data || undefined} value={dataVolta} onChange={(e) => setDataVolta(e.target.value)} />
+              </Campo>
+              <Campo id="o-hora-volta" rotulo="Horário da volta *">
+                <Input id="o-hora-volta" className="h-12 text-base [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:scale-125" type="time" value={horaVolta} onChange={(e) => setHoraVolta(e.target.value)} />
+              </Campo>
+              {agendaVolta === "livre" && <p className="flex items-center gap-2 text-sm text-gold"><CheckCircle2 className="size-4" /> Horário de volta livre</p>}
+              {agendaVolta === "conflito" && <p className="flex items-center gap-2 text-sm text-destructive"><AlertTriangle className="size-4" /> Horário de volta ocupado. Escolha outro.</p>}
+            </>
+          )}
         </Secao>
 
         <Secao titulo="2. Trajeto">
@@ -194,10 +253,13 @@ function Orcamento() {
             <div className="glow-gold rounded-lg border border-primary/50 bg-primary/10 p-4 text-center">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Valor da sua corrida</p>
               <p className="font-display text-gold mt-1 text-3xl font-semibold">
-                {selecionada ? formatarBRL(selecionada.valor) : <Loader2 className="mx-auto size-6 animate-spin" />}
+                {selecionada ? formatarBRL(valorPagar) : <Loader2 className="mx-auto size-6 animate-spin" />}
               </p>
+              {selecionada && pagamento === "Pix" && (
+                <p className="mt-1 text-sm"><span className="text-muted-foreground line-through">{formatarBRL(selecionada.valor)}</span> · <span className="text-gold">10% OFF fechando agora no Pix</span></p>
+              )}
               <p className="mt-1 text-sm text-muted-foreground">
-                {selecionada?.nome ? `${selecionada.nome} · ` : ""}{rota.km.toLocaleString("pt-BR")} km contratados (~{rota.minutos} min)
+                {selecionada?.nome ? `${selecionada.nome} · ` : ""}{kmTotal.toLocaleString("pt-BR")} km contratados{idaVolta ? " (ida e volta)" : ""}
               </p>
             </div>
           )}
@@ -205,36 +267,48 @@ function Orcamento() {
 
         {rota && (
           <Secao titulo="3. Escolha a modalidade">
-            {cotacoes.map((c) => (
-              <button key={c.nome} type="button" onClick={() => setEscolhida(c.nome)}
-                className={cn("w-full rounded-lg border p-4 text-left transition",
-                  escolhida === c.nome ? "glow-gold border-primary bg-primary/10" : "border-border/60")}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold">{c.nome}</p>
-                    <p className="text-xs text-muted-foreground">{rota.km.toLocaleString("pt-BR")} km contratados</p>
-                  </div>
-                  <p className="text-gold shrink-0 text-lg font-semibold">{formatarBRL(c.valor)}</p>
-                </div>
-              </button>
-            ))}
+            <div className="grid grid-cols-3 gap-2">
+              {cotacoes.map((c) => {
+                const Icone = iconeModalidade(c.nome);
+                return (
+                  <button key={c.nome} type="button" onClick={() => setEscolhida(c.nome)} aria-pressed={escolhida === c.nome}
+                    className={cn("flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition",
+                      escolhida === c.nome ? "glow-gold border-primary bg-primary/10" : "border-border/60")}>
+                    <Icone className={cn("size-7", escolhida === c.nome ? "text-primary" : "text-muted-foreground")} />
+                    <span className="text-xs font-medium leading-tight">{c.nome}</span>
+                  </button>
+                );
+              })}
+            </div>
             <Label>Pagamento no embarque</Label>
             <div className="grid grid-cols-2 gap-2">
               {(["Pix", "Cartão"] as const).map((p) => (
                 <Button key={p} type="button" className="h-11" variant={pagamento === p ? "default" : "secondary"} onClick={() => setPagamento(p)}>
-                  {p === "Pix" ? "Pix" : "Cartão no veículo"}
+                  {p === "Pix" ? "Pix agora · 10% OFF" : "Cartão no veículo"}
                 </Button>
               ))}
             </div>
+            {pacotes.length > 0 && (
+              <div className="mt-2 space-y-2 rounded-lg border border-primary/40 bg-primary/5 p-3">
+                <p className="flex items-center gap-2 text-sm font-semibold"><Package className="size-4 text-primary" /> Pacotes de créditos com 15% de desconto</p>
+                {pacotes.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between gap-2 rounded-md border border-border/60 p-2 text-sm">
+                    <span>{p.nome} <span className="text-muted-foreground">· {rotuloCiclo[p.ciclo]} · {Number(p.km)} km</span></span>
+                    <span className="text-gold shrink-0 font-semibold">{formatarBRL(Number(p.valor))}</span>
+                  </div>
+                ))}
+                <Button asChild variant="secondary" className="h-11 w-full"><Link to="/cliente/pacotes">Quero um pacote</Link></Button>
+              </div>
+            )}
           </Secao>
         )}
       </Card>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-border/60 bg-background/95 p-3 backdrop-blur">
         <div className="mx-auto max-w-lg">
-          <Button size="lg" className="h-14 w-full text-base" disabled={enviando || agenda === "conflito" || !selecionada} onClick={() => void concluir()}>
+          <Button size="lg" className="h-14 w-full text-base" disabled={enviando || agenda === "conflito" || agendaVolta === "conflito" || !selecionada} onClick={() => void concluir()}>
             {enviando ? <Loader2 className="animate-spin" /> : null}
-            {selecionada ? `Concluir orçamento e agendar — ${formatarBRL(selecionada.valor)}` : "Finalize a rota para ver o valor"}
+            {selecionada ? `Concluir orçamento e agendar — ${formatarBRL(valorPagar)}` : "Finalize a rota para ver o valor"}
           </Button>
         </div>
       </div>
