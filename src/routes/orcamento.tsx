@@ -290,7 +290,7 @@ function Orcamento() {
             </div>
             {pacotes.length > 0 && (
               <div className="mt-2 space-y-2 rounded-lg border border-primary/40 bg-primary/5 p-3">
-                <p className="flex items-center gap-2 text-sm font-semibold"><Package className="size-4 text-primary" /> Pacotes de créditos com 15% de desconto</p>
+                <p className="flex items-center gap-2 text-sm font-semibold"><Package className="size-4 text-primary" /> Economize com pacotes de créditos</p>
                 {pacotes.map((p) => (
                   <div key={p.id} className="flex items-center justify-between gap-2 rounded-md border border-border/60 p-2 text-sm">
                     <span>{p.nome} <span className="text-muted-foreground">· {rotuloCiclo[p.ciclo]} · {Number(p.km)} km</span></span>
