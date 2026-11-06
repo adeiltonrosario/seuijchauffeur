@@ -40,3 +40,12 @@ export function haConflito(novaIda: string, idasExistentes: string[], motoristas
   }).length;
   return ocupadas >= Math.max(1, motoristasAtivos);
 }
+
+/** Desconto para quem fecha a corrida agora no Pix. */
+export const DESCONTO_PIX = 0.1;
+
+/** Valor final: ida e volta dobra os km; Pix tem 10% de desconto. */
+export function valorFinal(m: ModalidadeBanco, kmTrecho: number, idaVolta: boolean, pagamento: "Pix" | "Cartão"): number {
+  const base = valorModalidade(m, idaVolta ? kmTrecho * 2 : kmTrecho);
+  return pagamento === "Pix" ? Math.round(base * (1 - DESCONTO_PIX) * 100) / 100 : base;
+}
