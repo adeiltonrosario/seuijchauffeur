@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
-  STATUS_INATIVOS, haConflito, modalidadeLivre, valorModalidade, type ModalidadeBanco,
+  STATUS_INATIVOS, haConflito, modalidadeLivre, valorFinal, valorModalidade, type ModalidadeBanco,
 } from "@/lib/orcamento-livre";
 
 async function admin() {
@@ -48,6 +48,7 @@ export const agendarOrcamento = createServerFn({ method: "POST" })
       km: z.number().positive().max(2000),
       modalidade: z.string().min(1).max(120),
       pagamento: z.enum(["Pix", "Cartão"]),
+      retorno: idaSchema.nullable(),
     }).parse(i))
   .handler(async ({ data }) => {
     if (!modalidadeLivre(data.modalidade)) return { ok: false as const, erro: "Modalidade não disponível." };
@@ -57,12 +58,14 @@ export const agendarOrcamento = createServerFn({ method: "POST" })
     if (!m) return { ok: false as const, erro: "Modalidade não encontrada." };
     if ((await verificarAgenda(data.ida)).conflito)
       return { ok: false as const, erro: "Este horário acabou de ser ocupado. Escolha outro horário." };
-    const valor = valorModalidade(m as ModalidadeBanco, data.km); // valor sempre recalculado no servidor
+    if (data.retorno && (await verificarAgenda(data.retorno)).conflito)
+      return { ok: false as const, erro: "O horário de volta está ocupado. Escolha outro horário." };
+    const valor = valorFinal(m as ModalidadeBanco, data.km, !!data.retorno, data.pagamento); // valor sempre recalculado no servidor
     const id = `AG-${Date.now().toString().slice(-6)}`;
     const { error } = await db.from("corridas").insert({
       id, cliente: data.nome, cliente_email: "", cliente_whatsapp: data.whatsapp, motorista: "",
       embarque: data.embarque, parada: data.paradas.filter(Boolean).join(" → ") || null,
-      desembarque: data.desembarque, ida: data.ida, retorno: null, modalidade: data.modalidade,
+      desembarque: data.desembarque, ida: data.ida, retorno: data.retorno, modalidade: data.modalidade,
       pagamento: data.pagamento, valor, status: "aguardando_motorista", veiculo: "", categoria: "Sedan", capacidade: 4,
     });
     if (error) { console.error("[orcamento] agendar", error.message); return { ok: false as const, erro: "Não foi possível agendar agora." }; }
