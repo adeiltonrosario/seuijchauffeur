@@ -689,6 +689,7 @@ export type Database = {
           id: string
           km: number
           nome: string
+          saldo_credito: number
           valor: number
         }
         Insert: {
@@ -698,6 +699,7 @@ export type Database = {
           id?: string
           km: number
           nome: string
+          saldo_credito?: number
           valor: number
         }
         Update: {
@@ -707,6 +709,7 @@ export type Database = {
           id?: string
           km?: number
           nome?: string
+          saldo_credito?: number
           valor?: number
         }
         Relationships: []
