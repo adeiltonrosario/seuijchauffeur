@@ -7,9 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CampoMoeda } from "@/components/campo-moeda";
-import { CICLOS, rotuloCiclo, validadeCiclo, type Ciclo } from "@/lib/pacotes";
+import { CICLOS, bonusPercentual, rotuloCiclo, validadeCiclo, type Ciclo } from "@/lib/pacotes";
 
-type Pacote = { id?: string; nome: string; ciclo: Ciclo; km: number; valor: number; ativo: boolean };
+type Pacote = { id?: string; nome: string; ciclo: Ciclo; saldo_credito: number; valor: number; ativo: boolean };
 type CicloCfg = { ciclo: Ciclo; preco_km: number; km_minimo: number };
 
 export function PacotesCreditosAdmin() {
@@ -21,7 +21,7 @@ export function PacotesCreditosAdmin() {
       supabase.from("pacotes_creditos").select("*").order("criado_em"),
       supabase.from("ciclos_credito").select("*"),
     ]);
-    setPacotes((p.data ?? []).map((x) => ({ ...x, ciclo: x.ciclo as Ciclo, km: Number(x.km), valor: Number(x.valor) })));
+    setPacotes((p.data ?? []).map((x) => ({ id: x.id, nome: x.nome, ativo: x.ativo, ciclo: x.ciclo as Ciclo, saldo_credito: Number(x.saldo_credito), valor: Number(x.valor) })));
     setCiclos(CICLOS.map((k) => {
       const r = (c.data ?? []).find((x) => x.ciclo === k);
       return { ciclo: k, preco_km: Number(r?.preco_km ?? 2.2), km_minimo: Number(r?.km_minimo ?? 10) };
@@ -30,8 +30,8 @@ export function PacotesCreditosAdmin() {
   useEffect(() => { void carregar(); }, []);
 
   const salvar = async (p: Pacote) => {
-    if (!p.nome.trim() || p.km <= 0 || p.valor <= 0) { toast.error("Preencha nome, km e valor."); return; }
-    const dados = { nome: p.nome, ciclo: p.ciclo, km: p.km, valor: p.valor, ativo: p.ativo };
+    if (!p.nome.trim() || p.valor <= 0 || p.saldo_credito < p.valor) { toast.error("Preencha nome e valor; o saldo liberado não pode ser menor que o valor pago."); return; }
+    const dados = { nome: p.nome, ciclo: p.ciclo, km: 0, saldo_credito: p.saldo_credito, valor: p.valor, ativo: p.ativo };
     const { error } = p.id
       ? await supabase.from("pacotes_creditos").update(dados).eq("id", p.id)
       : await supabase.from("pacotes_creditos").insert(dados);
@@ -74,8 +74,8 @@ export function PacotesCreditosAdmin() {
 
       <Card className="border-border/60 p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-display text-lg">Pacotes prontos</h3>
-          <Button size="sm" onClick={() => setPacotes((l) => [...l, { nome: "Novo pacote", ciclo: "semanal", km: 100, valor: 200, ativo: true }])}><Plus className="size-4" /> Novo pacote</Button>
+          <div><h3 className="font-display text-lg">Pacotes prontos</h3><p className="text-sm text-muted-foreground">O cliente paga um valor e recebe um saldo maior em créditos (1 crédito = R$ 1,00). Cada corrida desconta o valor da modalidade escolhida.</p></div>
+          <Button size="sm" onClick={() => setPacotes((l) => [...l, { nome: "Novo pacote", ciclo: "semanal", saldo_credito: 280, valor: 250, ativo: true }])}><Plus className="size-4" /> Novo pacote</Button>
         </div>
         <div className="space-y-3">
           {pacotes.map((p, i) => (
@@ -86,8 +86,8 @@ export function PacotesCreditosAdmin() {
                   {CICLOS.map((c) => <option key={c} value={c}>{rotuloCiclo[c]}</option>)}
                 </select>
               </div>
-              <div className="space-y-1"><Label>Km (créditos)</Label><Input type="number" value={p.km} onChange={(e) => muda(i, { km: Number(e.target.value) })} /></div>
-              <div className="space-y-1"><Label>Valor</Label><CampoMoeda valor={p.valor} aoMudar={(v) => muda(i, { valor: v })} /></div>
+              <div className="space-y-1"><Label>Cliente paga</Label><CampoMoeda valor={p.valor} aoMudar={(v) => muda(i, { valor: v })} /></div>
+              <div className="space-y-1"><Label>Saldo liberado <span className="text-gold">+{bonusPercentual(p.valor, p.saldo_credito)}%</span></Label><CampoMoeda valor={p.saldo_credito} aoMudar={(v) => muda(i, { saldo_credito: v })} /></div>
               <label className="flex items-center gap-2 pb-2 text-sm"><input type="checkbox" checked={p.ativo} onChange={(e) => muda(i, { ativo: e.target.checked })} /> Ativo</label>
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => salvar(p)}><Save className="size-4" /></Button>

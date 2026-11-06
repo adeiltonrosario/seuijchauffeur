@@ -31,7 +31,7 @@ export const Route = createFileRoute("/orcamento")({
 });
 
 type Cotacao = { nome: string; descricao: string; valor: number };
-type Pacote = { id: string; nome: string; ciclo: Ciclo; km: number; valor: number };
+type Pacote = { id: string; nome: string; ciclo: Ciclo; km: number; valor: number; saldo_credito: number };
 
 function iconeModalidade(nome: string): LucideIcon {
   const n = nome.toLowerCase();
@@ -75,7 +75,7 @@ function Orcamento() {
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
 
   useEffect(() => {
-    void supabase.from("pacotes_creditos").select("id,nome,ciclo,km,valor").eq("ativo", true).order("km")
+    void supabase.from("pacotes_creditos").select("id,nome,ciclo,km,valor,saldo_credito").eq("ativo", true).order("valor")
       .then(({ data }) => setPacotes((data ?? []) as Pacote[]));
   }, []);
 
@@ -293,7 +293,7 @@ function Orcamento() {
                 <p className="flex items-center gap-2 text-sm font-semibold"><Package className="size-4 text-primary" /> Economize com pacotes de créditos</p>
                 {pacotes.map((p) => (
                   <div key={p.id} className="flex items-center justify-between gap-2 rounded-md border border-border/60 p-2 text-sm">
-                    <span>{p.nome} <span className="text-muted-foreground">· {rotuloCiclo[p.ciclo]} · {Number(p.km)} km</span></span>
+                    <span>{p.nome} <span className="text-muted-foreground">· {rotuloCiclo[p.ciclo]} · ganha {formatarBRL(Math.max(Number(p.saldo_credito), Number(p.valor)))} em créditos</span></span>
                     <span className="text-gold shrink-0 font-semibold">{formatarBRL(Number(p.valor))}</span>
                   </div>
                 ))}

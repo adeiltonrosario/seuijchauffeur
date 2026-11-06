@@ -183,6 +183,13 @@
       "when": 1793850466030,
       "tag": "0025_pacotes_creditos",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793941728852,
+      "tag": "0026_pacotes_saldo_reais",
+      "breakpoints": true
     }
   ]
 }
