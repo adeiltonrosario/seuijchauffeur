@@ -31,7 +31,7 @@ export function PacotesCreditosAdmin() {
 
   const salvar = async (p: Pacote) => {
     if (!p.nome.trim() || p.valor <= 0 || p.saldo_credito < p.valor) { toast.error("Preencha nome e valor; o saldo liberado não pode ser menor que o valor pago."); return; }
-    const dados = { nome: p.nome, ciclo: p.ciclo, saldo_credito: p.saldo_credito, valor: p.valor, ativo: p.ativo };
+    const dados = { nome: p.nome, ciclo: p.ciclo, km: 0, saldo_credito: p.saldo_credito, valor: p.valor, ativo: p.ativo };
     const { error } = p.id
       ? await supabase.from("pacotes_creditos").update(dados).eq("id", p.id)
       : await supabase.from("pacotes_creditos").insert(dados);
