@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { MapPin, Map as MapIcon, Search } from "lucide-react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { Loader2, MapPin, Map as MapIcon, Search } from "lucide-react";
+import { ClientOnly } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
-const BROWSER_KEY = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"] as string | undefined;
+const MapaPino = lazy(() => import("@/components/mapa-pino"));
 
 /** Região padrão do mapa: Salvador e Região Metropolitana. */
 export const REGIAO_PADRAO = "Salvador, BA";
@@ -36,10 +37,35 @@ export function comRegiao(texto: string) {
     : `${t}, ${REGIAO_PADRAO}`;
 }
 
-function urlEmbed(endereco: string) {
-  if (!BROWSER_KEY) return null;
-  const p = new URLSearchParams({ key: BROWSER_KEY, q: comRegiao(endereco), zoom: "16", language: "pt-BR", region: "BR" });
-  return `https://www.google.com/maps/embed/v1/place?${p.toString()}`;
+type EnderecoOSM = {
+  road?: string; pedestrian?: string; house_number?: string; suburb?: string; neighbourhood?: string;
+  city?: string; town?: string; village?: string; municipality?: string; state?: string;
+};
+
+/** Monta "Rua, nº - Bairro, Cidade - BA" a partir do retorno do Nominatim. */
+function formatarEndereco(a: EnderecoOSM, reserva: string) {
+  const rua = a.road ?? a.pedestrian;
+  const bairro = a.suburb ?? a.neighbourhood;
+  const cidade = a.city ?? a.town ?? a.village ?? a.municipality;
+  const partes = [rua ? (a.house_number ? `${rua}, ${a.house_number}` : rua) : null, bairro, cidade].filter(Boolean);
+  return partes.length ? `${partes.join(", ")}, BA` : reserva;
+}
+
+async function enderecoDoPonto(lat: number, lng: number) {
+  const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&addressdetails=1&lat=${lat}&lon=${lng}`, {
+    headers: { "Accept-Language": "pt-BR" },
+  });
+  const d = (await r.json()) as { display_name?: string; address?: EnderecoOSM };
+  return formatarEndereco(d.address ?? {}, d.display_name ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+}
+
+async function pontoDoEndereco(texto: string): Promise<[number, number] | null> {
+  const q = encodeURIComponent(comRegiao(texto));
+  const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${q}`, {
+    headers: { "Accept-Language": "pt-BR" },
+  });
+  const d = (await r.json()) as { lat: string; lon: string }[];
+  return d[0] ? [Number(d[0].lat), Number(d[0].lon)] : null;
 }
 
 type Props = {
@@ -51,22 +77,39 @@ type Props = {
 export function BotaoSelecionarMapa({ valor, onConfirmar, rotulo = "local" }: Props) {
   const [aberto, setAberto] = useState(false);
   const [texto, setTexto] = useState(valor);
-  const [busca, setBusca] = useState(valor);
+  const [posicao, setPosicao] = useState<[number, number] | null>(null);
+  const [buscando, setBuscando] = useState(false);
+  const doPino = useRef(false); // texto veio do pino: não refazer busca
 
   useEffect(() => {
-    if (aberto) {
-      setTexto(valor);
-      setBusca(valor);
-    }
+    if (aberto) { setTexto(valor); setPosicao(null); }
   }, [aberto, valor]);
 
-  // Atualiza o mapa 600 ms após parar de digitar.
+  // Digitou: move o pino até o endereço (600 ms após parar de digitar).
   useEffect(() => {
-    const t = setTimeout(() => setBusca(texto), 600);
+    if (!aberto || !texto.trim()) return;
+    if (doPino.current) { doPino.current = false; return; }
+    const t = setTimeout(() => {
+      void pontoDoEndereco(texto).then((p) => p && setPosicao(p)).catch(() => undefined);
+    }, 600);
     return () => clearTimeout(t);
-  }, [texto]);
+  }, [texto, aberto]);
 
-  const embed = urlEmbed(busca);
+  // Marcou no mapa: descobre e salva o endereço do ponto.
+  const aoMarcar = async (lat: number, lng: number) => {
+    setPosicao([lat, lng]);
+    setBuscando(true);
+    try {
+      const end = await enderecoDoPonto(lat, lng);
+      doPino.current = true;
+      setTexto(end);
+      onConfirmar(end);
+    } catch {
+      // mantém o texto atual
+    } finally {
+      setBuscando(false);
+    }
+  };
 
   return (
     <>
@@ -87,14 +130,13 @@ export function BotaoSelecionarMapa({ valor, onConfirmar, rotulo = "local" }: Pr
               <MapPin className="size-5 text-primary" /> Escolher {rotulo} no mapa
             </DialogTitle>
             <DialogDescription>
-              Digite a rua, bairro ou local. O mapa começa em Salvador e Região Metropolitana.
+              Toque no mapa ou arraste o pino até o local. O endereço é salvo automaticamente.
             </DialogDescription>
           </DialogHeader>
 
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              autoFocus
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
               placeholder="Ex.: Rua Ceará, Pituba"
@@ -116,22 +158,15 @@ export function BotaoSelecionarMapa({ valor, onConfirmar, rotulo = "local" }: Pr
           </div>
 
           <div className="aspect-[16/10] overflow-hidden rounded-lg border border-border/60 bg-secondary/30">
-            {embed ? (
-              <iframe
-                title="Mapa do endereço"
-                src={embed}
-                className="size-full"
-                loading="lazy"
-                referrerPolicy="strict-origin-when-cross-origin"
-              />
-            ) : (
-              <div className="flex size-full items-center justify-center p-6 text-center text-sm text-muted-foreground">
-                Mapa indisponível neste ambiente. Confira o endereço digitado e confirme.
-              </div>
-            )}
+            <ClientOnly fallback={null}>
+              <Suspense fallback={<div className="flex size-full items-center justify-center"><Loader2 className="animate-spin" /></div>}>
+                <MapaPino posicao={posicao} onMarcar={(la, ln) => void aoMarcar(la, ln)} />
+              </Suspense>
+            </ClientOnly>
           </div>
 
-          <p className="text-sm">
+          <p className="flex items-center gap-2 text-sm">
+            {buscando && <Loader2 className="size-4 animate-spin" />}
             <span className="text-muted-foreground">Endereço: </span>
             <span className="font-medium">{comRegiao(texto)}</span>
           </p>
@@ -141,7 +176,7 @@ export function BotaoSelecionarMapa({ valor, onConfirmar, rotulo = "local" }: Pr
               Cancelar
             </Button>
             <Button
-              disabled={!texto.trim()}
+              disabled={!texto.trim() || buscando}
               onClick={() => {
                 onConfirmar(comRegiao(texto));
                 setAberto(false);
