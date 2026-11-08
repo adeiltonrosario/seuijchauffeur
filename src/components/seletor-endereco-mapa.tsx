@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { localizarEndereco } from "@/lib/geocodificar";
 
 const MapaPino = lazy(() => import("@/components/mapa-pino"));
 
@@ -60,12 +61,7 @@ async function enderecoDoPonto(lat: number, lng: number) {
 }
 
 async function pontoDoEndereco(texto: string): Promise<[number, number] | null> {
-  const q = encodeURIComponent(comRegiao(texto));
-  const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${q}`, {
-    headers: { "Accept-Language": "pt-BR" },
-  });
-  const d = (await r.json()) as { lat: string; lon: string }[];
-  return d[0] ? [Number(d[0].lat), Number(d[0].lon)] : null;
+  return localizarEndereco(comRegiao(texto));
 }
 
 type Props = {

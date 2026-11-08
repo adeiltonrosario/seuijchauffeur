@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Route as IconeRota, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { acharHospital, limparEndereco } from "@/lib/hospitais-rms";
+import { localizarEndereco } from "@/lib/geocodificar";
 
 // Rotas 100% gratuitas: Nominatim (OpenStreetMap) para endereços + OSRM para o trajeto viário.
 export type ResultadoRota = { km: number; minutos: number };
@@ -17,11 +18,9 @@ async function geocodificar(endereco: string): Promise<[number, number]> {
   const q = limparEndereco(comRegiao(limparEndereco(endereco)));
   const salvo = cache.get(q);
   if (salvo) return salvo;
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&viewbox=-38.75,-12.40,-37.90,-13.05&q=${encodeURIComponent(q)}`;
-  const r = await fetch(url, { headers: { "Accept-Language": "pt-BR" } });
-  const d = (await r.json()) as { lat: string; lon: string }[];
-  if (!d[0]) throw new Error(`Endereço não encontrado: ${endereco}`);
-  const p: [number, number] = [Number(d[0].lon), Number(d[0].lat)];
+  const achado = await localizarEndereco(q);
+  if (!achado) throw new Error(`Endereço não encontrado: ${endereco}`);
+  const p: [number, number] = [achado[1], achado[0]];
   cache.set(q, p);
   return p;
 }
