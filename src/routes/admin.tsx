@@ -1,3 +1,4 @@
+import { TaxaInterdiariaAdmin } from "@/components/taxa-interdiaria-admin";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Car, Clock, Landmark, Megaphone, Plus, Route as RouteIcon, Ticket, Trash2, UserPlus, Users } from "lucide-react";
@@ -1341,6 +1342,7 @@ function Admin() {
               </div>
             </Card>
           </div>
+          <div className="mb-6"><TaxaInterdiariaAdmin /></div>
           <div className="mb-6"><PacotesCreditosAdmin /></div>
           <PlanosPorModalidade modalidades={modalidades} />
           <div className="mt-6"><TabelaIndicacoes /></div>

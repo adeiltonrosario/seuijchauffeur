@@ -83,6 +83,7 @@ function Orcamento() {
   const digitos = whats.replace(/\D/g, "");
   const retorno = idaVolta && dataVolta && horaVolta ? `${dataVolta.split("-").reverse().join("/")} ${horaVolta}` : "";
 
+  const interdiario = idaVolta && !!dataVolta && !!data && dataVolta !== data;
   useEffect(() => {
     if (!retorno) { setAgendaVolta(null); return; }
     setAgendaVolta("checando");
@@ -107,12 +108,12 @@ function Orcamento() {
 
   const aoCalcular = async (r: ResultadoRota) => {
     setRota(r);
-    const lista = await cotar({ data: { km: idaVolta ? r.km * 2 : r.km } });
+    const lista = await cotar({ data: { km: idaVolta ? r.km * 2 : r.km, interdiario } });
     setCotacoes(lista);
     setEscolhida((e) => (lista.some((c) => c.nome === e) ? e : lista[0]?.nome ?? ""));
   };
   // Trocou ida/volta: recota com os km totais.
-  useEffect(() => { if (rota) void aoCalcular(rota); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [idaVolta]);
+  useEffect(() => { if (rota) void aoCalcular(rota); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [idaVolta, interdiario]);
   const kmTotal = rota ? Math.round((idaVolta ? rota.km * 2 : rota.km) * 100) / 100 : 0;
 
   const selecionada = cotacoes.find((c) => c.nome === escolhida);
@@ -261,6 +262,9 @@ function Orcamento() {
               <p className="mt-1 text-sm text-muted-foreground">
                 {selecionada?.nome ? `${selecionada.nome} · ` : ""}{kmTotal.toLocaleString("pt-BR")} km contratados{idaVolta ? " (ida e volta)" : ""}
               </p>
+              {interdiario && selecionada && (
+                <p className="mt-1 text-xs text-muted-foreground">Inclui taxa de deslocamento ({selecionada.taxaPct}%) — volta em outro dia.</p>
+              )}
             </div>
           )}
         </Secao>

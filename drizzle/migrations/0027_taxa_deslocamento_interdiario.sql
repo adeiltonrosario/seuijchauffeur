@@ -1,0 +1,2 @@
+ALTER TABLE public.credito_config ADD COLUMN IF NOT EXISTS taxa_interdiaria_pct numeric NOT NULL DEFAULT 30;
+COMMENT ON COLUMN public.credito_config.taxa_interdiaria_pct IS 'Percentual embutido no orçamento quando ida e volta são em dias diferentes.';

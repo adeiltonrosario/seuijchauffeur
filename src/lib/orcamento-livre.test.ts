@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { haConflito, modalidadeLivre, valorFinal, valorModalidade } from "./orcamento-livre";
+import { aplicarTaxaInterdiaria, voltaEmOutroDia, haConflito, modalidadeLivre, valorFinal, valorModalidade } from "./orcamento-livre";
 
 describe("orçamento livre", () => {
   it("bloqueia Casa de Apoio e Clube/Esportivo", () => {
@@ -21,5 +21,10 @@ describe("orçamento livre", () => {
     expect(valorFinal(m, 10, false, "Cartão")).toBe(22);
     expect(valorFinal(m, 10, true, "Cartão")).toBe(44);
     expect(valorFinal(m, 10, true, "Pix")).toBe(39.6);
+  });
+  it("taxa de deslocamento só quando a volta é em outro dia", () => {
+    expect(voltaEmOutroDia("14/11/2026 20:00", "15/11/2026 02:00")).toBe(true);
+    expect(voltaEmOutroDia("14/11/2026 20:00", "14/11/2026 23:30")).toBe(false);
+    expect(aplicarTaxaInterdiaria(100, 30)).toBe(130);
   });
 });

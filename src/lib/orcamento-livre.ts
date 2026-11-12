@@ -44,8 +44,21 @@ export function haConflito(novaIda: string, idasExistentes: string[], motoristas
 /** Desconto para quem fecha a corrida agora no Pix. */
 export const DESCONTO_PIX = 0.1;
 
-/** Valor final: ida e volta dobra os km; Pix tem 10% de desconto. */
-export function valorFinal(m: ModalidadeBanco, kmTrecho: number, idaVolta: boolean, pagamento: "Pix" | "Cartão"): number {
-  const base = valorModalidade(m, idaVolta ? kmTrecho * 2 : kmTrecho);
+/** Taxa de deslocamento padrão (%) quando a volta é em outro dia. */
+export const TAXA_INTERDIARIA_PADRAO = 30;
+
+/** Ida e volta em datas diferentes ("dd/mm/aaaa HH:MM"). */
+export function voltaEmOutroDia(ida: string, retorno: string | null | undefined): boolean {
+  return !!retorno && ida.slice(0, 10) !== retorno.slice(0, 10);
+}
+
+/** Embute a taxa de deslocamento interdiária no valor. */
+export function aplicarTaxaInterdiaria(valor: number, pct: number): number {
+  return Math.round(valor * (1 + Math.max(0, pct) / 100) * 100) / 100;
+}
+
+/** Valor final: ida e volta dobra os km; volta em outro dia soma a taxa; Pix tem 10% de desconto. */
+export function valorFinal(m: ModalidadeBanco, kmTrecho: number, idaVolta: boolean, pagamento: "Pix" | "Cartão", taxaInterdiariaPct = 0): number {
+  const base = aplicarTaxaInterdiaria(valorModalidade(m, idaVolta ? kmTrecho * 2 : kmTrecho), taxaInterdiariaPct);
   return pagamento === "Pix" ? Math.round(base * (1 - DESCONTO_PIX) * 100) / 100 : base;
 }

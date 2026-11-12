@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
-  STATUS_INATIVOS, haConflito, modalidadeLivre, valorFinal, valorModalidade, type ModalidadeBanco,
+  STATUS_INATIVOS, TAXA_INTERDIARIA_PADRAO, aplicarTaxaInterdiaria, haConflito, voltaEmOutroDia, modalidadeLivre, valorFinal, valorModalidade, type ModalidadeBanco,
 } from "@/lib/orcamento-livre";
 
 async function admin() {
@@ -20,6 +20,13 @@ async function verificarAgenda(ida: string) {
   return { conflito: haConflito(ida, ativas, count ?? 0) };
 }
 
+async function taxaInterdiaria(): Promise<number> {
+  const db = await admin();
+  const { data } = await db.from("credito_config").select("taxa_interdiaria_pct").limit(1).maybeSingle();
+  const v = Number(data?.taxa_interdiaria_pct);
+  return Number.isFinite(v) ? v : TAXA_INTERDIARIA_PADRAO;
+}
+
 const idaSchema = z.string().regex(/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/);
 
 export const checarHorario = createServerFn({ method: "POST" })
@@ -27,13 +34,14 @@ export const checarHorario = createServerFn({ method: "POST" })
   .handler(async ({ data }) => verificarAgenda(data.ida));
 
 export const cotarModalidades = createServerFn({ method: "POST" })
-  .inputValidator((i: unknown) => z.object({ km: z.number().positive().max(2000) }).parse(i))
+  .inputValidator((i: unknown) => z.object({ km: z.number().positive().max(2000), interdiario: z.boolean().optional() }).parse(i))
   .handler(async ({ data }) => {
     const db = await admin();
+    const pct = data.interdiario ? await taxaInterdiaria() : 0;
     const { data: lista } = await db.from("modalidades").select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km");
     return ((lista ?? []) as ModalidadeBanco[])
       .filter((m) => modalidadeLivre(m.nome))
-      .map((m) => ({ nome: m.nome, descricao: m.caracteristicas.split("\n")[0]!.slice(0, 120), valor: valorModalidade(m, data.km) }));
+      .map((m) => ({ nome: m.nome, descricao: m.caracteristicas.split("\n")[0]!.slice(0, 120), valor: aplicarTaxaInterdiaria(valorModalidade(m, data.km), pct), taxaPct: pct }));
   });
 
 export const agendarOrcamento = createServerFn({ method: "POST" })
@@ -60,7 +68,8 @@ export const agendarOrcamento = createServerFn({ method: "POST" })
       return { ok: false as const, erro: "Este horário acabou de ser ocupado. Escolha outro horário." };
     if (data.retorno && (await verificarAgenda(data.retorno)).conflito)
       return { ok: false as const, erro: "O horário de volta está ocupado. Escolha outro horário." };
-    const valor = valorFinal(m as ModalidadeBanco, data.km, !!data.retorno, data.pagamento); // valor sempre recalculado no servidor
+    const pct = voltaEmOutroDia(data.ida, data.retorno) ? await taxaInterdiaria() : 0;
+    const valor = valorFinal(m as ModalidadeBanco, data.km, !!data.retorno, data.pagamento, pct); // valor sempre recalculado no servidor
     const id = `AG-${Date.now().toString().slice(-6)}`;
     const { error } = await db.from("corridas").insert({
       id, cliente: data.nome, cliente_email: "", cliente_whatsapp: data.whatsapp, motorista: "",

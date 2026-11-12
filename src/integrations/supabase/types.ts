@@ -397,6 +397,7 @@ export type Database = {
           id: boolean
           preco_credito: number
           taxa_cofre: number
+          taxa_interdiaria_pct: number
           validade_cofre_meses: number
         }
         Insert: {
@@ -405,6 +406,7 @@ export type Database = {
           id?: boolean
           preco_credito?: number
           taxa_cofre?: number
+          taxa_interdiaria_pct?: number
           validade_cofre_meses?: number
         }
         Update: {
@@ -413,6 +415,7 @@ export type Database = {
           id?: boolean
           preco_credito?: number
           taxa_cofre?: number
+          taxa_interdiaria_pct?: number
           validade_cofre_meses?: number
         }
         Relationships: []
