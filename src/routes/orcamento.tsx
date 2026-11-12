@@ -30,7 +30,7 @@ export const Route = createFileRoute("/orcamento")({
   component: Orcamento,
 });
 
-type Cotacao = { nome: string; descricao: string; valor: number };
+type Cotacao = { nome: string; descricao: string; valor: number; taxaPct?: number };
 type Pacote = { id: string; nome: string; ciclo: Ciclo; km: number; valor: number; saldo_credito: number };
 
 function iconeModalidade(nome: string): LucideIcon {
