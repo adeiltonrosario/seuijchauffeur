@@ -324,6 +324,33 @@ export type Database = {
           },
         ]
       }
+      config_pix: {
+        Row: {
+          atualizado_em: string
+          banco: string
+          chave: string
+          id: boolean
+          tipo: string
+          titular: string
+        }
+        Insert: {
+          atualizado_em?: string
+          banco?: string
+          chave?: string
+          id?: boolean
+          tipo?: string
+          titular?: string
+        }
+        Update: {
+          atualizado_em?: string
+          banco?: string
+          chave?: string
+          id?: boolean
+          tipo?: string
+          titular?: string
+        }
+        Relationships: []
+      }
       corridas: {
         Row: {
           atualizado_em: string

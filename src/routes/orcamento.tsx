@@ -1,3 +1,4 @@
+import { PagarPix } from "@/components/pagar-pix";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -191,6 +192,7 @@ function Orcamento() {
           ) : (
             <>
               <p className="mt-4 text-sm text-muted-foreground">Seu horário está pré-reservado. O comprovante e a política de cancelamento serão liberados assim que o pagamento for confirmado.</p>
+              {pagamento === "Pix" && <div className="mt-4"><PagarPix valor={feito.valor} /></div>}
               <Button size="lg" className="mt-5 h-12 w-full" disabled={verificando} onClick={verificarPagamento}>
                 {verificando ? "Verificando..." : "Pagar corrida / verificar pagamento"}
               </Button>

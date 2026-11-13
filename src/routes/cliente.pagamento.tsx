@@ -1,3 +1,4 @@
+import { PagarPix } from "@/components/pagar-pix";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Copy, CreditCard, QrCode, Repeat } from "lucide-react";
@@ -23,7 +24,6 @@ export const Route = createFileRoute("/cliente/pagamento")({
   component: Pagamento,
 });
 
-const chavePix = "pix@seuchauffeur.com.br";
 
 function Pagamento() {
   const [metodo, setMetodo] = useState<"pix" | "cartao" | "plano">("pix");
@@ -102,18 +102,7 @@ function Pagamento() {
                     />
                   ))}
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Chave Pix</p>
-                  <p className="font-display text-lg">{chavePix}</p>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="mt-3"
-                    onClick={() => toast.success("Chave Pix copiada.")}
-                  >
-                    <Copy /> Copiar chave
-                  </Button>
-                </div>
+                <PagarPix />
               </div>
             ) : null}
 

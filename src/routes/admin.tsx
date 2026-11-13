@@ -70,6 +70,7 @@ import { CampoMoeda } from "@/components/campo-moeda";
 import { AdminAcessosModulos } from "@/components/admin-acessos-modulos";
 import { AdminCarteiraCreditos } from "@/components/admin-carteira-creditos";
 import { AdminSaldao } from "@/components/admin-saldao";
+import { ChavePixAdmin } from "@/components/chave-pix-admin";
 
 
 const TIPOS_CHAVE_PIX: TipoChavePix[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
@@ -1473,6 +1474,7 @@ function Admin() {
 
         <TabsContent value="recebimento" className="mt-6">
           <div className="grid gap-6 lg:grid-cols-2">
+            <ChavePixAdmin />
             <Card className="surface-luxe border-border/60 p-6">
               <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
                 <Landmark className="size-4" /> Conta de recebimento do motorista

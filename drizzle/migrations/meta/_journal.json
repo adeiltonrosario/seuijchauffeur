@@ -218,6 +218,13 @@
       "when": 1794580837893,
       "tag": "0030_corridas_pagamento_insert_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1794581463037,
+      "tag": "0031_config_pix",
+      "breakpoints": true
     }
   ]
 }
