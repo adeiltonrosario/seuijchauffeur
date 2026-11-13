@@ -1,0 +1,2 @@
+ALTER TABLE public.credito_config ADD COLUMN IF NOT EXISTS adicional_ocupante_pct numeric NOT NULL DEFAULT 10;
+ALTER TABLE public.corridas ADD COLUMN IF NOT EXISTS ocupantes_lista text[] NOT NULL DEFAULT '{}';

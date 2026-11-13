@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { AlertTriangle, Briefcase, Car, CheckCircle2, Landmark, Loader2, Package, Plane, Plus, ShoppingCart, Sparkles, X, type LucideIcon } from "lucide-react";
+import { AlertTriangle, Minus, Users, Briefcase, Car, CheckCircle2, Landmark, Loader2, Package, Plane, Plus, ShoppingCart, Sparkles, X, type LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { DESCONTO_PIX } from "@/lib/orcamento-livre";
+import { DESCONTO_PIX, MAX_OCUPANTES } from "@/lib/orcamento-livre";
 import { rotuloCiclo, type Ciclo } from "@/lib/pacotes";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -72,6 +72,8 @@ function Orcamento() {
   const [dataVolta, setDataVolta] = useState("");
   const [horaVolta, setHoraVolta] = useState("");
   const [agendaVolta, setAgendaVolta] = useState<"livre" | "conflito" | "checando" | null>(null);
+  const [acompanhantes, setAcompanhantes] = useState<string[]>([]);
+  const ocupantes = 1 + acompanhantes.length;
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
 
   useEffect(() => {
@@ -108,12 +110,12 @@ function Orcamento() {
 
   const aoCalcular = async (r: ResultadoRota) => {
     setRota(r);
-    const lista = await cotar({ data: { km: idaVolta ? r.km * 2 : r.km, interdiario } });
+    const lista = await cotar({ data: { km: idaVolta ? r.km * 2 : r.km, interdiario, ocupantes } });
     setCotacoes(lista);
     setEscolhida((e) => (lista.some((c) => c.nome === e) ? e : lista[0]?.nome ?? ""));
   };
   // Trocou ida/volta: recota com os km totais.
-  useEffect(() => { if (rota) void aoCalcular(rota); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [idaVolta, interdiario]);
+  useEffect(() => { if (rota) void aoCalcular(rota); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [idaVolta, interdiario, ocupantes]);
   const kmTotal = rota ? Math.round((idaVolta ? rota.km * 2 : rota.km) * 100) / 100 : 0;
 
   const selecionada = cotacoes.find((c) => c.nome === escolhida);
@@ -135,6 +137,7 @@ function Orcamento() {
       const r = await agendar({ data: {
         nome: nome.trim(), whatsapp: digitos, ida, embarque: origem, paradas, desembarque: destino,
         km: rota.km, modalidade: selecionada.nome, pagamento, retorno: retorno || null,
+        ocupantes: [nome.trim(), ...acompanhantes.map((a) => a.trim())],
       } });
       if (!r.ok) { toast.error(r.erro); if (r.erro.includes("horário")) setAgenda("conflito"); return; }
       setFeito({ id: r.id, valor: r.valor });
@@ -222,6 +225,20 @@ function Orcamento() {
               {agendaVolta === "conflito" && <p className="flex items-center gap-2 text-sm text-destructive"><AlertTriangle className="size-4" /> Horário de volta ocupado. Escolha outro.</p>}
             </>
           )}
+          <div className="space-y-2 rounded-lg border border-border/60 p-3">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-2"><Users className="size-4 text-primary" /> Ocupantes</Label>
+              <div className="flex items-center gap-2">
+                <Button type="button" size="icon" variant="secondary" aria-label="Remover ocupante" disabled={ocupantes <= 1} onClick={() => setAcompanhantes((l) => l.slice(0, -1))}><Minus /></Button>
+                <span className="w-6 text-center font-semibold">{ocupantes}</span>
+                <Button type="button" size="icon" variant="secondary" aria-label="Adicionar ocupante" disabled={ocupantes >= MAX_OCUPANTES} onClick={() => setAcompanhantes((l) => [...l, ""])}><Plus /></Button>
+              </div>
+            </div>
+            {acompanhantes.map((a, i) => (
+              <Input key={i} className="h-11" placeholder={`Nome do acompanhante ${i + 1} (opcional)`} value={a}
+                onChange={(e) => setAcompanhantes((l) => l.map((x, j) => (j === i ? e.target.value : x)))} />
+            ))}
+          </div>
         </Secao>
 
         <Secao titulo="2. Trajeto">
@@ -262,6 +279,7 @@ function Orcamento() {
               <p className="mt-1 text-sm text-muted-foreground">
                 {selecionada?.nome ? `${selecionada.nome} · ` : ""}{kmTotal.toLocaleString("pt-BR")} km contratados{idaVolta ? " (ida e volta)" : ""}
               </p>
+              {selecionada && <p className="mt-1 text-xs text-muted-foreground">{ocupantes} {ocupantes > 1 ? "ocupantes" : "ocupante"}</p>}
               {interdiario && selecionada && (
                 <p className="mt-1 text-xs text-muted-foreground">- Já Incluso taxa de deslocamento  — </p>
               )}

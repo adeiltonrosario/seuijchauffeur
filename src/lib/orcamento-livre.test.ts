@@ -28,3 +28,11 @@ describe("orçamento livre", () => {
     expect(aplicarTaxaInterdiaria(100, 30)).toBe(130);
   });
 });
+
+import { aplicarAdicionalOcupantes } from "./orcamento-livre";
+describe("adicional por ocupante", () => {
+  it("titular incluso, cobra a partir do 2º", () => {
+    expect(aplicarAdicionalOcupantes(100, 1, 10)).toBe(100);
+    expect(aplicarAdicionalOcupantes(100, 3, 10)).toBe(120);
+  });
+});

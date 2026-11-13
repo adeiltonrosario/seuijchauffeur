@@ -58,7 +58,17 @@ export function aplicarTaxaInterdiaria(valor: number, pct: number): number {
 }
 
 /** Valor final: ida e volta dobra os km; volta em outro dia soma a taxa; Pix tem 10% de desconto. */
-export function valorFinal(m: ModalidadeBanco, kmTrecho: number, idaVolta: boolean, pagamento: "Pix" | "Cartão", taxaInterdiariaPct = 0): number {
-  const base = aplicarTaxaInterdiaria(valorModalidade(m, idaVolta ? kmTrecho * 2 : kmTrecho), taxaInterdiariaPct);
+export function valorFinal(m: ModalidadeBanco, kmTrecho: number, idaVolta: boolean, pagamento: "Pix" | "Cartão", taxaInterdiariaPct = 0, ocupantes = 1, adicionalPct = 0): number {
+  const base = aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(valorModalidade(m, idaVolta ? kmTrecho * 2 : kmTrecho), taxaInterdiariaPct), ocupantes, adicionalPct);
   return pagamento === "Pix" ? Math.round(base * (1 - DESCONTO_PIX) * 100) / 100 : base;
+}
+
+/** Adicional padrão (%) por ocupante a partir do 2º. */
+export const ADICIONAL_OCUPANTE_PADRAO = 10;
+export const MAX_OCUPANTES = 4;
+
+/** Embute o adicional: o titular está incluso; cada ocupante extra soma pct% do valor. */
+export function aplicarAdicionalOcupantes(valor: number, ocupantes: number, pct: number): number {
+  const extras = Math.max(0, Math.min(MAX_OCUPANTES, Math.floor(ocupantes)) - 1);
+  return Math.round(valor * (1 + (extras * Math.max(0, pct)) / 100) * 100) / 100;
 }

@@ -339,6 +339,7 @@ export type Database = {
           ida: string
           modalidade: string
           motorista: string
+          ocupantes_lista: string[]
           pagamento: string
           parada: string | null
           retorno: string | null
@@ -360,6 +361,7 @@ export type Database = {
           ida: string
           modalidade: string
           motorista?: string
+          ocupantes_lista?: string[]
           pagamento?: string
           parada?: string | null
           retorno?: string | null
@@ -381,6 +383,7 @@ export type Database = {
           ida?: string
           modalidade?: string
           motorista?: string
+          ocupantes_lista?: string[]
           pagamento?: string
           parada?: string | null
           retorno?: string | null
@@ -392,6 +395,7 @@ export type Database = {
       }
       credito_config: {
         Row: {
+          adicional_ocupante_pct: number
           atualizado_em: string
           creditos_por_km: number
           id: boolean
@@ -401,6 +405,7 @@ export type Database = {
           validade_cofre_meses: number
         }
         Insert: {
+          adicional_ocupante_pct?: number
           atualizado_em?: string
           creditos_por_km?: number
           id?: boolean
@@ -410,6 +415,7 @@ export type Database = {
           validade_cofre_meses?: number
         }
         Update: {
+          adicional_ocupante_pct?: number
           atualizado_em?: string
           creditos_por_km?: number
           id?: boolean
