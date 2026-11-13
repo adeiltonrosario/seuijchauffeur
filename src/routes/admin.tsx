@@ -1,3 +1,4 @@
+import { AdminAgendamentos } from "@/components/admin-agendamentos";
 import { TaxaInterdiariaAdmin } from "@/components/taxa-interdiaria-admin";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -569,6 +570,7 @@ function Admin() {
           <TabsTrigger value="casas-apoio">Casas de Apoio</TabsTrigger>
           <TabsTrigger value="creditos">Créditos vencidos</TabsTrigger>
           <TabsTrigger value="saldao">Saldão</TabsTrigger>
+          <TabsTrigger value="agendamentos">Agendamentos</TabsTrigger>
         </TabsList>
 
 
@@ -1359,6 +1361,10 @@ function Admin() {
         <TabsContent value="propostas" className="mt-6">
           <AdminPropostas />
           <div className="mt-8"><AdminRotaExclusiva /></div>
+        </TabsContent>
+
+        <TabsContent value="agendamentos" className="mt-6">
+          <AdminAgendamentos />
         </TabsContent>
 
         <TabsContent value="saldao" className="mt-6">
