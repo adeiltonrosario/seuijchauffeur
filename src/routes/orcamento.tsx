@@ -263,7 +263,7 @@ function Orcamento() {
                 {selecionada?.nome ? `${selecionada.nome} · ` : ""}{kmTotal.toLocaleString("pt-BR")} km contratados{idaVolta ? " (ida e volta)" : ""}
               </p>
               {interdiario && selecionada && (
-                <p className="mt-1 text-xs text-muted-foreground">Inclui taxa de deslocamento ({selecionada.taxaPct}%) — volta em outro dia.</p>
+                <p className="mt-1 text-xs text-muted-foreground">- Já Incluso taxa de deslocamento  — </p>
               )}
             </div>
           )}
