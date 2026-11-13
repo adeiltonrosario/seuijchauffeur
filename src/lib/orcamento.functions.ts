@@ -93,3 +93,11 @@ export const agendarOrcamento = createServerFn({ method: "POST" })
     if (error) { console.error("[orcamento] agendar", error.message); return { ok: false as const, erro: "Não foi possível agendar agora." }; }
     return { ok: true as const, id, valor };
   });
+
+export const consultarPagamento = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) => z.object({ id: z.string().regex(/^AG-\d{6}$/), whatsapp: z.string().regex(/^\d{10,11}$/) }).parse(i))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const { data: c } = await db.from("corridas").select("pagamento_status").eq("id", data.id).eq("cliente_whatsapp", data.whatsapp).maybeSingle();
+    return { status: (c?.pagamento_status as string | undefined) ?? "pendente" };
+  });

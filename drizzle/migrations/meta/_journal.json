@@ -204,6 +204,20 @@
       "when": 1794548458468,
       "tag": "0028_adicional_ocupantes",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1794580824457,
+      "tag": "0029_corridas_pagamento_status",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1794580837893,
+      "tag": "0030_corridas_pagamento_insert_guard",
+      "breakpoints": true
     }
   ]
 }

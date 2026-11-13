@@ -341,6 +341,8 @@ export type Database = {
           motorista: string
           ocupantes_lista: string[]
           pagamento: string
+          pagamento_status: string
+          pago_em: string | null
           parada: string | null
           retorno: string | null
           status: string
@@ -363,6 +365,8 @@ export type Database = {
           motorista?: string
           ocupantes_lista?: string[]
           pagamento?: string
+          pagamento_status?: string
+          pago_em?: string | null
           parada?: string | null
           retorno?: string | null
           status?: string
@@ -385,6 +389,8 @@ export type Database = {
           motorista?: string
           ocupantes_lista?: string[]
           pagamento?: string
+          pagamento_status?: string
+          pago_em?: string | null
           parada?: string | null
           retorno?: string | null
           status?: string

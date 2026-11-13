@@ -12,7 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BotaoSelecionarMapa } from "@/components/seletor-endereco-mapa";
 import { BotaoFinalizarRota, type ResultadoRota } from "@/components/finalizar-rota";
-import { agendarOrcamento, checarHorario, cotarModalidades } from "@/lib/orcamento.functions";
+import { agendarOrcamento, checarHorario, consultarPagamento, cotarModalidades } from "@/lib/orcamento.functions";
+import { TAXA_CANCELAMENTO_PCT, taxaCancelamento } from "@/lib/cancelamento";
 import { formatarBRL } from "@/lib/dados";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +69,19 @@ function Orcamento() {
   const [agenda, setAgenda] = useState<"livre" | "conflito" | "checando" | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [feito, setFeito] = useState<{ id: string; valor: number } | null>(null);
+  const [statusPag, setStatusPag] = useState("pendente");
+  const [verificando, setVerificando] = useState(false);
+  const consultar = useServerFn(consultarPagamento);
+  const verificarPagamento = async () => {
+    if (!feito) return;
+    setVerificando(true);
+    try {
+      const r = await consultar({ data: { id: feito.id, whatsapp: whats.replace(/\D/g, "") } });
+      setStatusPag(r.status);
+      if (r.status !== "aprovado") toast.info("Pagamento ainda não confirmado. Assim que for aprovado, o comprovante será liberado.");
+    } catch { toast.error("Não foi possível verificar agora."); }
+    finally { setVerificando(false); }
+  };
   const [idaVolta, setIdaVolta] = useState(false);
   const [dataVolta, setDataVolta] = useState("");
   const [horaVolta, setHoraVolta] = useState("");
@@ -147,14 +161,16 @@ function Orcamento() {
   };
 
   if (feito) {
+    const taxa = taxaCancelamento(feito.valor);
     const msg = encodeURIComponent(
-      `Olá! Sou ${nome}. Agendamento ${feito.id}: ${selecionada?.nome}, ida ${ida}${retorno ? `, volta ${retorno}` : ""}. ${origem} → ${destino}. ${kmTotal.toLocaleString("pt-BR")} km · ${formatarBRL(feito.valor)} (${pagamento}).`,
+      `Olá! Sou ${nome}. Comprovante do agendamento ${feito.id} (PAGO): ${selecionada?.nome}, ida ${ida}${retorno ? `, volta ${retorno}` : ""}. ${origem} → ${destino}. ${kmTotal.toLocaleString("pt-BR")} km · ${formatarBRL(feito.valor)} (${pagamento}).\n\nPolítica de cancelamento: em caso de cancelamento após o pagamento, será retida taxa de ${TAXA_CANCELAMENTO_PCT}% (${formatarBRL(taxa)}) referente à reserva e deslocamento do motorista.`,
     );
+    const pago = statusPag === "aprovado";
     return (
       <main className="mx-auto min-h-screen max-w-lg px-4 py-10">
         <Card className="surface-luxe glow-gold border-primary/40 p-6 text-center">
           <CheckCircle2 className="mx-auto size-12 text-primary" />
-          <h1 className="font-display mt-3 text-2xl font-semibold">Agendamento recebido!</h1>
+          <h1 className="font-display mt-3 text-2xl font-semibold">{pago ? "Pagamento confirmado!" : "Pagamento pendente"}</h1>
           <p className="mt-1 text-sm text-muted-foreground">Nº {feito.id}</p>
           <div className="mt-5 space-y-1 text-left text-sm">
             <p><b>{selecionada?.nome}</b> · ida {ida}{retorno ? ` · volta ${retorno}` : ""}</p>
@@ -162,10 +178,24 @@ function Orcamento() {
             <p>{kmTotal.toLocaleString("pt-BR")} km contratados{retorno ? " (ida e volta)" : ""}</p>
             <p className="text-gold text-2xl font-semibold">{formatarBRL(feito.valor)}</p>
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">Seu horário está reservado. Avisaremos pelo WhatsApp quando o motorista confirmar.</p>
-          <Button asChild size="lg" className="mt-5 h-12 w-full">
-            <a href={`https://wa.me/?text=${msg}`} target="_blank" rel="noreferrer">Abrir confirmação no WhatsApp</a>
-          </Button>
+          {pago ? (
+            <>
+              <div className="mt-4 rounded-md border border-primary/30 p-3 text-left text-sm">
+                <p className="font-semibold">Política de cancelamento</p>
+                <p className="text-muted-foreground">Cancelamentos após o pagamento retêm {TAXA_CANCELAMENTO_PCT}% do valor ({formatarBRL(taxa)}).</p>
+              </div>
+              <Button asChild size="lg" className="mt-5 h-12 w-full">
+                <a href={`https://wa.me/55${digitos}?text=${msg}`} target="_blank" rel="noreferrer">Receber comprovante no WhatsApp</a>
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="mt-4 text-sm text-muted-foreground">Seu horário está pré-reservado. O comprovante e a política de cancelamento serão liberados assim que o pagamento for confirmado.</p>
+              <Button size="lg" className="mt-5 h-12 w-full" disabled={verificando} onClick={verificarPagamento}>
+                {verificando ? "Verificando..." : "Pagar corrida / verificar pagamento"}
+              </Button>
+            </>
+          )}
           <Button variant="ghost" className="mt-2 w-full" onClick={() => window.location.reload()}>Novo orçamento</Button>
         </Card>
       </main>
