@@ -4,8 +4,8 @@
  * Fotos não têm texto digital; nesses casos o motorista digita os dados.
  */
 
-export type DadosCnh = { nome?: string; cpf?: string; registro?: string };
-export type DadosCrlv = { placa?: string; marca?: string; modelo?: string; cor?: string; lotacao?: number };
+export type DadosCnh = { nome?: string | undefined; cpf?: string | undefined; registro?: string | undefined };
+export type DadosCrlv = { placa?: string | undefined; marca?: string | undefined; modelo?: string | undefined; cor?: string | undefined; lotacao?: number | undefined };
 
 const limpar = (t: string) => t.replace(/\s+/g, " ").trim();
 
