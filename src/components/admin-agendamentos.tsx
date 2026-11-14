@@ -1,19 +1,34 @@
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Percent, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatarBRL } from "@/lib/dados";
-import { listarAgendamentosAdmin, excluirAgendamentosAdmin } from "@/lib/agendamentos-admin.functions";
+import { listarAgendamentosAdmin, excluirAgendamentosAdmin, descontoAgendamentoAdmin } from "@/lib/agendamentos-admin.functions";
 
 type Linha = Awaited<ReturnType<typeof listarAgendamentosAdmin>>[number];
 
 export function AdminAgendamentos() {
   const listar = useServerFn(listarAgendamentosAdmin);
   const excluir = useServerFn(excluirAgendamentosAdmin);
+  const descontar = useServerFn(descontoAgendamentoAdmin);
+  const conceder = async (a: Linha) => {
+    const original = a.valor_original ?? a.valor;
+    const t = window.prompt(`Desconto para ${a.id} (valor original ${formatarBRL(original)}).\nDigite em % (ex: 10%) ou em reais (ex: 20,00):`);
+    if (!t) return;
+    const txt = t.trim().replace(/\s/g, "");
+    const n = Number(txt.replace("%", "").replace(/\./g, "").replace(",", "."));
+    if (!Number.isFinite(n) || n < 0) return void toast.error("Valor inválido.");
+    const final = Math.max(0, Math.round((txt.endsWith("%") ? original * (1 - Math.min(n, 100) / 100) : original - n) * 100) / 100);
+    if (!window.confirm(`Novo valor final do cliente: ${formatarBRL(final)}. Confirmar?`)) return;
+    setOcupado(true);
+    try { await descontar({ data: { id: a.id, valorFinal: final } }); toast.success(`Valor ajustado para ${formatarBRL(final)}.`); await carregar(); }
+    catch (e) { toast.error((e as Error).message); }
+    finally { setOcupado(false); }
+  };
   const [lista, setLista] = useState<Linha[]>([]);
   const [sel, setSel] = useState<Set<string>>(new Set());
   const [busca, setBusca] = useState("");
@@ -82,9 +97,13 @@ export function AdminAgendamentos() {
                     <td className="p-2">{a.cliente}<div className="text-xs text-muted-foreground">{a.motorista || "sem motorista"}</div></td>
                     <td className="p-2">{a.modalidade}</td>
                     <td className="p-2">{a.ida}</td>
-                    <td className="p-2">{formatarBRL(a.valor)}</td>
+                    <td className="p-2">{formatarBRL(a.valor)}{a.valor_original != null && a.valor_original > a.valor && (
+                      <div className="text-xs text-muted-foreground line-through">{formatarBRL(a.valor_original)}</div>)}</td>
                     <td className="p-2">{a.status}</td>
-                    <td className="p-2">
+                    <td className="flex gap-1 p-2">
+                      <Button size="sm" variant="secondary" disabled={ocupado} onClick={() => void conceder(a)}>
+                        <Percent className="h-4 w-4" /> Desconto
+                      </Button>
                       <Button size="icon" variant="ghost" aria-label={`Excluir ${a.id}`} disabled={ocupado}
                         onClick={() => window.confirm(`Excluir o agendamento ${a.id} de ${a.cliente}?`) && void rodar({ ids: [a.id] })}>
                         <Trash2 className="h-4 w-4 text-destructive" />

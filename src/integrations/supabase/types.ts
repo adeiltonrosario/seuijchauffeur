@@ -360,6 +360,7 @@ export type Database = {
           cliente_email: string
           cliente_whatsapp: string
           criado_em: string
+          desconto_por: string | null
           desembarque: string
           embarque: string
           id: string
@@ -374,6 +375,7 @@ export type Database = {
           retorno: string | null
           status: string
           valor: number
+          valor_original: number | null
           veiculo: string
         }
         Insert: {
@@ -384,6 +386,7 @@ export type Database = {
           cliente_email?: string
           cliente_whatsapp?: string
           criado_em?: string
+          desconto_por?: string | null
           desembarque: string
           embarque: string
           id: string
@@ -398,6 +401,7 @@ export type Database = {
           retorno?: string | null
           status?: string
           valor?: number
+          valor_original?: number | null
           veiculo?: string
         }
         Update: {
@@ -408,6 +412,7 @@ export type Database = {
           cliente_email?: string
           cliente_whatsapp?: string
           criado_em?: string
+          desconto_por?: string | null
           desembarque?: string
           embarque?: string
           id?: string
@@ -422,6 +427,7 @@ export type Database = {
           retorno?: string | null
           status?: string
           valor?: number
+          valor_original?: number | null
           veiculo?: string
         }
         Relationships: []

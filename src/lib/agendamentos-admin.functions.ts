@@ -13,10 +13,10 @@ export const listarAgendamentosAdmin = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("corridas")
-      .select("id, cliente, cliente_email, motorista, modalidade, ida, valor, status")
+      .select("id, cliente, cliente_email, motorista, modalidade, ida, valor, valor_original, status")
       .order("criado_em", { ascending: false });
     if (error) throw new Error("Não foi possível carregar os agendamentos.");
-    return (data ?? []).map((r) => ({ ...r, valor: Number(r.valor) }));
+    return (data ?? []).map((r) => ({ ...r, valor: Number(r.valor), valor_original: r.valor_original == null ? null : Number(r.valor_original) }));
   });
 
 export const excluirAgendamentosAdmin = createServerFn({ method: "POST" })
@@ -34,4 +34,26 @@ export const excluirAgendamentosAdmin = createServerFn({ method: "POST" })
     const { count, error } = data.todos ? await q.neq("id", "") : await q.in("id", data.ids);
     if (error) throw new Error("Não foi possível excluir.");
     return { excluidos: count ?? 0 };
+  });
+
+export const descontoAgendamentoAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; valorFinal: number }) => {
+    const v = Math.round(Number(d.valorFinal) * 100) / 100;
+    if (typeof d.id !== "string" || d.id.length > 64 || !Number.isFinite(v) || v < 0) throw new Error("Dados inválidos.");
+    return { id: d.id, valorFinal: v };
+  })
+  .handler(async ({ data, context }) => {
+    await exigirEquipe(context.supabase as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: c } = await supabaseAdmin.from("corridas").select("valor, valor_original, pagamento_status").eq("id", data.id).maybeSingle();
+    if (!c) throw new Error("Agendamento não encontrado.");
+    if (c.pagamento_status === "aprovado") throw new Error("Pagamento já aprovado; não é possível alterar o valor.");
+    const original = c.valor_original == null ? Number(c.valor) : Number(c.valor_original);
+    if (data.valorFinal > original) throw new Error("O valor final não pode passar do valor original.");
+    const { error } = await supabaseAdmin.from("corridas")
+      .update({ valor: data.valorFinal, valor_original: original, desconto_por: context.userId })
+      .eq("id", data.id);
+    if (error) throw new Error("Não foi possível salvar o desconto.");
+    return { valor: data.valorFinal, original };
   });

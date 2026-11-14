@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { AlertTriangle, Minus, Users, Briefcase, Car, CheckCircle2, Landmark, Loader2, Package, Plane, Plus, ShoppingCart, Sparkles, X, type LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { DESCONTO_PIX, MAX_OCUPANTES } from "@/lib/orcamento-livre";
+import { MAX_OCUPANTES } from "@/lib/orcamento-livre";
 import { rotuloCiclo, type Ciclo } from "@/lib/pacotes";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -134,7 +134,7 @@ function Orcamento() {
   const kmTotal = rota ? Math.round((idaVolta ? rota.km * 2 : rota.km) * 100) / 100 : 0;
 
   const selecionada = cotacoes.find((c) => c.nome === escolhida);
-  const valorPagar = selecionada ? (pagamento === "Pix" ? Math.round(selecionada.valor * (1 - DESCONTO_PIX) * 100) / 100 : selecionada.valor) : 0;
+  const valorPagar = selecionada ? selecionada.valor : 0;
 
   const concluir = async (): Promise<void> => {
     if (nome.trim().length < 3) return void toast.error("Informe seu nome completo.");
@@ -306,7 +306,7 @@ function Orcamento() {
                 {selecionada ? formatarBRL(valorPagar) : <Loader2 className="mx-auto size-6 animate-spin" />}
               </p>
               {selecionada && pagamento === "Pix" && (
-                <p className="mt-1 text-sm"><span className="text-muted-foreground line-through">{formatarBRL(selecionada.valor)}</span> · <span className="text-gold">10% OFF fechando agora no Pix</span></p>
+                <p className="mt-1 text-sm text-gold">Fechando no Pix, peça seu voucher de desconto à nossa equipe.</p>
               )}
               <p className="mt-1 text-sm text-muted-foreground">
                 {selecionada?.nome ? `${selecionada.nome} · ` : ""}{kmTotal.toLocaleString("pt-BR")} km contratados{idaVolta ? " (ida e volta)" : ""}
@@ -338,7 +338,7 @@ function Orcamento() {
             <div className="grid grid-cols-2 gap-2">
               {(["Pix", "Cartão"] as const).map((p) => (
                 <Button key={p} type="button" className="h-11" variant={pagamento === p ? "default" : "secondary"} onClick={() => setPagamento(p)}>
-                  {p === "Pix" ? "Pix agora · 10% OFF" : "Cartão no veículo"}
+                  {p === "Pix" ? "Pix" : "Cartão no veículo"}
                 </Button>
               ))}
             </div>

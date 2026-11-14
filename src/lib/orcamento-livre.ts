@@ -60,7 +60,8 @@ export function aplicarTaxaInterdiaria(valor: number, pct: number): number {
 /** Valor final: ida e volta dobra os km; volta em outro dia soma a taxa; Pix tem 10% de desconto. */
 export function valorFinal(m: ModalidadeBanco, kmTrecho: number, idaVolta: boolean, pagamento: "Pix" | "Cartão", taxaInterdiariaPct = 0, ocupantes = 1, adicionalPct = 0): number {
   const base = aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(valorModalidade(m, idaVolta ? kmTrecho * 2 : kmTrecho), taxaInterdiariaPct), ocupantes, adicionalPct);
-  return pagamento === "Pix" ? Math.round(base * (1 - DESCONTO_PIX) * 100) / 100 : base;
+  void pagamento; // desconto Pix não é automático: Admin concede no agendamento
+  return base;
 }
 
 /** Adicional padrão (%) por ocupante a partir do 2º. */
