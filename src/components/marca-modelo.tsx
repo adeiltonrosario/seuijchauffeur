@@ -6,10 +6,10 @@ type Catalogo = Record<string, string[]>;
 let cache: Catalogo | null = null;
 
 /** Seleção de marca e modelo a partir do catálogo pré-cadastrado (com busca). Retorna "Marca Modelo". */
-export function MarcaModelo({ id, onChange }: { id: string; onChange: (valor: string) => void }) {
+export function MarcaModelo({ id, onChange, marcaInicial = "", modeloInicial = "" }: { id: string; onChange: (valor: string) => void; marcaInicial?: string; modeloInicial?: string }) {
   const [catalogo, setCatalogo] = useState<Catalogo | null>(cache);
-  const [marca, setMarca] = useState("");
-  const [modelo, setModelo] = useState("");
+  const [marca, setMarca] = useState(marcaInicial);
+  const [modelo, setModelo] = useState(modeloInicial);
 
   useEffect(() => {
     if (cache) return;

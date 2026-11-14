@@ -19,6 +19,7 @@ import {
 import { formatarTelefone, validarContato } from "@/lib/contatos";
 import { registrarPendente } from "@/lib/status-motorista";
 import { cpfValido, criarAcesso, enviarDocumento, formatarCpf, validarSenhas } from "@/lib/cadastro-acesso";
+import { extrairCnh, extrairCrlv, lerTextoPdf } from "@/lib/leitura-documentos";
 import { gravarMotorista, gravarVeiculoFrota } from "@/lib/banco";
 
 export const Route = createFileRoute("/seja-motorista")({
@@ -46,7 +47,6 @@ const DOCUMENTOS = [
   { chave: "foto", rotulo: "Foto de perfil (rosto) *" },
   { chave: "cnh", rotulo: "CNH com EAR (foto ou PDF) *" },
   { chave: "crlv", rotulo: "CRLV do veículo (foto ou PDF) *" },
-  { chave: "antecedentes", rotulo: "Certidão de antecedentes criminais (opcional)" },
 ] as const;
 
 function SejaMotorista() {
@@ -65,6 +65,40 @@ function SejaMotorista() {
   const [capacidade, setCapacidade] = useState(String(capacidadeDaCategoria("Sedan")));
   const [salvando, setSalvando] = useState(false);
   const [enviado, setEnviado] = useState(false);
+
+  const [lendo, setLendo] = useState<string | null>(null);
+  const [mmInicial, setMmInicial] = useState({ chave: 0, marca: "", modelo: "" });
+
+  const anexar = async (chave: string, f: File | null) => {
+    setArquivos((a) => ({ ...a, [chave]: f }));
+    if (!f || (chave !== "cnh" && chave !== "crlv")) return;
+    setLendo(chave);
+    try {
+      const texto = await lerTextoPdf(f);
+      if (!texto.trim()) {
+        toast.info("Documento anexado. Para preenchimento automático, envie o PDF digital (app Carteira Digital de Trânsito).");
+        return;
+      }
+      if (chave === "cnh") {
+        const d = extrairCnh(texto);
+        if (d.nome) setNome(d.nome);
+        if (d.cpf) setCpf(formatarCpf(d.cpf));
+        if (d.registro) setCnh(d.registro);
+        toast.success(d.nome || d.cpf ? "Dados da CNH preenchidos. Confira antes de enviar." : "Não consegui ler os dados da CNH. Preencha manualmente.");
+      } else {
+        const d = extrairCrlv(texto);
+        if (d.placa) setPlaca(d.placa);
+        if (d.cor) setCor(d.cor);
+        if (d.marca) setMmInicial((m) => ({ chave: m.chave + 1, marca: d.marca!, modelo: d.modelo ?? "" }));
+        if (d.lotacao) setCapacidade(String(d.lotacao));
+        toast.success(d.placa ? "Dados do veículo preenchidos. Confira antes de enviar." : "Não consegui ler os dados do CRLV. Preencha manualmente.");
+      }
+    } catch {
+      toast.info("Documento anexado. Preencha os dados manualmente.");
+    } finally {
+      setLendo(null);
+    }
+  };
 
   const setCategoria = (c: CategoriaVeiculo) => {
     setCategoriaState(c);
@@ -87,7 +121,7 @@ function SejaMotorista() {
       return void toast.error(`Informe a lotação entre ${faixa.min} e ${faixa.max} ocupantes conforme o CRLV.`);
     }
     for (const d of DOCUMENTOS) {
-      if (d.chave !== "antecedentes" && !arquivos[d.chave]) return void toast.error(`Anexe: ${d.rotulo.replace(" *", "")}.`);
+      if (!arquivos[d.chave]) return void toast.error(`Anexe: ${d.rotulo.replace(" *", "")}.`);
     }
     setSalvando(true);
     try {
@@ -193,15 +227,16 @@ function SejaMotorista() {
                   <div key={d.chave} className="space-y-1">
                     <Label htmlFor={`sm-doc-${d.chave}`}>{d.rotulo}</Label>
                     <Input id={`sm-doc-${d.chave}`} type="file" accept={d.chave === "foto" ? "image/*" : "image/*,application/pdf"}
-                      onChange={(e) => setArquivos((a) => ({ ...a, [d.chave]: e.target.files?.[0] ?? null }))} />
+                      onChange={(e) => void anexar(d.chave, e.target.files?.[0] ?? null)} />
+                    {lendo === d.chave ? <p className="text-xs text-primary">Lendo documento...</p> : null}
                   </div>
                 ))}
-                <p className="text-xs text-muted-foreground">Arquivos de até 10 MB. Só a equipe de administração pode ver.</p>
+                <p className="text-xs text-muted-foreground">Envie primeiro a CNH e o CRLV em PDF digital (gov.br) e os campos serão preenchidos automaticamente, sem custo. Arquivos de até 10 MB; só a equipe de administração pode ver.</p>
               </div>
 
               <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 space-y-3">
                 <p className="text-xs font-medium uppercase tracking-wide text-primary">Seu veículo</p>
-                <div className="sm:col-span-2"><MarcaModelo id="sm" onChange={setModelo} /></div>
+                <div className="sm:col-span-2"><MarcaModelo key={mmInicial.chave} id="sm" onChange={setModelo} marcaInicial={mmInicial.marca} modeloInicial={mmInicial.modelo} /></div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-2"><Label htmlFor="sm-placa">Placa *</Label>
                     <Input id="sm-placa" value={placa} onChange={(e) => setPlaca(e.target.value.toUpperCase())} placeholder="ABC-1D23" /></div>
