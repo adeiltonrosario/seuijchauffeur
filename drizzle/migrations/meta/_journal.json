@@ -246,6 +246,13 @@
       "when": 1794801850867,
       "tag": "0034_aceite_imediato_motorista",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1794839665617,
+      "tag": "0035_restringir_politicas_abertas",
+      "breakpoints": true
     }
   ]
 }
