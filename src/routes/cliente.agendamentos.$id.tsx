@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Route as RouteIcon, Star, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { BotaoGoogleAgenda } from "@/components/botao-google-agenda";
 import { ChatCorrida } from "@/components/chat-corrida";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -166,6 +167,8 @@ function DetalhesAgendamento() {
               </Button>
             </div>
           </Card>
+
+          <BotaoGoogleAgenda codigo={agendamento.id} ida={agendamento.ida} embarque={agendamento.embarque} destino={agendamento.desembarque} detalhes={`Modalidade: ${agendamento.modalidade}`} />
 
           <ChatCorrida
             agendamentoId={agendamento.id}

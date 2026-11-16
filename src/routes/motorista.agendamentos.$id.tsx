@@ -3,6 +3,7 @@ import { BellRing, CheckCircle2, Clock, Navigation, PlayCircle } from "lucide-re
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { AvisoWhatsapp } from "@/components/aviso-whatsapp";
+import { BotaoGoogleAgenda } from "@/components/botao-google-agenda";
 import { ChatCorrida } from "@/components/chat-corrida";
 import { MapaLocal } from "@/components/mapa-local";
 import { StatusBadge } from "@/components/status-badge";
@@ -130,6 +131,8 @@ function DetalhesMotorista() {
               {caracteristicasDaModalidade(agendamento.modalidade)}
             </p>
           </Card>
+
+          <BotaoGoogleAgenda codigo={agendamento.id} ida={agendamento.ida} embarque={agendamento.embarque} destino={agendamento.desembarque} detalhes={`Modalidade: ${agendamento.modalidade}`} />
 
           <ChatCorrida
             agendamentoId={agendamento.id}

@@ -10,6 +10,7 @@ import { PlanosPorModalidade } from "@/components/planos-por-modalidade";
 import { PacotesCreditosAdmin } from "@/components/pacotes-creditos-admin";
 import { AdminCasasApoio } from "@/components/admin-casas-apoio";
 import { TabelaIndicacoes } from "@/components/tabela-indicacoes";
+import { AgendaFrotaAdmin } from "@/components/agenda-frota-admin";
 import { LinkOrcamentoAdmin } from "@/components/link-orcamento-admin";
 import { AdminPrecosEsportivo } from "@/components/admin-precos-esportivo";
 import { AdminPropostas } from "@/components/admin-propostas";
@@ -559,6 +560,7 @@ function Admin() {
       {papelEquipe === "admin" || papelEquipe === "gerente" ? (
       <>
       <LinkOrcamentoAdmin />
+      <AgendaFrotaAdmin />
       <Tabs defaultValue="motoristas">
         <TabsList>
           <TabsTrigger value="motoristas">Motoristas</TabsTrigger>
