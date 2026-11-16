@@ -5,7 +5,7 @@ export const FUSO_AGENDA = "America/Bahia";
 export function paraDataGoogle(texto: string, somarMin = 0): string | null {
   const m = texto.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})/);
   if (!m) return null;
-  const d = new Date(Date.UTC(+m[3], +m[2] - 1, +m[1], +m[4], +m[5] + somarMin));
+  const d = new Date(Date.UTC(Number(m[3]), Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5]) + somarMin));
   const p = (n: number) => String(n).padStart(2, "0");
   return `${d.getUTCFullYear()}${p(d.getUTCMonth() + 1)}${p(d.getUTCDate())}T${p(d.getUTCHours())}${p(d.getUTCMinutes())}00`;
 }
