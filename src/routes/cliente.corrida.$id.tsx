@@ -102,8 +102,8 @@ function CorridaCliente() {
 
           {aberto && candidaturas.length === 0 ? (
             <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="size-4" /> Seu agendamento está aberto. Assim que motoristas demonstrarem
-              interesse, eles aparecerão aqui.
+              <Clock className="size-4" /> Seu agendamento está aberto. Assim que um motorista aceitar,
+              ele aparecerá aqui automaticamente.
             </p>
           ) : null}
 

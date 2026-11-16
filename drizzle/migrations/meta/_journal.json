@@ -239,6 +239,13 @@
       "when": 1794799305303,
       "tag": "0033_conflito_agenda_motorista",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1794801850867,
+      "tag": "0034_aceite_imediato_motorista",
+      "breakpoints": true
     }
   ]
 }

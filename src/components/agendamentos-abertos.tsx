@@ -20,7 +20,7 @@ export function OportunidadesMotorista() {
     setEnviando(id);
     const r = await candidatarCorrida(id);
     setEnviando(null);
-    if (r === "ok") toast.success("Interesse enviado. O cliente vai escolher entre os interessados.");
+    if (r === "ok") toast.success("Corrida aceita! Ela já está na sua agenda.");
     else toast.error(mensagemCandidatura(r));
   };
 
@@ -28,7 +28,7 @@ export function OportunidadesMotorista() {
     <Card className="mb-6 border-primary/30 p-6">
       <h2 className="text-sm font-medium uppercase tracking-wide text-gold">Agendamentos abertos</h2>
       <p className="mt-1 text-xs text-muted-foreground">
-        Demonstre interesse; o cliente escolhe e vincula o motorista.
+        O primeiro motorista disponível que aceitar fica com a corrida.
       </p>
       {abertas.length === 0 ? (
         <p className="mt-4 text-sm text-muted-foreground">Nenhum agendamento aberto no momento.</p>
@@ -46,7 +46,7 @@ export function OportunidadesMotorista() {
                   <p className="text-xs text-gold">{formatarBRL(a.valor)}</p>
                 </div>
                 <Button size="sm" disabled={jaEnviei || enviando !== null} onClick={() => void candidatar(a.id)}>
-                  <Hand /> {jaEnviei ? "Interesse enviado" : enviando === a.id ? "Enviando…" : "Tenho interesse"}
+                  <Hand /> {jaEnviei ? "Aceita" : enviando === a.id ? "Aceitando…" : "Aceitar corrida"}
                 </Button>
               </li>
             );
