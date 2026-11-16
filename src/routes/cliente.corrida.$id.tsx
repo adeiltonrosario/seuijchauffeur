@@ -73,6 +73,9 @@ function CorridaCliente() {
               Motoristas interessados
             </h2>
             <StatusBadge status={corrida.status} />
+            <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${corrida.pagamentoStatus === "aprovado" ? "border-success/30 bg-success/15 text-success" : "border-warning/30 bg-warning/15 text-warning"}`}>
+              {corrida.pagamentoStatus === "aprovado" ? "Pago" : "Pagamento pendente"}
+            </span>
           </div>
 
           {!aberto && corrida.motorista ? (

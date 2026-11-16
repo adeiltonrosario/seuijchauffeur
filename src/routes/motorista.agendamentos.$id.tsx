@@ -44,6 +44,7 @@ function DetalhesMotorista() {
 
   const status = agendamento.status;
   const ativo = motorista?.status === "ativo";
+  const pago = agendamento.pagamentoStatus === "aprovado";
   const mudar = async (novo: StatusAgendamento, msg: string) => {
     if (!ativo) { toast.error("Seu cadastro precisa estar ativo."); return; }
     if (await atualizarStatusCorrida(agendamento.id, novo)) toast.success(msg);
@@ -54,10 +55,24 @@ function DetalhesMotorista() {
     <AppShell
       titulo={`Corrida ${agendamento.id}`}
       descricao={`${agendamento.cliente} · ${agendamento.modalidade}`}
-      acao={<StatusBadge status={status} />}
+      acao={
+        <div className="flex items-center gap-2">
+          <StatusBadge status={status} />
+          <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${pago ? "border-success/30 bg-success/15 text-success" : "border-warning/30 bg-warning/15 text-warning"}`}>
+            {pago ? "Pago" : "Pagamento pendente"}
+          </span>
+        </div>
+      }
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
+          {!pago && status !== "cancelado" ? (
+            <Card className="border-warning/40 bg-warning/10 p-4">
+              <p className="text-sm text-warning">
+                ⚠️ Corrida reservada na sua agenda, porém o pagamento do cliente ainda está <strong>pendente</strong>. Aguarde a confirmação do pagamento antes de iniciar o trajeto.
+              </p>
+            </Card>
+          ) : null}
           <AvisoWhatsapp agendamento={agendamento} />
           <Card className="border-warning/30 bg-warning/10 p-4">
             <p className="flex items-center gap-2 text-sm text-warning">
@@ -132,8 +147,8 @@ function DetalhesMotorista() {
           <Button className="w-full" disabled={status !== "pendente"} onClick={() => mudar("confirmado", "Corrida confirmada.")}>
             <CheckCircle2 /> Confirmar corrida
           </Button>
-          <Button className="w-full" variant="secondary" disabled={status !== "confirmado"} onClick={() => mudar("em-andamento", "Início da corrida registrado.")}>
-            <PlayCircle /> Iniciar corrida
+          <Button className="w-full" variant="secondary" disabled={status !== "confirmado" || !pago} title={!pago ? "Aguardando pagamento do cliente" : undefined} onClick={() => mudar("em-andamento", "Início da corrida registrado.")}>
+            <PlayCircle /> {pago ? "Iniciar corrida" : "Aguardando pagamento"}
           </Button>
           <Button className="w-full" disabled={status !== "em-andamento"} onClick={() => mudar("concluido", "Corrida concluída.")}>
             <Clock /> Concluir corrida

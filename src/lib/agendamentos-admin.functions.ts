@@ -13,7 +13,7 @@ export const listarAgendamentosAdmin = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("corridas")
-      .select("id, cliente, cliente_email, motorista, modalidade, ida, valor, valor_original, status")
+      .select("id, cliente, cliente_email, motorista, modalidade, ida, valor, valor_original, status, pagamento_status")
       .order("criado_em", { ascending: false });
     if (error) throw new Error("Não foi possível carregar os agendamentos.");
     return (data ?? []).map((r) => ({ ...r, valor: Number(r.valor), valor_original: r.valor_original == null ? null : Number(r.valor_original) }));
@@ -56,4 +56,20 @@ export const descontoAgendamentoAdmin = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error("Não foi possível salvar o desconto.");
     return { valor: data.valorFinal, original };
+  });
+
+export const confirmarPagamentoAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => {
+    if (typeof d.id !== "string" || !d.id || d.id.length > 64) throw new Error("Dados inválidos.");
+    return { id: d.id };
+  })
+  .handler(async ({ data, context }) => {
+    await exigirEquipe(context.supabase as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("corridas")
+      .update({ pagamento_status: "aprovado", pago_em: new Date().toISOString() })
+      .eq("id", data.id);
+    if (error) throw new Error("Não foi possível confirmar o pagamento.");
+    return { ok: true };
   });

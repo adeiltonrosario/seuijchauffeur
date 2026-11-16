@@ -131,6 +131,8 @@ export type Agendamento = {
   capacidade: number;
   /** Telefone com WhatsApp do cliente, para avisos com mensagem pronta. */
   whatsappCliente?: string;
+  /** Situação financeira: pendente ou aprovado. */
+  pagamentoStatus?: string;
 };
 
 export const agendamentos: Agendamento[] = [];

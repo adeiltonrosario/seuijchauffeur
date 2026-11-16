@@ -12,7 +12,7 @@ type Linha = {
   id: string; cliente: string; motorista: string; embarque: string; parada: string | null;
   desembarque: string; ida: string; retorno: string | null; modalidade: string; pagamento: string;
   valor: number; status: string; veiculo: string; categoria: string; capacidade: number;
-  cliente_whatsapp: string;
+  cliente_whatsapp: string; pagamento_status?: string;
 };
 
 function paraAgendamento(r: Linha): Agendamento {
@@ -25,6 +25,7 @@ function paraAgendamento(r: Linha): Agendamento {
   };
   if (r.parada) a.parada = r.parada;
   if (r.retorno) a.retorno = r.retorno;
+  a.pagamentoStatus = r.pagamento_status ?? "pendente";
   if (r.cliente_whatsapp) a.whatsappCliente = r.cliente_whatsapp;
   return a;
 }

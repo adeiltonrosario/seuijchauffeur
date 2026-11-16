@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Percent, Trash2 } from "lucide-react";
+import { BadgeCheck, Percent, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatarBRL } from "@/lib/dados";
-import { listarAgendamentosAdmin, excluirAgendamentosAdmin, descontoAgendamentoAdmin } from "@/lib/agendamentos-admin.functions";
+import { listarAgendamentosAdmin, excluirAgendamentosAdmin, descontoAgendamentoAdmin, confirmarPagamentoAdmin } from "@/lib/agendamentos-admin.functions";
 
 type Linha = Awaited<ReturnType<typeof listarAgendamentosAdmin>>[number];
 
@@ -15,6 +15,14 @@ export function AdminAgendamentos() {
   const listar = useServerFn(listarAgendamentosAdmin);
   const excluir = useServerFn(excluirAgendamentosAdmin);
   const descontar = useServerFn(descontoAgendamentoAdmin);
+  const confirmarPg = useServerFn(confirmarPagamentoAdmin);
+  const confirmarPagamento = async (a: Linha) => {
+    if (!window.confirm(`Confirmar o recebimento de ${formatarBRL(a.valor)} do agendamento ${a.id}?`)) return;
+    setOcupado(true);
+    try { await confirmarPg({ data: { id: a.id } }); toast.success("Pagamento confirmado."); await carregar(); }
+    catch (e) { toast.error((e as Error).message); }
+    finally { setOcupado(false); }
+  };
   const conceder = async (a: Linha) => {
     const original = a.valor_original ?? a.valor;
     const t = window.prompt(`Desconto para ${a.id} (valor original ${formatarBRL(original)}).\nDigite em % (ex: 10%) ou em reais (ex: 20,00):`);
@@ -99,8 +107,13 @@ export function AdminAgendamentos() {
                     <td className="p-2">{a.ida}</td>
                     <td className="p-2">{formatarBRL(a.valor)}{a.valor_original != null && a.valor_original > a.valor && (
                       <div className="text-xs text-muted-foreground line-through">{formatarBRL(a.valor_original)}</div>)}</td>
-                    <td className="p-2">{a.status}</td>
+                    <td className="p-2">{a.status}<div className={`text-xs ${a.pagamento_status === "aprovado" ? "text-success" : "text-warning"}`}>
+                      {a.pagamento_status === "aprovado" ? "Pago" : "Pagamento pendente"}</div></td>
                     <td className="flex gap-1 p-2">
+                      {a.pagamento_status !== "aprovado" && (
+                        <Button size="sm" disabled={ocupado} onClick={() => void confirmarPagamento(a)}>
+                          <BadgeCheck className="h-4 w-4" /> Confirmar pagamento
+                        </Button>)}
                       <Button size="sm" variant="secondary" disabled={ocupado} onClick={() => void conceder(a)}>
                         <Percent className="h-4 w-4" /> Desconto
                       </Button>
