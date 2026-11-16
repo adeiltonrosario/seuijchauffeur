@@ -182,7 +182,7 @@ function Orcamento() {
             <p>{kmTotal.toLocaleString("pt-BR")} km contratados{retorno ? " (ida e volta)" : ""}</p>
             <p className="text-gold text-2xl font-semibold">{formatarBRL(feito.valor)}</p>
           </div>
-          <div className="mt-4"><BotaoGoogleAgenda codigo={feito.id} ida={ida} embarque={origem} destino={destino} detalhes={selecionada?.nome} /></div>
+          <div className="mt-4"><BotaoGoogleAgenda codigo={feito.id} ida={ida} embarque={origem} destino={destino} detalhes={selecionada?.nome ?? ""} /></div>
           {pago ? (
             <>
               <div className="mt-4 rounded-md border border-primary/30 p-3 text-left text-sm">
