@@ -58,6 +58,7 @@ function Orcamento() {
 
   const [nome, setNome] = useState("");
   const [whats, setWhats] = useState("");
+  const [email, setEmail] = useState("");
   const [data, setData] = useState("");
   const [hora, setHora] = useState("");
   const [origem, setOrigem] = useState("");
@@ -139,6 +140,7 @@ function Orcamento() {
   const concluir = async (): Promise<void> => {
     if (nome.trim().length < 3) return void toast.error("Informe seu nome completo.");
     if (digitos.length < 10) return void toast.error("Informe o WhatsApp com DDD.");
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return void toast.error("Informe um e-mail válido.");
     if (!ida) return void toast.error("Escolha a data e o horário.");
     if (new Date(`${data}T${hora}`) < new Date()) return void toast.error("Escolha um horário futuro.");
     if (agenda === "conflito") return void toast.error("Horário ocupado. Escolha outro horário.");
@@ -150,7 +152,7 @@ function Orcamento() {
     setEnviando(true);
     try {
       const r = await agendar({ data: {
-        nome: nome.trim(), whatsapp: digitos, ida, embarque: origem, paradas, desembarque: destino,
+        nome: nome.trim(), whatsapp: digitos, email: email.trim(), ida, embarque: origem, paradas, desembarque: destino,
         km: rota.km, modalidade: selecionada.nome, pagamento, retorno: retorno || null,
         ocupantes: [nome.trim(), ...acompanhantes.map((a) => a.trim())],
       } });
@@ -198,6 +200,7 @@ function Orcamento() {
               </Button>
             </>
           )}
+          <AtivarConta nome={nome} email={email.trim()} whatsapp={digitos} />
           <Button variant="ghost" className="mt-2 w-full" onClick={() => window.location.reload()}>Novo orçamento</Button>
         </Card>
       </main>
@@ -223,6 +226,9 @@ function Orcamento() {
           </Campo>
           <Campo id="o-whats" rotulo="WhatsApp com DDD *">
             <Input id="o-whats" className="h-12 text-base" type="tel" inputMode="numeric" autoComplete="tel" value={whats} onChange={(e) => setWhats(mascara(e.target.value))} placeholder="(71) 98765-4321" />
+          </Campo>
+          <Campo id="o-email" rotulo="E-mail *">
+            <Input id="o-email" className="h-12 text-base" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" />
           </Campo>
           <Campo id="o-data" rotulo="Data da viagem *">
             <Input id="o-data" className="h-12 text-base [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:scale-125" type="date" min={new Date().toISOString().slice(0, 10)} value={data} onChange={(e) => setData(e.target.value)} />
@@ -384,6 +390,44 @@ function Campo({ id, rotulo, children }: { id: string; rotulo: string; children:
     <div className="space-y-1.5">
       <Label htmlFor={id}>{rotulo}</Label>
       {children}
+    </div>
+  );
+}
+
+function AtivarConta({ nome, email, whatsapp }: { nome: string; email: string; whatsapp: string }) {
+  const [senha, setSenha] = useState("");
+  const [estado, setEstado] = useState<"form" | "enviando" | "feito" | "fechado">("form");
+  if (estado === "fechado") return null;
+  const ativar = async () => {
+    if (senha.length < 6) return void toast.error("A senha precisa ter ao menos 6 caracteres.");
+    setEstado("enviando");
+    const { data, error } = await supabase.auth.signUp({
+      email, password: senha,
+      options: { emailRedirectTo: `${window.location.origin}/cliente`, data: { nome, whatsapp } },
+    });
+    if (error) {
+      setEstado("form");
+      return void toast.error(/registered|already/i.test(error.message) ? "Este e-mail já tem conta. Entre na Área do Cliente: o agendamento já aparece lá." : "Não foi possível ativar agora.");
+    }
+    setEstado("feito");
+    if (data.session) window.location.href = "/cliente";
+  };
+  return (
+    <div className="mt-5 rounded-md border border-primary/30 p-4 text-left text-sm">
+      {estado === "feito" ? (
+        <p>Conta criada! Confirme pelo link enviado para <b>{email}</b> e acompanhe tudo na Área do Cliente.</p>
+      ) : (
+        <>
+          <p className="font-semibold">Deseja criar uma senha rápida para acompanhar seu agendamento em tempo real e acumular créditos?</p>
+          <Input type="password" autoComplete="new-password" className="mt-3 h-11" placeholder="Crie uma senha (mín. 6)" value={senha} onChange={(e) => setSenha(e.target.value)} />
+          <div className="mt-3 flex gap-2">
+            <Button className="flex-1" disabled={estado === "enviando"} onClick={() => void ativar()}>
+              {estado === "enviando" ? <Loader2 className="animate-spin" /> : null} Ativar minha conta
+            </Button>
+            <Button variant="ghost" onClick={() => setEstado("fechado")}>Deixar para depois</Button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

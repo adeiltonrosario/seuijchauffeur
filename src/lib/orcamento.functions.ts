@@ -9,7 +9,12 @@ async function admin() {
   return supabaseAdmin;
 }
 
-async function verificarAgenda(ida: string) {
+// Clientes podem agendar livremente no mesmo horário; o conflito é checado por motorista no aceite.
+async function verificarAgenda(_ida: string) {
+  return { conflito: false };
+}
+
+export async function _verificarAgendaFrota(ida: string) {
   const db = await admin();
   const data = ida.slice(0, 10);
   const [{ data: corridas }, { count }] = await Promise.all([
@@ -58,6 +63,7 @@ export const agendarOrcamento = createServerFn({ method: "POST" })
     z.object({
       nome: z.string().trim().min(3).max(120),
       whatsapp: z.string().regex(/^\d{10,11}$/),
+      email: z.string().trim().email().max(200),
       ida: idaSchema,
       embarque: z.string().trim().min(3).max(300),
       paradas: z.array(z.string().trim().max(300)).max(8),
@@ -74,17 +80,13 @@ export const agendarOrcamento = createServerFn({ method: "POST" })
     const { data: m } = await db.from("modalidades")
       .select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km").eq("nome", data.modalidade).maybeSingle();
     if (!m) return { ok: false as const, erro: "Modalidade não encontrada." };
-    if ((await verificarAgenda(data.ida)).conflito)
-      return { ok: false as const, erro: "Este horário acabou de ser ocupado. Escolha outro horário." };
-    if (data.retorno && (await verificarAgenda(data.retorno)).conflito)
-      return { ok: false as const, erro: "O horário de volta está ocupado. Escolha outro horário." };
     const pct = voltaEmOutroDia(data.ida, data.retorno) ? await taxaInterdiaria() : 0;
     const occ = data.ocupantes.length;
     const adic = occ > 1 ? await adicionalOcupante() : 0;
     const valor = valorFinal(m as ModalidadeBanco, data.km, !!data.retorno, data.pagamento, pct, occ, adic); // valor sempre recalculado no servidor
     const id = `AG-${Date.now().toString().slice(-6)}`;
     const { error } = await db.from("corridas").insert({
-      id, cliente: data.nome, cliente_email: "", cliente_whatsapp: data.whatsapp, motorista: "",
+      id, cliente: data.nome, cliente_email: data.email.toLowerCase(), cliente_whatsapp: data.whatsapp, motorista: "",
       embarque: data.embarque, parada: data.paradas.filter(Boolean).join(" → ") || null,
       desembarque: data.desembarque, ida: data.ida, retorno: data.retorno, modalidade: data.modalidade,
       pagamento: data.pagamento, valor, status: "aguardando_motorista", veiculo: "", categoria: "Sedan", capacidade: 4,

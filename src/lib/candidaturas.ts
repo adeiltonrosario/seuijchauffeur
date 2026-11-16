@@ -22,6 +22,7 @@ const MENSAGENS: Record<string, string> = {
   corrida_inexistente: "Agendamento não encontrado.",
   corrida_fechada: "Este agendamento já tem motorista vinculado.",
   sem_permissao: "Apenas o cliente do agendamento pode vincular o motorista.",
+  conflito_agenda: "Conflito de agenda: este motorista já tem uma corrida confirmada a menos de 1h30 deste horário.",
   candidatura_inexistente: "Candidatura não encontrada.",
 };
 

@@ -1233,6 +1233,7 @@ export type Database = {
         Args: { _oferta: string; _responsavel: string }
         Returns: undefined
       }
+      _ida_ts: { Args: { _ida: string }; Returns: string }
       acesso_casa_apoio: { Args: { _email: string }; Returns: Json }
       cancelar_compra_saldao: { Args: { _compra: string }; Returns: Json }
       candidatar_corrida: { Args: { _corrida: string }; Returns: string }
@@ -1304,6 +1305,10 @@ export type Database = {
       meus_creditos: { Args: { _email: string }; Returns: Json }
       minhas_compras_saldao: { Args: never; Returns: Json }
       modulos_liberados: { Args: { _email: string }; Returns: string[] }
+      motorista_tem_conflito: {
+        Args: { _ida: string; _ignorar: string; _nome: string }
+        Returns: boolean
+      }
       pagar_proposta: { Args: { _proposta: string }; Returns: string }
       painel_carteira_admin: { Args: never; Returns: Json }
       painel_saldao_admin: { Args: never; Returns: Json }
