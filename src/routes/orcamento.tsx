@@ -1,3 +1,4 @@
+import { BotoesNavegacao } from "@/components/botoes-navegacao";
 import { BotaoGoogleAgenda } from "@/components/botao-google-agenda";
 import { PagarPix } from "@/components/pagar-pix";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -182,7 +183,8 @@ function Orcamento() {
             <p>{kmTotal.toLocaleString("pt-BR")} km contratados{retorno ? " (ida e volta)" : ""}</p>
             <p className="text-gold text-2xl font-semibold">{formatarBRL(feito.valor)}</p>
           </div>
-          <div className="mt-4"><BotaoGoogleAgenda codigo={feito.id} ida={ida} embarque={origem} destino={destino} detalhes={selecionada?.nome ?? ""} /></div>
+          <div className="mt-4"><BotaoGoogleAgenda codigo={feito.id} ida={ida} embarque={origem} destino={destino} detalhes={selecionada?.nome ?? ""} />
+<div className="mt-2"><BotoesNavegacao origem={origem} destino={destino} /></div></div>
           {pago ? (
             <>
               <div className="mt-4 rounded-md border border-primary/30 p-3 text-left text-sm">

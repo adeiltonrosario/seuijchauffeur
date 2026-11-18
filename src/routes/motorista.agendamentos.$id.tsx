@@ -1,3 +1,4 @@
+import { BotoesNavegacao } from "@/components/botoes-navegacao";
 import { createFileRoute } from "@tanstack/react-router";
 import { BellRing, CheckCircle2, Clock, Navigation, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -133,6 +134,7 @@ function DetalhesMotorista() {
           </Card>
 
           <BotaoGoogleAgenda codigo={agendamento.id} ida={agendamento.ida} embarque={agendamento.embarque} destino={agendamento.desembarque} detalhes={`Modalidade: ${agendamento.modalidade}`} />
+<div className="mt-2"><BotoesNavegacao origem={agendamento.embarque} destino={agendamento.desembarque} /></div>
 
           <ChatCorrida
             agendamentoId={agendamento.id}

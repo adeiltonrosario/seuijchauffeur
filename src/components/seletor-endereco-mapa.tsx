@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { localizarEndereco } from "@/lib/geocodificar";
+import { coordenadasDeLink, ehLinkMapa, enderecoDeLink, linkGoogleMapsBusca } from "@/lib/navegacao-gps";
 
 const MapaPino = lazy(() => import("@/components/mapa-pino"));
 
@@ -85,6 +86,13 @@ export function BotaoSelecionarMapa({ valor, onConfirmar, rotulo = "local" }: Pr
   useEffect(() => {
     if (!aberto || !texto.trim()) return;
     if (doPino.current) { doPino.current = false; return; }
+    const coord = coordenadasDeLink(texto);
+    if (coord) { void aoMarcar(coord[0], coord[1]); return; }
+    if (ehLinkMapa(texto)) {
+      const nome = enderecoDeLink(texto);
+      if (nome) setTexto(nome);
+      return;
+    }
     const t = setTimeout(() => {
       void pontoDoEndereco(texto).then((p) => p && setPosicao(p)).catch(() => undefined);
     }, 600);
@@ -130,15 +138,23 @@ export function BotaoSelecionarMapa({ valor, onConfirmar, rotulo = "local" }: Pr
             </DialogDescription>
           </DialogHeader>
 
-          <div className="relative">
+          <div className="flex gap-2">
+          <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
-              placeholder="Ex.: Rua Ceará, Pituba"
+              placeholder="Endereço ou link do Google Maps/Waze"
               className="pl-9"
             />
           </div>
+          <Button asChild variant="secondary" type="button">
+            <a href={linkGoogleMapsBusca(texto)} target="_blank" rel="noreferrer">Google Maps</a>
+          </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Não achou? Abra o Google Maps, toque no local, copie o link ou as coordenadas e cole aqui.
+          </p>
 
           <div className="flex flex-wrap gap-2">
             {ATALHOS_RMS.map((a) => (

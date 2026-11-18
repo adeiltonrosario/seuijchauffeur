@@ -1,3 +1,4 @@
+import { BotoesNavegacao } from "@/components/botoes-navegacao";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { Route as RouteIcon, Star, UserPlus, X } from "lucide-react";
@@ -169,6 +170,7 @@ function DetalhesAgendamento() {
           </Card>
 
           <BotaoGoogleAgenda codigo={agendamento.id} ida={agendamento.ida} embarque={agendamento.embarque} destino={agendamento.desembarque} detalhes={`Modalidade: ${agendamento.modalidade}`} />
+<div className="mt-2"><BotoesNavegacao origem={agendamento.embarque} destino={agendamento.desembarque} /></div>
 
           <ChatCorrida
             agendamentoId={agendamento.id}
