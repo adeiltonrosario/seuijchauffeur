@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
   STATUS_INATIVOS, TAXA_INTERDIARIA_PADRAO, ADICIONAL_OCUPANTE_PADRAO, MAX_OCUPANTES, aplicarAdicionalOcupantes, aplicarTaxaInterdiaria, haConflito, voltaEmOutroDia, modalidadeLivre, valorFinal, bloqueioTrajeto, ehIntermunicipal, ehVip, kmCobrados, valorVip, SUFIXO_TURNO, valorModalidade, type ModalidadeBanco,
-} from "@/lib/orcamento-livre";
+, pedagioTotal } from "@/lib/orcamento-livre";
 
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -46,7 +46,7 @@ export const checarHorario = createServerFn({ method: "POST" })
   .handler(async ({ data }) => verificarAgenda(data.ida));
 
 export const cotarModalidades = createServerFn({ method: "POST" })
-  .inputValidator((i: unknown) => z.object({ km: z.number().positive().max(2000), idaVolta: z.boolean().optional(), enderecos: z.array(z.string().max(300)).max(10).optional(), interdiario: z.boolean().optional(), ocupantes: z.number().int().min(1).max(MAX_OCUPANTES).optional() }).parse(i))
+  .inputValidator((i: unknown) => z.object({ km: z.number().positive().max(2000), idaVolta: z.boolean().optional(), enderecos: z.array(z.string().max(300)).max(10).optional(), interdiario: z.boolean().optional(), ocupantes: z.number().int().min(1).max(MAX_OCUPANTES).optional(), ida: idaSchema.optional(), retorno: idaSchema.nullable().optional() }).parse(i))
   .handler(async ({ data }) => {
     const db = await admin();
     const pct = data.interdiario ? await taxaInterdiaria() : 0;
@@ -55,15 +55,20 @@ export const cotarModalidades = createServerFn({ method: "POST" })
     const end = data.enderecos ?? [];
     const inter = ehIntermunicipal(end, data.km);
     const km = kmCobrados(data.km, !!data.idaVolta, inter);
-    const ajustar = (v: number) => aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(v, pct), occ, adic);
+    const pedagio = pedagioTotal(inter, data.ida ?? "", data.retorno);
+    const det = (v: number) => {
+      const transporte = aplicarAdicionalOcupantes(v, occ, adic);
+      const total = aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(v, pct), occ, adic);
+      return { transporte, taxa: Math.round((total - transporte) * 100) / 100, pedagio, valor: Math.round((total + pedagio) * 100) / 100 };
+    };
     const { data: lista } = await db.from("modalidades").select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km");
-    const out: { nome: string; descricao: string; valor: number; taxaPct: number; bloqueio: string | null }[] = [];
+    const out: { nome: string; descricao: string; valor: number; transporte: number; taxa: number; pedagio: number; taxaPct: number; bloqueio: string | null }[] = [];
     for (const m of ((lista ?? []) as ModalidadeBanco[]).filter((x) => modalidadeLivre(x.nome))) {
       const base = { descricao: m.caracteristicas.split("\n")[0]!.slice(0, 120), taxaPct: pct, bloqueio: bloqueioTrajeto(m.nome, end) };
       if (ehVip(m.nome)) {
-        out.push({ ...base, nome: m.nome, valor: ajustar(valorVip(m, km, false)) });
-        out.push({ ...base, nome: m.nome + SUFIXO_TURNO, valor: ajustar(valorVip(m, km, true)) });
-      } else out.push({ ...base, nome: m.nome, valor: ajustar(valorModalidade(m, km)) });
+        out.push({ ...base, nome: m.nome, ...det(valorVip(m, km, false)) });
+        out.push({ ...base, nome: m.nome + SUFIXO_TURNO, ...det(valorVip(m, km, true)) });
+      } else out.push({ ...base, nome: m.nome, ...det(valorModalidade(m, km)) });
     }
     return { intermunicipal: inter, cotacoes: out };
   });
@@ -103,7 +108,7 @@ export const agendarOrcamento = createServerFn({ method: "POST" })
     void valorFinal; void data.pagamento;
     const bruto = ehVip(nomeBase) ? valorVip(m as ModalidadeBanco, km, turno) : (turno ? NaN : valorModalidade(m as ModalidadeBanco, km));
     if (!Number.isFinite(bruto)) return { ok: false as const, erro: "Modalidade não disponível." };
-    const valor = aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(bruto, pct), occ, adic); // valor sempre recalculado no servidor
+    const valor = Math.round((aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(bruto, pct), occ, adic) + pedagioTotal(inter, data.ida, data.retorno)) * 100) / 100; // valor sempre recalculado no servidor
     const id = `AG-${Date.now().toString().slice(-6)}`;
     const { error } = await db.from("corridas").insert({
       id, cliente: data.nome, cliente_email: data.email.toLowerCase(), cliente_whatsapp: data.whatsapp, motorista: "",

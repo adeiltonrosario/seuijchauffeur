@@ -112,3 +112,35 @@ export function valorVip(m: ModalidadeBanco, km: number, turno: boolean): number
   const v = turno ? VIP_TURNO_VALOR + Math.max(0, km - VIP_TURNO_KM) * tarifa : Math.max(VIP_PISO, km * tarifa);
   return Math.round(v * 100) / 100;
 }
+
+// ---------- Pedágios da rodovia (viagens intermunicipais) ----------
+/** Tarifa por passagem: dia útil e fim de semana. */
+export const PEDAGIO_DIA_UTIL = 10;
+export const PEDAGIO_FIM_SEMANA = 22;
+const DIAS = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+
+/** "dd/mm/aaaa ..." → índice do dia da semana (0 = domingo). */
+export function diaSemana(dataHora: string): number | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(dataHora.trim());
+  if (!m) return null;
+  return new Date(Date.UTC(+m[3]!, +m[2]! - 1, +m[1]!)).getUTCDay();
+}
+export const nomeDiaSemana = (dataHora: string) => { const d = diaSemana(dataHora); return d === null ? "" : DIAS[d]!; };
+const tarifaPedagio = (dataHora: string) => { const d = diaSemana(dataHora); return d === 0 || d === 6 ? PEDAGIO_FIM_SEMANA : PEDAGIO_DIA_UTIL; };
+
+/**
+ * Pedágio cobrado: cada dia de operação tem 2 passagens (ida e volta do veículo).
+ * Volta em outro dia soma as 2 passagens daquele dia.
+ */
+export function pedagioTotal(intermunicipal: boolean, ida: string, retorno: string | null | undefined): number {
+  if (!intermunicipal || !ida) return 0;
+  let t = 2 * tarifaPedagio(ida);
+  if (retorno && voltaEmOutroDia(ida, retorno)) t += 2 * tarifaPedagio(retorno);
+  return t;
+}
+
+/** Rótulo dos dias: "Domingo + Quarta". */
+export function rotuloDiasPedagio(ida: string, retorno: string | null | undefined): string {
+  const curto = (s: string) => nomeDiaSemana(s).replace("-feira", "");
+  return retorno && voltaEmOutroDia(ida, retorno) ? `${curto(ida)} + ${curto(retorno)}` : curto(ida);
+}
