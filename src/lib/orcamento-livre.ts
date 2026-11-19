@@ -73,3 +73,42 @@ export function aplicarAdicionalOcupantes(valor: number, ocupantes: number, pct:
   const extras = Math.max(0, Math.min(MAX_OCUPANTES, Math.floor(ocupantes)) - 1);
   return Math.round(valor * (1 + (extras * Math.max(0, pct)) / 100) * 100) / 100;
 }
+
+// ---------- Proteções de trajeto ----------
+const RX_AEROPORTO = /aeroporto|deputado lu[ií]s eduardo|\bSSA\b|terminal de (passageiros|cargas)/i;
+const RX_INTERMUNICIPAL = /sau[ií]pe|mata de s[aã]o jo[aã]o|praia do forte|imbassa[ií]|guarajuba|itacimirim|cama[cç]ari|arembepe|feira de santana|dias d.?[aá]vila|candeias|sim[oõ]es filho|s[aã]o sebasti[aã]o do pass[eé]|pojuca|catu|entre rios|conde|esplanada|valen[cç]a|morro de s[aã]o paulo|ilha de itaparica|vera cruz|santo amaro|cachoeira/i;
+/** Acima disso a rota é tratada como viagem de estrada. */
+export const KM_INTERMUNICIPAL = 45;
+/** Só ida em estrada: cobra esta fração dos km de volta do motorista vazio. */
+export const RETORNO_VAZIO_PCT = 50;
+/** VIPS & SHOWS */
+export const VIP_PISO = 220;
+export const VIP_TURNO_VALOR = 480;
+export const VIP_TURNO_HORAS = 5;
+export const VIP_TURNO_KM = 50;
+export const SUFIXO_TURNO = " · Turno 5h";
+
+export const temAeroporto = (enderecos: string[]) => enderecos.some((e) => RX_AEROPORTO.test(e));
+export const ehIntermunicipal = (enderecos: string[], kmTrecho: number) =>
+  kmTrecho > KM_INTERMUNICIPAL || enderecos.some((e) => RX_INTERMUNICIPAL.test(e));
+export const ehAeroportoModalidade = (nome: string) => /aeroporto/i.test(nome);
+export const ehVip = (nome: string) => /vip|show/i.test(nome);
+
+/** Motivo de bloqueio da modalidade para o trajeto, ou null se permitida. */
+export function bloqueioTrajeto(nome: string, enderecos: string[]): string | null {
+  if (ehAeroportoModalidade(nome) && !temAeroporto(enderecos)) return "Esta modalidade exige embarque ou desembarque no Aeroporto de Salvador.";
+  return null;
+}
+
+/** Taxa de retorno vazio: só ida em estrada soma RETORNO_VAZIO_PCT dos km de volta. */
+export function kmCobrados(kmTrecho: number, idaVolta: boolean, intermunicipal: boolean): number {
+  if (idaVolta) return kmTrecho * 2;
+  return intermunicipal ? kmTrecho * (1 + RETORNO_VAZIO_PCT / 100) : kmTrecho;
+}
+
+/** VIP pontual: piso garantido. VIP turno: valor fechado com franquia e excedente por km. */
+export function valorVip(m: ModalidadeBanco, km: number, turno: boolean): number {
+  const tarifa = Math.max(Number(m.por_km) || 0, MINIMO_POR_KM);
+  const v = turno ? VIP_TURNO_VALOR + Math.max(0, km - VIP_TURNO_KM) * tarifa : Math.max(VIP_PISO, km * tarifa);
+  return Math.round(v * 100) / 100;
+}

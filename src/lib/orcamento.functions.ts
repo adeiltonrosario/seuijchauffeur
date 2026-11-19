@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
-  STATUS_INATIVOS, TAXA_INTERDIARIA_PADRAO, ADICIONAL_OCUPANTE_PADRAO, MAX_OCUPANTES, aplicarAdicionalOcupantes, aplicarTaxaInterdiaria, haConflito, voltaEmOutroDia, modalidadeLivre, valorFinal, valorModalidade, type ModalidadeBanco,
+  STATUS_INATIVOS, TAXA_INTERDIARIA_PADRAO, ADICIONAL_OCUPANTE_PADRAO, MAX_OCUPANTES, aplicarAdicionalOcupantes, aplicarTaxaInterdiaria, haConflito, voltaEmOutroDia, modalidadeLivre, valorFinal, bloqueioTrajeto, ehIntermunicipal, ehVip, kmCobrados, valorVip, SUFIXO_TURNO, valorModalidade, type ModalidadeBanco,
 } from "@/lib/orcamento-livre";
 
 async function admin() {
@@ -46,16 +46,26 @@ export const checarHorario = createServerFn({ method: "POST" })
   .handler(async ({ data }) => verificarAgenda(data.ida));
 
 export const cotarModalidades = createServerFn({ method: "POST" })
-  .inputValidator((i: unknown) => z.object({ km: z.number().positive().max(2000), interdiario: z.boolean().optional(), ocupantes: z.number().int().min(1).max(MAX_OCUPANTES).optional() }).parse(i))
+  .inputValidator((i: unknown) => z.object({ km: z.number().positive().max(2000), idaVolta: z.boolean().optional(), enderecos: z.array(z.string().max(300)).max(10).optional(), interdiario: z.boolean().optional(), ocupantes: z.number().int().min(1).max(MAX_OCUPANTES).optional() }).parse(i))
   .handler(async ({ data }) => {
     const db = await admin();
     const pct = data.interdiario ? await taxaInterdiaria() : 0;
     const occ = data.ocupantes ?? 1;
     const adic = occ > 1 ? await adicionalOcupante() : 0;
+    const end = data.enderecos ?? [];
+    const inter = ehIntermunicipal(end, data.km);
+    const km = kmCobrados(data.km, !!data.idaVolta, inter);
+    const ajustar = (v: number) => aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(v, pct), occ, adic);
     const { data: lista } = await db.from("modalidades").select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km");
-    return ((lista ?? []) as ModalidadeBanco[])
-      .filter((m) => modalidadeLivre(m.nome))
-      .map((m) => ({ nome: m.nome, descricao: m.caracteristicas.split("\n")[0]!.slice(0, 120), valor: aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(valorModalidade(m, data.km), pct), occ, adic), taxaPct: pct }));
+    const out: { nome: string; descricao: string; valor: number; taxaPct: number; bloqueio: string | null }[] = [];
+    for (const m of ((lista ?? []) as ModalidadeBanco[]).filter((x) => modalidadeLivre(x.nome))) {
+      const base = { descricao: m.caracteristicas.split("\n")[0]!.slice(0, 120), taxaPct: pct, bloqueio: bloqueioTrajeto(m.nome, end) };
+      if (ehVip(m.nome)) {
+        out.push({ ...base, nome: m.nome, valor: ajustar(valorVip(m, km, false)) });
+        out.push({ ...base, nome: m.nome + SUFIXO_TURNO, valor: ajustar(valorVip(m, km, true)) });
+      } else out.push({ ...base, nome: m.nome, valor: ajustar(valorModalidade(m, km)) });
+    }
+    return { intermunicipal: inter, cotacoes: out };
   });
 
 export const agendarOrcamento = createServerFn({ method: "POST" })
@@ -75,15 +85,25 @@ export const agendarOrcamento = createServerFn({ method: "POST" })
       ocupantes: z.array(z.string().trim().max(120)).min(1).max(MAX_OCUPANTES),
     }).parse(i))
   .handler(async ({ data }) => {
-    if (!modalidadeLivre(data.modalidade)) return { ok: false as const, erro: "Modalidade não disponível." };
+    const turno = data.modalidade.endsWith(SUFIXO_TURNO);
+    const nomeBase = turno ? data.modalidade.slice(0, -SUFIXO_TURNO.length) : data.modalidade;
+    if (!modalidadeLivre(nomeBase)) return { ok: false as const, erro: "Modalidade não disponível." };
+    const enderecos = [data.embarque, ...data.paradas, data.desembarque];
+    const bloq = bloqueioTrajeto(nomeBase, enderecos);
+    if (bloq) return { ok: false as const, erro: bloq };
     const db = await admin();
     const { data: m } = await db.from("modalidades")
-      .select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km").eq("nome", data.modalidade).maybeSingle();
+      .select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km").eq("nome", nomeBase).maybeSingle();
     if (!m) return { ok: false as const, erro: "Modalidade não encontrada." };
     const pct = voltaEmOutroDia(data.ida, data.retorno) ? await taxaInterdiaria() : 0;
     const occ = data.ocupantes.length;
     const adic = occ > 1 ? await adicionalOcupante() : 0;
-    const valor = valorFinal(m as ModalidadeBanco, data.km, !!data.retorno, data.pagamento, pct, occ, adic); // valor sempre recalculado no servidor
+    const inter = ehIntermunicipal(enderecos, data.km);
+    const km = kmCobrados(data.km, !!data.retorno, inter);
+    void valorFinal; void data.pagamento;
+    const bruto = ehVip(nomeBase) ? valorVip(m as ModalidadeBanco, km, turno) : (turno ? NaN : valorModalidade(m as ModalidadeBanco, km));
+    if (!Number.isFinite(bruto)) return { ok: false as const, erro: "Modalidade não disponível." };
+    const valor = aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(bruto, pct), occ, adic); // valor sempre recalculado no servidor
     const id = `AG-${Date.now().toString().slice(-6)}`;
     const { error } = await db.from("corridas").insert({
       id, cliente: data.nome, cliente_email: data.email.toLowerCase(), cliente_whatsapp: data.whatsapp, motorista: "",

@@ -34,7 +34,7 @@ export const Route = createFileRoute("/orcamento")({
   component: Orcamento,
 });
 
-type Cotacao = { nome: string; descricao: string; valor: number; taxaPct?: number };
+type Cotacao = { nome: string; descricao: string; valor: number; taxaPct?: number; bloqueio?: string | null };
 type Pacote = { id: string; nome: string; ciclo: Ciclo; km: number; valor: number; saldo_credito: number };
 
 function iconeModalidade(nome: string): LucideIcon {
@@ -69,6 +69,7 @@ function Orcamento() {
   const [rota, setRota] = useState<ResultadoRota | null>(null);
   const [cotacoes, setCotacoes] = useState<Cotacao[]>([]);
   const [escolhida, setEscolhida] = useState("");
+  const [intermunicipal, setIntermunicipal] = useState(false);
   const [pagamento, setPagamento] = useState<"Pix" | "Cartão">("Pix");
   const [agenda, setAgenda] = useState<"livre" | "conflito" | "checando" | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -128,9 +129,11 @@ function Orcamento() {
 
   const aoCalcular = async (r: ResultadoRota) => {
     setRota(r);
-    const lista = await cotar({ data: { km: idaVolta ? r.km * 2 : r.km, interdiario, ocupantes } });
+    const res = await cotar({ data: { km: r.km, idaVolta, enderecos: [origem, ...paradas, destino], interdiario, ocupantes } });
+    const lista = res.cotacoes;
     setCotacoes(lista);
-    setEscolhida((e) => (lista.some((c) => c.nome === e) ? e : lista[0]?.nome ?? ""));
+    setIntermunicipal(res.intermunicipal);
+    setEscolhida((e) => (lista.some((c) => c.nome === e && !c.bloqueio) ? e : lista.find((c) => !c.bloqueio)?.nome ?? ""));
   };
   // Trocou ida/volta: recota com os km totais.
   useEffect(() => { if (rota) void aoCalcular(rota); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [idaVolta, interdiario, ocupantes]);
@@ -331,19 +334,35 @@ function Orcamento() {
 
         {rota && (
           <Secao titulo="3. Escolha a modalidade">
+            {intermunicipal && (
+              <p className="rounded-md border border-primary/40 bg-primary/5 p-2 text-xs">
+                <strong className="text-gold">Viagem intermunicipal / Litoral Norte.</strong> {idaVolta ? "Valor de estrada com ida e volta." : "Só ida: inclui taxa de retorno do motorista."}
+              </p>
+            )}
             <div className="grid grid-cols-3 gap-2">
               {cotacoes.map((c) => {
                 const Icone = iconeModalidade(c.nome);
                 return (
-                  <button key={c.nome} type="button" onClick={() => setEscolhida(c.nome)} aria-pressed={escolhida === c.nome}
-                    className={cn("flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition",
+                  <button key={c.nome} type="button" disabled={!!c.bloqueio} title={c.bloqueio ?? undefined}
+                    onClick={() => (c.bloqueio ? toast.error(c.bloqueio) : setEscolhida(c.nome))} aria-pressed={escolhida === c.nome}
+                    className={cn("flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition", c.bloqueio && "cursor-not-allowed opacity-40",
                       escolhida === c.nome ? "glow-gold border-primary bg-primary/10" : "border-border/60")}>
                     <Icone className={cn("size-7", escolhida === c.nome ? "text-primary" : "text-muted-foreground")} />
                     <span className="text-xs font-medium leading-tight">{c.nome}</span>
+                    {c.bloqueio && <span className="text-[10px] leading-tight text-muted-foreground">Exige Aeroporto na rota</span>}
                   </button>
                 );
               })}
             </div>
+            {selecionada && /vip|show/i.test(selecionada.nome) && (
+              <div className="space-y-1 rounded-lg border border-primary/40 bg-primary/5 p-3 text-xs">
+                <p className="font-semibold text-gold">VIPS & SHOWS</p>
+                {selecionada.nome.includes("Turno")
+                  ? <p>Carro e motorista à disposição por até 5h, 50 km inclusos; excedente por km. Retorno garantido na madrugada.</p>
+                  : <p>Translado pontual VIP com piso mínimo de R$ 220,00, cobrindo o deslocamento até você.</p>}
+                <p className="text-muted-foreground">Veículo higienizado e climatizado, atendimento discreto e profissional, ponto de encontro VIP.</p>
+              </div>
+            )}
             <Label>Pagamento no embarque</Label>
             <div className="grid grid-cols-2 gap-2">
               {(["Pix", "Cartão"] as const).map((p) => (
