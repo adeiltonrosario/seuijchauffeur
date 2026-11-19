@@ -1,8 +1,26 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
-  STATUS_INATIVOS, TAXA_INTERDIARIA_PADRAO, ADICIONAL_OCUPANTE_PADRAO, MAX_OCUPANTES, aplicarAdicionalOcupantes, aplicarTaxaInterdiaria, haConflito, voltaEmOutroDia, modalidadeLivre, valorFinal, bloqueioTrajeto, ehIntermunicipal, ehVip, kmCobrados, valorVip, SUFIXO_TURNO, valorModalidade, type ModalidadeBanco,
-, pedagioTotal } from "@/lib/orcamento-livre";
+  STATUS_INATIVOS,
+  TAXA_INTERDIARIA_PADRAO,
+  ADICIONAL_OCUPANTE_PADRAO,
+  MAX_OCUPANTES,
+  aplicarAdicionalOcupantes,
+  aplicarTaxaInterdiaria,
+  haConflito,
+  voltaEmOutroDia,
+  modalidadeLivre,
+  valorFinal,
+  bloqueioTrajeto,
+  ehIntermunicipal,
+  ehVip,
+  kmCobrados,
+  valorVip,
+  SUFIXO_TURNO,
+  valorModalidade,
+  type ModalidadeBanco,
+  pedagioTotal,
+} from "@/lib/orcamento-livre";
 
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -46,7 +64,19 @@ export const checarHorario = createServerFn({ method: "POST" })
   .handler(async ({ data }) => verificarAgenda(data.ida));
 
 export const cotarModalidades = createServerFn({ method: "POST" })
-  .inputValidator((i: unknown) => z.object({ km: z.number().positive().max(2000), idaVolta: z.boolean().optional(), enderecos: z.array(z.string().max(300)).max(10).optional(), interdiario: z.boolean().optional(), ocupantes: z.number().int().min(1).max(MAX_OCUPANTES).optional(), ida: idaSchema.optional(), retorno: idaSchema.nullable().optional() }).parse(i))
+  .inputValidator((i: unknown) =>
+    z
+      .object({
+        km: z.number().positive().max(2000),
+        idaVolta: z.boolean().optional(),
+        enderecos: z.array(z.string().max(300)).max(10).optional(),
+        interdiario: z.boolean().optional(),
+        ocupantes: z.number().int().min(1).max(MAX_OCUPANTES).optional(),
+        ida: idaSchema.optional(),
+        retorno: idaSchema.nullable().optional(),
+      })
+      .parse(i),
+  )
   .handler(async ({ data }) => {
     const db = await admin();
     const pct = data.interdiario ? await taxaInterdiaria() : 0;
@@ -59,12 +89,32 @@ export const cotarModalidades = createServerFn({ method: "POST" })
     const det = (v: number) => {
       const transporte = aplicarAdicionalOcupantes(v, occ, adic);
       const total = aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(v, pct), occ, adic);
-      return { transporte, taxa: Math.round((total - transporte) * 100) / 100, pedagio, valor: Math.round((total + pedagio) * 100) / 100 };
+      return {
+        transporte,
+        taxa: Math.round((total - transporte) * 100) / 100,
+        pedagio,
+        valor: Math.round((total + pedagio) * 100) / 100,
+      };
     };
-    const { data: lista } = await db.from("modalidades").select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km");
-    const out: { nome: string; descricao: string; valor: number; transporte: number; taxa: number; pedagio: number; taxaPct: number; bloqueio: string | null }[] = [];
+    const { data: lista } = await db
+      .from("modalidades")
+      .select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km");
+    const out: {
+      nome: string;
+      descricao: string;
+      valor: number;
+      transporte: number;
+      taxa: number;
+      pedagio: number;
+      taxaPct: number;
+      bloqueio: string | null;
+    }[] = [];
     for (const m of ((lista ?? []) as ModalidadeBanco[]).filter((x) => modalidadeLivre(x.nome))) {
-      const base = { descricao: m.caracteristicas.split("\n")[0]!.slice(0, 120), taxaPct: pct, bloqueio: bloqueioTrajeto(m.nome, end) };
+      const base = {
+        descricao: m.caracteristicas.split("\n")[0]!.slice(0, 120),
+        taxaPct: pct,
+        bloqueio: bloqueioTrajeto(m.nome, end),
+      };
       if (ehVip(m.nome)) {
         out.push({ ...base, nome: m.nome, ...det(valorVip(m, km, false)) });
         out.push({ ...base, nome: m.nome + SUFIXO_TURNO, ...det(valorVip(m, km, true)) });
@@ -75,20 +125,23 @@ export const cotarModalidades = createServerFn({ method: "POST" })
 
 export const agendarOrcamento = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) =>
-    z.object({
-      nome: z.string().trim().min(3).max(120),
-      whatsapp: z.string().regex(/^\d{10,11}$/),
-      email: z.string().trim().email().max(200),
-      ida: idaSchema,
-      embarque: z.string().trim().min(3).max(300),
-      paradas: z.array(z.string().trim().max(300)).max(8),
-      desembarque: z.string().trim().min(3).max(300),
-      km: z.number().positive().max(2000),
-      modalidade: z.string().min(1).max(120),
-      pagamento: z.enum(["Pix", "Cartão"]),
-      retorno: idaSchema.nullable(),
-      ocupantes: z.array(z.string().trim().max(120)).min(1).max(MAX_OCUPANTES),
-    }).parse(i))
+    z
+      .object({
+        nome: z.string().trim().min(3).max(120),
+        whatsapp: z.string().regex(/^\d{10,11}$/),
+        email: z.string().trim().email().max(200),
+        ida: idaSchema,
+        embarque: z.string().trim().min(3).max(300),
+        paradas: z.array(z.string().trim().max(300)).max(8),
+        desembarque: z.string().trim().min(3).max(300),
+        km: z.number().positive().max(2000),
+        modalidade: z.string().min(1).max(120),
+        pagamento: z.enum(["Pix", "Cartão"]),
+        retorno: idaSchema.nullable(),
+        ocupantes: z.array(z.string().trim().max(120)).min(1).max(MAX_OCUPANTES),
+      })
+      .parse(i),
+  )
   .handler(async ({ data }) => {
     const turno = data.modalidade.endsWith(SUFIXO_TURNO);
     const nomeBase = turno ? data.modalidade.slice(0, -SUFIXO_TURNO.length) : data.modalidade;
@@ -97,34 +150,70 @@ export const agendarOrcamento = createServerFn({ method: "POST" })
     const bloq = bloqueioTrajeto(nomeBase, enderecos);
     if (bloq) return { ok: false as const, erro: bloq };
     const db = await admin();
-    const { data: m } = await db.from("modalidades")
-      .select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km").eq("nome", nomeBase).maybeSingle();
+    const { data: m } = await db
+      .from("modalidades")
+      .select("nome,caracteristicas,por_km,por_turno,valor_turno,franquia_km")
+      .eq("nome", nomeBase)
+      .maybeSingle();
     if (!m) return { ok: false as const, erro: "Modalidade não encontrada." };
     const pct = voltaEmOutroDia(data.ida, data.retorno) ? await taxaInterdiaria() : 0;
     const occ = data.ocupantes.length;
     const adic = occ > 1 ? await adicionalOcupante() : 0;
     const inter = ehIntermunicipal(enderecos, data.km);
     const km = kmCobrados(data.km, !!data.retorno, inter);
-    void valorFinal; void data.pagamento;
-    const bruto = ehVip(nomeBase) ? valorVip(m as ModalidadeBanco, km, turno) : (turno ? NaN : valorModalidade(m as ModalidadeBanco, km));
+    void valorFinal;
+    void data.pagamento;
+    const bruto = ehVip(nomeBase)
+      ? valorVip(m as ModalidadeBanco, km, turno)
+      : turno
+        ? NaN
+        : valorModalidade(m as ModalidadeBanco, km);
     if (!Number.isFinite(bruto)) return { ok: false as const, erro: "Modalidade não disponível." };
-    const valor = Math.round((aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(bruto, pct), occ, adic) + pedagioTotal(inter, data.ida, data.retorno)) * 100) / 100; // valor sempre recalculado no servidor
+    const valor =
+      Math.round(
+        (aplicarAdicionalOcupantes(aplicarTaxaInterdiaria(bruto, pct), occ, adic) +
+          pedagioTotal(inter, data.ida, data.retorno)) *
+          100,
+      ) / 100; // valor sempre recalculado no servidor
     const id = `AG-${Date.now().toString().slice(-6)}`;
     const { error } = await db.from("corridas").insert({
-      id, cliente: data.nome, cliente_email: data.email.toLowerCase(), cliente_whatsapp: data.whatsapp, motorista: "",
-      embarque: data.embarque, parada: data.paradas.filter(Boolean).join(" → ") || null,
-      desembarque: data.desembarque, ida: data.ida, retorno: data.retorno, modalidade: data.modalidade,
-      pagamento: data.pagamento, valor, status: "aguardando_motorista", veiculo: "", categoria: "Sedan", capacidade: 4,
+      id,
+      cliente: data.nome,
+      cliente_email: data.email.toLowerCase(),
+      cliente_whatsapp: data.whatsapp,
+      motorista: "",
+      embarque: data.embarque,
+      parada: data.paradas.filter(Boolean).join(" → ") || null,
+      desembarque: data.desembarque,
+      ida: data.ida,
+      retorno: data.retorno,
+      modalidade: data.modalidade,
+      pagamento: data.pagamento,
+      valor,
+      status: "aguardando_motorista",
+      veiculo: "",
+      categoria: "Sedan",
+      capacidade: 4,
       ocupantes_lista: data.ocupantes.map((o, i) => o || (i === 0 ? data.nome : `Acompanhante ${i}`)),
     });
-    if (error) { console.error("[orcamento] agendar", error.message); return { ok: false as const, erro: "Não foi possível agendar agora." }; }
+    if (error) {
+      console.error("[orcamento] agendar", error.message);
+      return { ok: false as const, erro: "Não foi possível agendar agora." };
+    }
     return { ok: true as const, id, valor };
   });
 
 export const consultarPagamento = createServerFn({ method: "POST" })
-  .inputValidator((i: unknown) => z.object({ id: z.string().regex(/^AG-\d{6}$/), whatsapp: z.string().regex(/^\d{10,11}$/) }).parse(i))
+  .inputValidator((i: unknown) =>
+    z.object({ id: z.string().regex(/^AG-\d{6}$/), whatsapp: z.string().regex(/^\d{10,11}$/) }).parse(i),
+  )
   .handler(async ({ data }) => {
     const db = await admin();
-    const { data: c } = await db.from("corridas").select("pagamento_status").eq("id", data.id).eq("cliente_whatsapp", data.whatsapp).maybeSingle();
+    const { data: c } = await db
+      .from("corridas")
+      .select("pagamento_status")
+      .eq("id", data.id)
+      .eq("cliente_whatsapp", data.whatsapp)
+      .maybeSingle();
     return { status: (c?.pagamento_status as string | undefined) ?? "pendente" };
   });
