@@ -6,7 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { AlertTriangle, Minus, Users, Briefcase, Car, CheckCircle2, Landmark, Loader2, Package, Plane, Plus, ShoppingCart, Sparkles, X, type LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { MAX_OCUPANTES } from "@/lib/orcamento-livre";
+import { MAX_OCUPANTES, rotuloDiasPedagio } from "@/lib/orcamento-livre";
 import { rotuloCiclo, type Ciclo } from "@/lib/pacotes";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/orcamento")({
   component: Orcamento,
 });
 
-type Cotacao = { nome: string; descricao: string; valor: number; taxaPct?: number; bloqueio?: string | null };
+type Cotacao = { nome: string; descricao: string; valor: number; transporte?: number; taxa?: number; pedagio?: number; taxaPct?: number; bloqueio?: string | null };
 type Pacote = { id: string; nome: string; ciclo: Ciclo; km: number; valor: number; saldo_credito: number };
 
 function iconeModalidade(nome: string): LucideIcon {
@@ -129,14 +129,14 @@ function Orcamento() {
 
   const aoCalcular = async (r: ResultadoRota) => {
     setRota(r);
-    const res = await cotar({ data: { km: r.km, idaVolta, enderecos: [origem, ...paradas, destino], interdiario, ocupantes } });
+    const res = await cotar({ data: { km: r.km, idaVolta, enderecos: [origem, ...paradas, destino], interdiario, ocupantes, ...(ida ? { ida } : {}), retorno: retorno || null } });
     const lista = res.cotacoes;
     setCotacoes(lista);
     setIntermunicipal(res.intermunicipal);
     setEscolhida((e) => (lista.some((c) => c.nome === e && !c.bloqueio) ? e : lista.find((c) => !c.bloqueio)?.nome ?? ""));
   };
   // Trocou ida/volta: recota com os km totais.
-  useEffect(() => { if (rota) void aoCalcular(rota); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [idaVolta, interdiario, ocupantes]);
+  useEffect(() => { if (rota) void aoCalcular(rota); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [idaVolta, interdiario, ocupantes, ida, retorno]);
   const kmTotal = rota ? Math.round((idaVolta ? rota.km * 2 : rota.km) * 100) / 100 : 0;
 
   const selecionada = cotacoes.find((c) => c.nome === escolhida);
@@ -325,8 +325,16 @@ function Orcamento() {
                 {selecionada?.nome ? `${selecionada.nome} · ` : ""}{kmTotal.toLocaleString("pt-BR")} km contratados{idaVolta ? " (ida e volta)" : ""}
               </p>
               {selecionada && <p className="mt-1 text-xs text-muted-foreground">{ocupantes} {ocupantes > 1 ? "ocupantes" : "ocupante"}</p>}
-              {interdiario && selecionada && (
-                <p className="mt-1 text-xs text-muted-foreground">- Já Incluso taxa de deslocamento  — </p>
+              {selecionada && (
+                <div className="mt-3 space-y-1 border-t border-primary/30 pt-3 text-left text-sm">
+                  <p className="text-xs uppercase tracking-wide text-gold">Resumo do agendamento executivo</p>
+                  <p className="flex justify-between gap-2"><span>Transporte Executivo{idaVolta ? " (Ida + Retorno agendado)" : " (Ida)"}</span><span>{formatarBRL(selecionada.transporte ?? selecionada.valor)}</span></p>
+                  {!!selecionada.taxa && <p className="flex justify-between gap-2"><span>Taxa de Deslocamento Interdiário</span><span>{formatarBRL(selecionada.taxa)}</span></p>}
+                  {!!selecionada.pedagio && <p className="flex justify-between gap-2"><span>Pedágios da Rodovia ({rotuloDiasPedagio(ida, retorno)})</span><span>{formatarBRL(selecionada.pedagio)}</span></p>}
+                  <p className="flex justify-between gap-2 border-t border-primary/30 pt-1 font-semibold text-gold"><span>Valor total</span><span>{formatarBRL(selecionada.valor)}</span></p>
+                  {!!selecionada.pedagio && <p className="text-xs text-muted-foreground">✓ Todos os pedágios e retornos inclusos</p>}
+                  {interdiario && <p className="text-xs text-muted-foreground">✓ Motorista pontual na ida e no retorno agendado</p>}
+                </div>
               )}
             </div>
           )}

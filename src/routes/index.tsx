@@ -706,7 +706,7 @@ function Autenticacao() {
             <p className="mt-5 font-display text-lg font-semibold text-gold">Agende agora</p>
             <p className="mt-1 text-xs uppercase tracking-[0.2em] text-primary">Escaneie o QR Code</p>
             <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-              Fale direto com Adeilton Oliveira pelo WhatsApp +55 (71) 99680-5321 e reserve seu trajeto executivo.
+              Fale com o suporte e tire suas dúvidas.
             </p>
             <Button asChild className="mt-6">
               <a href={WHATSAPP} target="_blank" rel="noreferrer">
